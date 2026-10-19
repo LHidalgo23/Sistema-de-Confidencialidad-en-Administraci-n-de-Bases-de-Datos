@@ -1,0 +1,3 @@
+-- Prueba P-13 | Control A8.3 | Tipo: Negativa | Conexión: RECEPCION_01
+-- Resultado esperado: ORA-00942 / ORA-01031 al intentar leer EXPEDIENTES
+-- TODO: (conectado como RECEPCION_01) SELECT * FROM CLINICA.EXPEDIENTES;

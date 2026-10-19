@@ -1,0 +1,4 @@
+-- Prueba P-21 | Control A8.20 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: la sesión actual tiene cifrado de red activo
+-- TODO: SELECT NETWORK_SERVICE_BANNER FROM V$SESSION_CONNECT_INFO WHERE SID = SYS_CONTEXT('USERENV','SID');
+-- TODO: SELECT SYS_CONTEXT('USERENV','NETWORK_PROTOCOL') FROM DUAL;

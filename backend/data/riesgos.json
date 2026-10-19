@@ -1,0 +1,68 @@
+[
+  {
+    "id": "R-CONF-01",
+    "resumen": "Privilegios excesivos (ANY, DBA, PUBLIC)",
+    "descripcion": null,
+    "causa": null,
+    "consecuencia": null,
+    "probabilidad": null,
+    "impacto": null,
+    "nivel": null,
+    "baseLegal": "Ley 8968 - dato personal"
+  },
+  {
+    "id": "R-CONF-02",
+    "resumen": "Cuentas por defecto, inactivas o con contraseñas débiles",
+    "descripcion": null,
+    "causa": null,
+    "consecuencia": null,
+    "probabilidad": null,
+    "impacto": null,
+    "nivel": null,
+    "baseLegal": "Ley 8968 - dato personal"
+  },
+  {
+    "id": "R-CONF-03",
+    "resumen": "Robo de datafiles o backups sin cifrar",
+    "descripcion": null,
+    "causa": null,
+    "consecuencia": null,
+    "probabilidad": null,
+    "impacto": null,
+    "nivel": null,
+    "baseLegal": "Ley 8968 - dato sensible (salud)"
+  },
+  {
+    "id": "R-CONF-04",
+    "resumen": "Clones DEV/TEST con datos personales reales",
+    "descripcion": null,
+    "causa": null,
+    "consecuencia": null,
+    "probabilidad": null,
+    "impacto": null,
+    "nivel": null,
+    "baseLegal": "Ley 8968 - dato sensible (salud)"
+  },
+  {
+    "id": "R-CONF-05",
+    "resumen": "Acceso privilegiado sin auditoría ni trazabilidad",
+    "descripcion": null,
+    "causa": null,
+    "consecuencia": null,
+    "probabilidad": null,
+    "impacto": null,
+    "nivel": null,
+    "baseLegal": "Ley 8968 - dato personal y dato sensible"
+  },
+  {
+    "id": "R-CONF-06",
+    "resumen": "Tráfico de red sin cifrar / listener expuesto",
+    "descripcion": null,
+    "causa": null,
+    "consecuencia": null,
+    "probabilidad": null,
+    "impacto": null,
+    "nivel": null,
+    "baseLegal": "Ley 8968 - dato personal y dato sensible"
+  }
+]

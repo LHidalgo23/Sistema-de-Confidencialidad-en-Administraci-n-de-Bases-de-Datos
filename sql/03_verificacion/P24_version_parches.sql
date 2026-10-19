@@ -1,0 +1,4 @@
+-- Prueba P-24 | Control A8.8 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: versión documentada (en Oracle XE: estado Parcial, justificado en el informe)
+-- TODO: SELECT * FROM V$VERSION;
+-- TODO: SELECT * FROM DBA_REGISTRY_SQLPATCH ORDER BY ACTION_TIME DESC;

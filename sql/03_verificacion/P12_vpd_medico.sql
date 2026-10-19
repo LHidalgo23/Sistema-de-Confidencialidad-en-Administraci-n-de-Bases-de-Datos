@@ -1,0 +1,4 @@
+-- Prueba P-12 | Control A8.3 | Tipo: Negativa | Conexión: MEDICO_01
+-- Resultado esperado: MEDICO_01 solo ve expedientes de sus propios pacientes
+-- TODO: (conectado como MEDICO_01) SELECT COUNT(*) FROM CLINICA.EXPEDIENTES
+--       WHERE MEDICO_ASIGNADO != 'MEDICO_01'; -- esperado: 0 filas visibles (VPD filtra el resto)

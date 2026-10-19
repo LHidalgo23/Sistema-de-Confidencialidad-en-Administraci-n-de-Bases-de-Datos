@@ -1,0 +1,4 @@
+-- Prueba P-04 | Control A5.16 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: 0 cuentas abiertas sin uso por más de 90 días
+-- TODO: SELECT COUNT(*) FROM DBA_USERS
+--       WHERE ACCOUNT_STATUS = 'OPEN' AND LAST_LOGIN < SYSDATE - 90;

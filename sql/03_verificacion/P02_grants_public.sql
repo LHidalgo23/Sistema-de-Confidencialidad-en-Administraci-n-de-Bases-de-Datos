@@ -1,0 +1,3 @@
+-- Prueba P-02 | Control A5.15 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: 0 grants de objetos CLINICA a PUBLIC
+-- TODO: SELECT COUNT(*) FROM DBA_TAB_PRIVS WHERE OWNER = 'CLINICA' AND GRANTEE = 'PUBLIC';

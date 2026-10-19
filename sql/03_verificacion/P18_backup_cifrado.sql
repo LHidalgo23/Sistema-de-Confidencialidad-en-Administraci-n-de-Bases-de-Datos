@@ -1,0 +1,4 @@
+-- Prueba P-18 | Control A8.13 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: los backups recientes tienen ENCRYPTED = 'YES'
+-- TODO: SELECT COUNT(*) FROM V$BACKUP_PIECE
+--       WHERE COMPLETION_TIME > SYSDATE - 7 AND NVL(ENCRYPTED, 'NO') = 'NO';

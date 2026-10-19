@@ -1,0 +1,4 @@
+-- Prueba P-14 | Control A8.5 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: solo hashes de contraseña 12C (sin versiones 10G/11G heredadas)
+-- TODO: SELECT USERNAME, PASSWORD_VERSIONS FROM DBA_USERS
+--       WHERE PASSWORD_VERSIONS NOT LIKE '%12C%' OR PASSWORD_VERSIONS LIKE '%10G%' OR PASSWORD_VERSIONS LIKE '%11G%';

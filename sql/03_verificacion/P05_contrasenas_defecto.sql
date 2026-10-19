@@ -1,0 +1,5 @@
+-- Prueba P-05 | Controles A5.16/A5.17 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: 0 cuentas abiertas con contraseña por defecto
+-- TODO: SELECT COUNT(*) FROM DBA_USERS_WITH_DEFPWD d
+--       JOIN DBA_USERS u ON u.USERNAME = d.USERNAME
+--       WHERE u.ACCOUNT_STATUS = 'OPEN';

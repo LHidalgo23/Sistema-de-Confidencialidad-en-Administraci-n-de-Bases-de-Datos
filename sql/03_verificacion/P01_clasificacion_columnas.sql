@@ -1,0 +1,3 @@
+-- Prueba P-01 | Control A5.12 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: todas las columnas sensibles de CLINICA están en CLASIFICACION_DATOS
+-- TODO: SELECT COUNT(*) FROM CLINICA.CLASIFICACION_DATOS;

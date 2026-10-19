@@ -1,0 +1,35 @@
+# Credenciales y secretos
+.env
+*.env
+!.env.example
+wallets/
+*.p12
+*.pfx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# Logs y temporales
+*.log
+npm-debug.log*
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Oracle / SQL Developer
+*.trc
+*.aud

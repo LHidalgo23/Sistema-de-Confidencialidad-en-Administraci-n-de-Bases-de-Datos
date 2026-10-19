@@ -1,0 +1,16 @@
+-- ============================================================================
+-- Control: A8.13 — Respaldo de la información
+-- Riesgo(s) relacionado(s): R-CONF-03
+-- Tarea(s) del DBA: T-06
+-- Objetivo: configurar RMAN para que todos los backups de la base queden
+--           cifrados con AES256.
+-- Evidencia observable (Anexo A): V$BACKUP_PIECE.encrypted,
+--           V$RMAN_ENCRYPTION_ALGORITHMS.
+-- Prueba de verificación: P-18
+-- Herramienta: RMAN (rman target /)
+-- ============================================================================
+
+-- TODO: CONFIGURE ENCRYPTION FOR DATABASE ON;
+-- TODO: CONFIGURE ENCRYPTION ALGORITHM 'AES256';
+-- TODO: BACKUP DATABASE PLUS ARCHIVELOG;
+-- TODO: LIST BACKUP SUMMARY; -- confirmar columna "Compressed"/"Encrypted" = YES

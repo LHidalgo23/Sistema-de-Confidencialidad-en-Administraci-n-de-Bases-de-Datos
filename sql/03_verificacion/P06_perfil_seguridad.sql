@@ -1,0 +1,5 @@
+-- Prueba P-06 | Control A5.17 | Tipo: Configuración | Conexión: AUDITOR_APP
+-- Resultado esperado: perfil con verify function, intentos <= 5, vigencia <= 90 días
+-- TODO: SELECT PROFILE, RESOURCE_NAME, LIMIT FROM DBA_PROFILES
+--       WHERE PROFILE = 'PERFIL_USUARIOS'
+--         AND RESOURCE_NAME IN ('FAILED_LOGIN_ATTEMPTS','PASSWORD_LIFE_TIME','PASSWORD_VERIFY_FUNCTION');
