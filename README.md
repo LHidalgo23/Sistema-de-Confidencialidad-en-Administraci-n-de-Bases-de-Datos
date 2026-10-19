@@ -72,6 +72,10 @@ Si no hay una instancia de Oracle disponible, el frontend puede leer los snapsho
 
 ---
 
+## Diseño: motor genérico, caso de evidencia específico
+
+El motor de auditoría (catálogo de controles/riesgos/tareas en `backend/data/*.json`, el runner de pruebas, la API y el dashboard) **no está acoplado a la clínica**: es un framework de auditoría de confidencialidad ISO/IEC 27001 para Oracle, reutilizable con cualquier esquema. `Clínica Los Robles S.A.` es únicamente el caso ficticio usado para generar evidencia real (datos, SQL, resultados antes/después) en este proyecto. La identidad del cliente auditado vive en `backend/data/caso.json` (servido vía `GET /api/caso`) y el resto del sistema no depende de ese archivo para funcionar.
+
 ## Seguridad y credenciales
 
 - Ninguna credencial real se versiona en este repositorio. El archivo `.env` (con usuario/contraseña de `AUDITOR_APP` y el DSN de conexión) está excluido vía `.gitignore`; usar `backend/.env.example` como plantilla.

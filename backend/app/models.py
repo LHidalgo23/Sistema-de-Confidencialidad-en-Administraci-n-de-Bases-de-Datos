@@ -18,6 +18,15 @@ class Estado(str, Enum):
     CUMPLE = "Cumple"
 
 
+class Caso(BaseModel):
+    cliente: str
+    sector: str | None = None
+    esquemaOracle: str
+    descripcion: str | None = None
+    baseLegal: str | None = None
+    notaReutilizacion: str | None = None
+
+
 class Riesgo(BaseModel):
     id: str
     resumen: str

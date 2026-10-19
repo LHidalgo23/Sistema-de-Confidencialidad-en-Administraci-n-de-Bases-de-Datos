@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models import Control, Prueba, Riesgo, ResultadoAuditoria, ResultadoControl, Tarea
+from .models import Caso, Control, Prueba, Riesgo, ResultadoAuditoria, ResultadoControl, Tarea
 from .runner import ejecutar_prueba
 from .scoring import calcular_madurez, estado_desde_madurez
 
@@ -38,11 +38,20 @@ app.add_middleware(
 )
 
 
-def _cargar_json(nombre: str) -> list[dict]:
+def _cargar_json(nombre: str) -> list[dict] | dict:
     ruta = DATA_DIR / nombre
     if not ruta.exists():
         raise HTTPException(status_code=500, detail=f"No se encontró {nombre}")
     return json.loads(ruta.read_text(encoding="utf-8"))
+
+
+@app.get("/api/caso", response_model=Caso)
+def obtener_caso():
+    """Identidad del cliente/caso auditado. Único dato de negocio específico
+    del despliegue actual: el motor de auditoría (controles, pruebas, API,
+    frontend) es genérico y no depende de este archivo para funcionar."""
+    datos = _cargar_json("caso.json")
+    return datos
 
 
 @app.get("/api/riesgos", response_model=list[Riesgo])

@@ -9,6 +9,7 @@ async function request(path) {
 }
 
 export const api = {
+  caso: () => request("/api/caso"),
   riesgos: () => request("/api/riesgos"),
   tareas: () => request("/api/tareas"),
   controles: () => request("/api/controles"),
