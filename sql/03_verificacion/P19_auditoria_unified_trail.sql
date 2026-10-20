@@ -1,5 +1,0 @@
--- Prueba P-19 | Control A8.15 | Tipo: Auditoría | Conexión: APP_CLINICA (genera) + AUDITOR_APP (verifica)
--- Resultado esperado: el SELECT sobre una tabla sensible aparece en UNIFIED_AUDIT_TRAIL
--- TODO: (conectado como APP_CLINICA) SELECT COUNT(*) FROM CLINICA.PACIENTES;
--- TODO: (conectado como AUDITOR_APP) SELECT COUNT(*) FROM UNIFIED_AUDIT_TRAIL
---       WHERE DBUSERNAME = 'APP_CLINICA' AND OBJECT_NAME = 'PACIENTES' AND EVENT_TIMESTAMP > SYSTIMESTAMP - INTERVAL '5' MINUTE;

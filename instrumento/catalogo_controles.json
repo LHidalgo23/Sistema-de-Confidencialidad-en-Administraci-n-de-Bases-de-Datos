@@ -1,0 +1,556 @@
+[
+  {
+    "id": "OBS-01",
+    "control_iso": "A5.12",
+    "controles_adicionales": [],
+    "nombre": "Columnas sensibles sin clasificación registrada",
+    "riesgo": "R-CONF-01",
+    "tarea": "T-01",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_COL_COMMENTS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-01.sql",
+      "columnas": ["esquema", "tabla", "columna", "nivel", "marcador", "comentario_actual"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "COMMENT ON COLUMN {esquema}.{tabla}.{columna} IS '{marcador!l}: {nivel!l}. {comentario_actual!l}';",
+      "nota": "Confirmar el nivel de clasificación con el dueño del dato antes de registrarlo. El comentario actual de la columna se conserva al final."
+    },
+    "preventivo": "Procedimiento de alta de columnas que exija clasificar el dato antes de pasar a producción (A5.12) y revisión anual del inventario de datos sensibles.",
+    "severidad": "media"
+  },
+  {
+    "id": "OBS-02",
+    "control_iso": "A5.15",
+    "controles_adicionales": [],
+    "nombre": "Objetos de negocio con privilegios para PUBLIC",
+    "riesgo": "R-CONF-01",
+    "tarea": "T-02",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_TAB_PRIVS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-02.sql",
+      "columnas": ["esquema", "objeto", "privilegio"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "REVOKE {privilegio!k} ON {esquema}.{objeto} FROM PUBLIC;",
+      "nota": "Antes de revocar, identificar qué cuentas dependen del acceso vía PUBLIC y otorgarles el acceso mediante un rol funcional."
+    },
+    "preventivo": "Política de cambios que prohíba GRANT a PUBLIC sobre esquemas de negocio y auditoría unificada de las sentencias GRANT (A8.15).",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-03",
+    "control_iso": "A5.15",
+    "controles_adicionales": [],
+    "nombre": "Privilegios sobre objetos otorgados directo a usuarios",
+    "riesgo": "R-CONF-01",
+    "tarea": "T-02",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_TAB_PRIVS", "DBA_USERS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-03.sql",
+      "columnas": ["grantee", "esquema", "objeto", "privilegio"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Crear (si no existe) un rol funcional y otorgar el privilegio al rol antes de revocar:\n-- GRANT {privilegio!k} ON {esquema}.{objeto} TO <ROL_FUNCIONAL>;\n-- GRANT <ROL_FUNCIONAL> TO {grantee};\nREVOKE {privilegio!k} ON {esquema}.{objeto} FROM {grantee};",
+      "nota": "El rol funcional debe definirse según la función del puesto, no según la persona. Descomentar los GRANT una vez definido el rol."
+    },
+    "preventivo": "Gestión de accesos basada en roles: toda solicitud de acceso se resuelve asignando un rol, nunca un grant directo (A5.15, A5.18).",
+    "severidad": "media"
+  },
+  {
+    "id": "OBS-04",
+    "control_iso": "A5.16",
+    "controles_adicionales": [],
+    "nombre": "Cuentas abiertas sin uso reciente",
+    "riesgo": "R-CONF-02",
+    "tarea": "T-01",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_USERS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-04.sql",
+      "columnas": ["usuario", "estado", "ultimo_acceso", "creado"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "ALTER USER {usuario} ACCOUNT LOCK;",
+      "nota": "Confirmar con el responsable del área o con RR. HH. que la cuenta realmente no se usa antes de bloquearla. Bloquear, no eliminar, preserva la trazabilidad de los objetos del usuario."
+    },
+    "preventivo": "Proceso de baja de personal conectado a la gestión de identidades y revisión trimestral de cuentas sin actividad (A5.16, A5.18).",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-05",
+    "control_iso": "A5.17",
+    "controles_adicionales": ["A5.16"],
+    "nombre": "Cuentas abiertas con contraseña por defecto",
+    "riesgo": "R-CONF-02",
+    "tarea": "T-03",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_USERS_WITH_DEFPWD", "DBA_USERS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-05.sql",
+      "columnas": ["usuario", "estado"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "ALTER USER {usuario} PASSWORD EXPIRE;",
+      "nota": "PASSWORD EXPIRE obliga a definir una contraseña nueva en el siguiente inicio de sesión, de modo que el script nunca contiene secretos. Si la cuenta no se usa, bloquearla (ACCOUNT LOCK)."
+    },
+    "preventivo": "Verificación de contraseñas por defecto en el procedimiento de entrega de cualquier base nueva y función de verificación de contraseñas en el perfil (A5.17).",
+    "severidad": "alta",
+    "limitaciones": "DBA_USERS_WITH_DEFPWD solo reconoce las contraseñas por defecto conocidas de Oracle; no detecta contraseñas débiles elegidas por la empresa."
+  },
+  {
+    "id": "OBS-06",
+    "control_iso": "A5.17",
+    "controles_adicionales": [],
+    "nombre": "Perfiles sin función de verificación o con límites débiles",
+    "riesgo": "R-CONF-02",
+    "tarea": "T-03",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_PROFILES", "DBA_USERS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-06.sql",
+      "columnas": ["perfil", "parametro", "actual", "recomendado"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "ALTER PROFILE {perfil} LIMIT {parametro!k} {recomendado!k};",
+      "nota": "Si el parámetro es PASSWORD_VERIFY_FUNCTION, verificar que la función exista (script utlpwdmg.sql). Aplicar IDLE_TIME y los límites de contraseña a cuentas de servicio solo tras confirmar que la aplicación tolera la política."
+    },
+    "preventivo": "Perfiles de seguridad dedicados por tipo de cuenta (personas, servicio) y revisión anual de los límites frente a la política de contraseñas (A5.17, A8.5).",
+    "severidad": "media"
+  },
+  {
+    "id": "OBS-07",
+    "control_iso": "A5.18",
+    "controles_adicionales": [],
+    "nombre": "Privilegios de sistema directos no justificados",
+    "riesgo": "R-CONF-01",
+    "tarea": "T-02",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_SYS_PRIVS", "DBA_USERS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-07.sql",
+      "columnas": ["grantee", "privilegio", "con_admin_option"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "REVOKE {privilegio!k} FROM {grantee};",
+      "nota": "Antes de revocar, otorgar el privilegio realmente necesario mediante un rol funcional que quede sujeto a la revisión periódica de derechos."
+    },
+    "preventivo": "Revisión trimestral de derechos de acceso con registro del revisor y la fecha (A5.18).",
+    "severidad": "media",
+    "limitaciones": "Sin conocer la función del puesto, se aproxima 'no justificado' como 'privilegio de sistema directo fuera de la lista permitida de la empresa'."
+  },
+  {
+    "id": "OBS-08",
+    "control_iso": "A5.33",
+    "controles_adicionales": [],
+    "nombre": "AUDIT_ADMIN indebido o sin purga de la pista de auditoría",
+    "riesgo": "R-CONF-05",
+    "tarea": "T-11",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_ROLE_PRIVS", "DBA_USERS", "DBA_ROLES", "DBA_AUDIT_MGMT_CLEANUP_JOBS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-08.sql",
+      "columnas": ["tipo", "grantee"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "discriminador": "tipo",
+      "plantillas": {
+        "AUDIT_ADMIN": "REVOKE AUDIT_ADMIN FROM {grantee};",
+        "RETENCION": "-- Purga programada de la pista unificada (definir primero la política de retención de la empresa):\n-- BEGIN\n--   DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(\n--     audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n--     last_archive_time => SYSTIMESTAMP - INTERVAL '<DIAS_RETENCION>' DAY);\n--   DBMS_AUDIT_MGMT.CREATE_PURGE_JOB(\n--     audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n--     audit_trail_purge_interval => 24,\n--     audit_trail_purge_name => 'PURGA_AUDITORIA_UNIFICADA',\n--     use_last_arch_timestamp => TRUE);\n-- END;\n-- /"
+      },
+      "nota": "La retención de la auditoría unificada se gestiona con DBMS_AUDIT_MGMT (marca de tiempo de archivo y trabajo de purga); no existe un parámetro de 'días de retención'. Respaldar o exportar la pista antes de purgar si la normativa lo exige."
+    },
+    "preventivo": "Separación de funciones: quien administra la auditoría no administra los datos ni el sistema, y la pista se exporta a un repositorio inmutable o SIEM antes de purgarse (A5.33, A8.15).",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-09",
+    "control_iso": "A8.2",
+    "controles_adicionales": [],
+    "nombre": "Rol DBA fuera de las cuentas autorizadas",
+    "riesgo": "R-CONF-01",
+    "tarea": "T-02",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_ROLE_PRIVS", "DBA_USERS", "DBA_ROLES"],
+    "observable": {
+      "archivo": "sql/observables/OBS-09.sql",
+      "columnas": ["grantee", "con_admin_option"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Antes de revocar, identificar los privilegios realmente requeridos por la cuenta y otorgarlos mediante un rol funcional.\nREVOKE DBA FROM {grantee};",
+      "nota": "Una cuenta de aplicación nunca debería tener el rol DBA. Probar la aplicación en un ambiente no productivo tras la revocación."
+    },
+    "preventivo": "Revisión trimestral de privilegios (A5.18) y política de auditoría unificada sobre GRANT/REVOKE (A8.15).",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-10",
+    "control_iso": "A8.2",
+    "controles_adicionales": [],
+    "nombre": "Privilegios ANY a cuentas no administrativas",
+    "riesgo": "R-CONF-01",
+    "tarea": "T-02",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_SYS_PRIVS", "DBA_USERS", "DBA_ROLES"],
+    "observable": {
+      "archivo": "sql/observables/OBS-10.sql",
+      "columnas": ["grantee", "privilegio", "con_admin_option"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Reemplazar por grants explícitos sobre los objetos necesarios, mediante un rol funcional.\nREVOKE {privilegio!k} FROM {grantee};",
+      "nota": "Un privilegio ANY da acceso a todos los esquemas, incluidos los de otras aplicaciones. Identificar qué objetos usa realmente la cuenta antes de revocar."
+    },
+    "preventivo": "Principio de mínimo privilegio en el alta de cuentas y auditoría de las sentencias GRANT (A8.2, A8.15).",
+    "severidad": "alta",
+    "limitaciones": "Se observan los grantees directos; los privilegios heredados por una cadena de roles propios aparecen como hallazgo del rol que los contiene."
+  },
+  {
+    "id": "OBS-11",
+    "control_iso": "A8.2",
+    "controles_adicionales": [],
+    "nombre": "AUDIT_SYS_OPERATIONS desactivado o cuentas en el password file",
+    "riesgo": "R-CONF-05",
+    "tarea": "T-07",
+    "alcance": "Instancia",
+    "version_min": 19,
+    "requiere": ["V$PARAMETER", "V$PWFILE_USERS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-11.sql",
+      "columnas": ["tipo", "objeto", "actual"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "discriminador": "tipo",
+      "plantillas": {
+        "AUDIT_SYS_OPERATIONS": "-- Ejecutar en CDB$ROOT; requiere reinicio de la instancia.\nALTER SYSTEM SET audit_sys_operations = TRUE SCOPE = SPFILE;",
+        "PWFILE": "-- Revisar si {objeto} requiere privilegios administrativos ({actual!l}). Si no los requiere:\n-- REVOKE SYSDBA FROM {objeto};\n-- REVOKE SYSOPER FROM {objeto};\n-- REVOKE SYSBACKUP FROM {objeto};"
+      },
+      "nota": "audit_sys_operations es un parámetro de instancia: no se puede cambiar desde una PDB. Las cuentas con SYSBACKUP legítimas (operador de respaldos) deben declararse en cuentas_pwfile_autorizadas."
+    },
+    "preventivo": "Separación de funciones con roles SYSBACKUP/SYSDG/SYSKM en lugar de SYSDBA compartido y revisión del password file en cada auditoría (A8.2).",
+    "severidad": "alta",
+    "limitaciones": "Observa parámetros de instancia: desde una PDB puede no ser visible y se reporta como No evaluable."
+  },
+  {
+    "id": "OBS-12",
+    "control_iso": "A8.3",
+    "controles_adicionales": [],
+    "nombre": "Tablas sensibles sin política VPD",
+    "riesgo": "R-CONF-01",
+    "tarea": "T-02",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_POLICIES"],
+    "observable": {
+      "archivo": "sql/observables/OBS-12.sql",
+      "columnas": ["esquema", "tabla"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- La regla de acceso depende del negocio: el instrumento no puede inventarla. Completar y descomentar.\n-- 1) CREATE OR REPLACE FUNCTION <ESQUEMA_SEGURIDAD>.FN_VPD_{tabla!b}(p_esquema VARCHAR2, p_objeto VARCHAR2) RETURN VARCHAR2 AS\n--    BEGIN RETURN '<predicado: por ejemplo, columna_responsable = SYS_CONTEXT(''USERENV'',''SESSION_USER'')>'; END;\n--    /\n-- 2) BEGIN\n--      DBMS_RLS.ADD_POLICY(object_schema => '{esquema!l}', object_name => '{tabla!l}',\n--        policy_name => 'POL_{tabla!l}', function_schema => '<ESQUEMA_SEGURIDAD>',\n--        policy_function => 'FN_VPD_{tabla!l}', statement_types => 'SELECT,INSERT,UPDATE,DELETE', update_check => TRUE);\n--    END;\n--    /",
+      "nota": "El esquema de seguridad que aloja la función de predicado debe ser distinto del dueño de la tabla. Los usuarios con EXEMPT ACCESS POLICY (incluido SYS) no están sujetos a VPD."
+    },
+    "preventivo": "Definir en el diseño de cada tabla sensible quién puede ver qué filas (A8.3) y probar la política con usuarios reales de cada rol.",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-13",
+    "control_iso": "A8.5",
+    "controles_adicionales": [],
+    "nombre": "Cuentas con hashes de contraseña antiguos",
+    "riesgo": "R-CONF-02",
+    "tarea": "T-03",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_USERS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-13.sql",
+      "columnas": ["usuario", "versiones"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "ALTER USER {usuario} PASSWORD EXPIRE;",
+      "nota": "Primero configurar SQLNET.ALLOWED_LOGON_VERSION_SERVER = 12 (o superior) en sqlnet.ora; así, al renovar la contraseña, solo se almacena el hash 12C. Verificar que los clientes antiguos soporten esa versión."
+    },
+    "preventivo": "Fijar SQLNET.ALLOWED_LOGON_VERSION_SERVER como parte del estándar de configuración del servidor (A8.5).",
+    "severidad": "media"
+  },
+  {
+    "id": "OBS-14",
+    "control_iso": "A8.10",
+    "controles_adicionales": [],
+    "nombre": "Objetos de negocio en la papelera de reciclaje",
+    "riesgo": "R-CONF-03",
+    "tarea": "T-10",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_RECYCLEBIN"],
+    "observable": {
+      "archivo": "sql/observables/OBS-14.sql",
+      "columnas": ["esquema", "objeto", "tipo", "tablespace", "eliminado"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "PURGE TABLESPACE {tablespace} USER {esquema};",
+      "nota": "PURGE es irreversible: confirmar que los objetos eliminados no deben recuperarse con FLASHBACK TABLE ... TO BEFORE DROP."
+    },
+    "preventivo": "Procedimiento estándar de eliminación segura: DROP ... PURGE, y DELETE OBSOLETE en RMAN para los respaldos que ya no se requieren (A8.10).",
+    "severidad": "media"
+  },
+  {
+    "id": "OBS-15",
+    "control_iso": "A8.11",
+    "controles_adicionales": [],
+    "nombre": "Columnas sensibles sin política de Data Redaction",
+    "riesgo": "R-CONF-04",
+    "tarea": "T-05",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["REDACTION_COLUMNS", "REDACTION_POLICIES"],
+    "observable": {
+      "archivo": "sql/observables/OBS-15.sql",
+      "columnas": ["esquema", "tabla", "columna"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "DECLARE\n  v_politica redaction_policies.policy_name%TYPE;\nBEGIN\n  BEGIN\n    SELECT policy_name INTO v_politica FROM redaction_policies\n     WHERE object_owner = '{esquema!l}' AND object_name = '{tabla!l}';\n    DBMS_REDACT.ALTER_POLICY(object_schema => '{esquema!l}', object_name => '{tabla!l}',\n      policy_name => v_politica, action => DBMS_REDACT.ADD_COLUMN,\n      column_name => '{columna!l}', function_type => DBMS_REDACT.FULL);\n  EXCEPTION WHEN NO_DATA_FOUND THEN\n    DBMS_REDACT.ADD_POLICY(object_schema => '{esquema!l}', object_name => '{tabla!l}',\n      policy_name => 'POL_REDACT_{tabla!l}', column_name => '{columna!l}',\n      function_type => DBMS_REDACT.FULL, expression => '1=1');\n  END;\nEND;\n/",
+      "nota": "Una tabla admite una sola política de redaction: la primera columna crea la política y las siguientes la amplían. La expresión 1=1 redacta para todos los usuarios salvo los que tengan EXEMPT REDACTION POLICY; ajustarla (por rol o usuario) y elegir PARTIAL/REGEXP donde convenga conservar parte del dato."
+    },
+    "preventivo": "Incluir la redacción de datos sensibles en el diseño de las vistas y consultas de soporte y desarrollo (A8.11) y revisar quién tiene EXEMPT REDACTION POLICY.",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-16",
+    "control_iso": "A8.12",
+    "controles_adicionales": [],
+    "nombre": "Canales de fuga: paquetes, directorios y Data Pump",
+    "riesgo": "R-CONF-03",
+    "tarea": "T-10",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_TAB_PRIVS", "DBA_DIRECTORIES", "DBA_ROLE_PRIVS", "DBA_USERS", "DBA_ROLES"],
+    "observable": {
+      "archivo": "sql/observables/OBS-16.sql",
+      "columnas": ["tipo", "grantee", "objeto", "privilegio"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "discriminador": "tipo",
+      "plantillas": {
+        "PAQUETE": "REVOKE EXECUTE ON SYS.{objeto} FROM PUBLIC;",
+        "DIRECTORIO": "REVOKE {privilegio!k} ON DIRECTORY {objeto} FROM PUBLIC;",
+        "DATAPUMP": "REVOKE {objeto} FROM {grantee};"
+      },
+      "nota": "Revocar EXECUTE de UTL_* a PUBLIC puede afectar componentes que los usan: probar en un ambiente no productivo y, si algo falla, otorgar el privilegio solo a la cuenta que lo necesite."
+    },
+    "preventivo": "Listas de control de acceso de red (ACL) para UTL_HTTP/UTL_TCP, directorios con acceso por cuenta y auditoría de las exportaciones Data Pump (A8.12, A8.15).",
+    "severidad": "alta",
+    "limitaciones": "En instalaciones nuevas de Oracle varios paquetes UTL_* vienen otorgados a PUBLIC por defecto: es un hallazgo real de endurecimiento, no un error de la herramienta."
+  },
+  {
+    "id": "OBS-17",
+    "control_iso": "A8.13",
+    "controles_adicionales": [],
+    "nombre": "Respaldos recientes sin cifrar",
+    "riesgo": "R-CONF-03",
+    "tarea": "T-06",
+    "alcance": "Instancia",
+    "version_min": 19,
+    "requiere": ["V$BACKUP_PIECE"],
+    "observable": {
+      "archivo": "sql/observables/OBS-17.sql",
+      "columnas": ["pieza", "manejador", "finalizado"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Ejecutar en RMAN (rman target /). El respaldo {pieza!l} se reemplaza por uno cifrado:\n-- CONFIGURE ENCRYPTION FOR DATABASE ON;\n-- CONFIGURE ENCRYPTION ALGORITHM 'AES256';\n-- BACKUP DATABASE PLUS ARCHIVELOG;\n-- DELETE OBSOLETE;",
+      "nota": "El cifrado transparente de RMAN usa la llave maestra de TDE: el keystore debe estar abierto durante el respaldo. Conservar el keystore y su contraseña fuera del servidor, o los respaldos serán irrecuperables."
+    },
+    "preventivo": "Cifrado AES de todos los respaldos como configuración permanente de RMAN y prueba periódica de restauración (A8.13).",
+    "severidad": "alta",
+    "limitaciones": "Observa el catálogo de RMAN de la instancia; desde una PDB puede no ser visible y se reporta como No evaluable en lugar de 'sin respaldos'."
+  },
+  {
+    "id": "OBS-18",
+    "control_iso": "A8.15",
+    "controles_adicionales": [],
+    "nombre": "Tablas sensibles sin política de auditoría unificada",
+    "riesgo": "R-CONF-05",
+    "tarea": "T-07",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["AUDIT_UNIFIED_POLICIES", "AUDIT_UNIFIED_ENABLED_POLICIES"],
+    "observable": {
+      "archivo": "sql/observables/OBS-18.sql",
+      "columnas": ["esquema", "tabla"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "CREATE AUDIT POLICY POL_ISO_{esquema!b}_{tabla!b}\n  ACTIONS SELECT ON {esquema}.{tabla},\n          INSERT ON {esquema}.{tabla},\n          UPDATE ON {esquema}.{tabla},\n          DELETE ON {esquema}.{tabla};\nAUDIT POLICY POL_ISO_{esquema!b}_{tabla!b};",
+      "nota": "Auditar SELECT en tablas muy consultadas genera volumen: acotar con WHEN/EVALUATE PER o auditar solo a los roles de riesgo, y dimensionar el espacio de la pista de auditoría."
+    },
+    "preventivo": "Estándar de auditoría para tablas sensibles definido en el diseño y revisión periódica de las alertas generadas (A8.15).",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-19",
+    "control_iso": "A8.15",
+    "controles_adicionales": [],
+    "nombre": "Logons fallidos y acciones privilegiadas sin auditar",
+    "riesgo": "R-CONF-05",
+    "tarea": "T-07",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["AUDIT_UNIFIED_POLICIES", "AUDIT_UNIFIED_ENABLED_POLICIES"],
+    "observable": {
+      "archivo": "sql/observables/OBS-19.sql",
+      "columnas": ["tipo", "accion"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "discriminador": "tipo",
+      "plantillas": {
+        "LOGON_FALLIDO": "AUDIT POLICY ORA_LOGON_FAILURES WHENEVER NOT SUCCESSFUL;",
+        "ACCION_PRIVILEGIADA": "CREATE AUDIT POLICY POL_ISO_ACCIONES_PRIVILEGIADAS\n  ACTIONS CREATE USER, ALTER USER, DROP USER, GRANT, REVOKE, CREATE ROLE, ALTER ROLE, DROP ROLE;\nAUDIT POLICY POL_ISO_ACCIONES_PRIVILEGIADAS;"
+      },
+      "nota": "Verificar los nombres de acción disponibles en la versión instalada (consultar AUDIT_UNIFIED_POLICIES / documentación de CREATE AUDIT POLICY) antes de aplicar."
+    },
+    "preventivo": "Centralizar la pista de auditoría en un SIEM con alertas sobre intentos fallidos repetidos y cambios de privilegios (A8.15, A8.16).",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-20",
+    "control_iso": "A8.20",
+    "controles_adicionales": [],
+    "nombre": "Sesiones sin cifrado de red",
+    "riesgo": "R-CONF-06",
+    "tarea": "T-09",
+    "alcance": "Instancia",
+    "version_min": 19,
+    "requiere": ["V$SESSION", "V$SESSION_CONNECT_INFO"],
+    "observable": {
+      "archivo": "sql/observables/OBS-20.sql",
+      "columnas": ["usuario", "sid", "serial", "programa", "maquina"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- La sesión de {usuario!l} (SID {sid!n}) viaja sin cifrado nativo. El cambio se aplica en sqlnet.ora del servidor (no es SQL):\n-- SQLNET.ENCRYPTION_SERVER = REQUIRED\n-- SQLNET.ENCRYPTION_TYPES_SERVER = (AES256)\n-- SQLNET.CRYPTO_CHECKSUM_SERVER = REQUIRED\n-- TCP.VALIDNODE_CHECKING = YES\n-- TCP.INVITED_NODES = (<hosts autorizados>)\n-- Guardar copia del sqlnet.ora original, reiniciar el listener y probar la conexión tras el cambio.",
+      "nota": "Con ENCRYPTION_SERVER=REQUIRED los clientes que no soporten cifrado dejan de conectar: empezar en REQUESTED durante la transición y pasar a REQUIRED cuando todos los clientes estén listos."
+    },
+    "preventivo": "Cifrado en tránsito obligatorio (nativo o TLS) y lista de nodos autorizados como estándar del listener (A8.20, A8.21).",
+    "severidad": "alta",
+    "limitaciones": "Una sesión TLS (tcps) no muestra el adaptador de cifrado nativo y se listará aquí; confirmarla con SYS_CONTEXT('USERENV','NETWORK_PROTOCOL')."
+  },
+  {
+    "id": "OBS-21",
+    "control_iso": "A8.24",
+    "controles_adicionales": [],
+    "nombre": "Keystore de TDE no abierto",
+    "riesgo": "R-CONF-03",
+    "tarea": "T-04",
+    "alcance": "Instancia/PDB",
+    "version_min": 19,
+    "requiere": ["V$ENCRYPTION_WALLET"],
+    "observable": {
+      "archivo": "sql/observables/OBS-21.sql",
+      "columnas": ["estado", "ubicacion", "tipo_wallet"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Estado actual del keystore: {estado!l}. Según el estado:\n-- NOT_AVAILABLE : configurar WALLET_ROOT y TDE_CONFIGURATION (requiere reinicio) y crear el keystore.\n-- CLOSED        : ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY \"<clave_del_keystore>\";\n-- OPEN_NO_MASTER_KEY : ADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY \"<clave_del_keystore>\" WITH BACKUP;",
+      "nota": "Hacer respaldo del keystore y registrar su contraseña en un gestor de secretos antes de crear llaves: perder el keystore deja los datos cifrados ilegibles. Considerar un wallet de auto-login para que la base abra sola tras un reinicio."
+    },
+    "preventivo": "Procedimiento de custodia del keystore (copias, doble control, rotación de llaves) y monitoreo de su estado (A8.24).",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-22",
+    "control_iso": "A8.24",
+    "controles_adicionales": [],
+    "nombre": "Columnas sensibles en tablespaces sin cifrar",
+    "riesgo": "R-CONF-03",
+    "tarea": "T-04",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["DBA_TABLES", "DBA_TAB_PARTITIONS", "DBA_TABLESPACES", "DBA_ENCRYPTED_COLUMNS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-22.sql",
+      "columnas": ["esquema", "tabla", "columna", "tablespace"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Cifrar el tablespace {tablespace!l} (requiere keystore abierto con llave maestra, ver OBS-21).\n-- Opción sin conexión (requiere ventana de mantenimiento):\n-- ALTER TABLESPACE {tablespace} OFFLINE NORMAL;\n-- ALTER TABLESPACE {tablespace} ENCRYPTION OFFLINE USING 'AES256' ENCRYPT;\n-- ALTER TABLESPACE {tablespace} ONLINE;\n-- Opción en línea (genera copias de los archivos de datos):\n-- ALTER TABLESPACE {tablespace} ENCRYPTION ONLINE USING 'AES256' ENCRYPT FILE_NAME_CONVERT = ('<archivo_origen>', '<archivo_destino>');",
+      "nota": "No se pueden cifrar in situ SYSTEM, SYSAUX, UNDO ni TEMP; para esas estructuras el control es el cifrado de respaldos y del almacenamiento. Alternativa: crear un tablespace nuevo con ENCRYPTION y mover las tablas con ALTER TABLE ... MOVE."
+    },
+    "preventivo": "Crear los tablespaces de datos sensibles con cifrado desde el diseño (A8.24) y verificar V$ENCRYPTED_TABLESPACES tras cada alta.",
+    "severidad": "alta"
+  },
+  {
+    "id": "OBS-23",
+    "control_iso": "A8.33",
+    "controles_adicionales": ["A8.31"],
+    "nombre": "Esquemas de desarrollo o prueba con datos sensibles sin enmascarar",
+    "riesgo": "R-CONF-04",
+    "tarea": "T-12",
+    "alcance": "PDB",
+    "version_min": 19,
+    "requiere": ["REDACTION_COLUMNS", "DBA_COL_COMMENTS"],
+    "observable": {
+      "archivo": "sql/observables/OBS-23.sql",
+      "columnas": ["esquema", "tabla", "columna", "marcador"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Enmascarar los datos de {esquema}.{tabla}.{columna} (por ejemplo con DBMS_RANDOM o un UPDATE con valores ficticios) y, una vez enmascarados, registrar el marcador:\n-- UPDATE {esquema}.{tabla} SET {columna} = <expresion_de_enmascarado>;\n-- COMMENT ON COLUMN {esquema}.{tabla}.{columna} IS '{marcador!l}';",
+      "nota": "El marcador es una convención: solo debe registrarse cuando el enmascarado ya se aplicó. Los ambientes de prueba no deberían recibir copias de producción sin enmascarar (A8.33)."
+    },
+    "preventivo": "Procedimiento de refresco de ambientes que enmascare los datos en el mismo flujo de la copia, y separación de ambientes de desarrollo, prueba y producción (A8.31, A8.33).",
+    "severidad": "alta",
+    "limitaciones": "Sin leer datos no se puede probar que el enmascarado físico se aplicó; la herramienta se apoya en la política de redaction o en el marcador que registra el DBA."
+  },
+  {
+    "id": "OBS-24",
+    "control_iso": "A8.8",
+    "controles_adicionales": [],
+    "nombre": "Versión y parches del motor",
+    "riesgo": "R-CONF-03",
+    "tarea": "T-08",
+    "alcance": "Instancia",
+    "version_min": 19,
+    "requiere": ["V$VERSION", "DBA_REGISTRY_SQLPATCH"],
+    "observable": {
+      "archivo": "sql/observables/OBS-24.sql",
+      "columnas": ["version", "ultimo_parche", "dias"],
+      "regla": { "tipo": "sin_filas" }
+    },
+    "correctivo": {
+      "plantilla": "-- Versión instalada: {version!l}. Último parche aplicado: {ultimo_parche!l} (hace {dias!l} días).\n-- Aplicar el Release Update vigente con OPatch y datapatch (descarga desde Oracle Support).\n-- Oracle XE no recibe Release Updates trimestrales: documentar el hallazgo como aceptación de riesgo\n-- en el perfil de la empresa y planificar la migración a una edición con soporte de parches.",
+      "nota": "Probar el parche en un ambiente no productivo, respaldar la base y ejecutar datapatch al terminar."
+    },
+    "preventivo": "Calendario trimestral de revisión de Critical Patch Updates y suscripción a los avisos de seguridad de Oracle (A8.8).",
+    "severidad": "media",
+    "limitaciones": "Mide la antigüedad desde que se aplicó el último parche, no desde su publicación; es una aproximación documentada."
+  }
+]

@@ -1,3 +1,0 @@
--- Prueba P-15 | Control A8.10 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: recyclebin de CLINICA vacío
--- TODO: SELECT COUNT(*) FROM DBA_RECYCLEBIN WHERE OWNER = 'CLINICA';

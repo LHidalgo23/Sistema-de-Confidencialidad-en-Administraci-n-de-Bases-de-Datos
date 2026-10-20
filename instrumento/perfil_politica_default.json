@@ -1,0 +1,36 @@
+{
+  "version": "1.0",
+  "descripcion": "Umbrales por defecto basados en ISO/IEC 27002:2022 y en las guías de endurecimiento de Oracle. Cada empresa sobrescribe solo las claves que necesite al registrarse; las claves desconocidas se rechazan.",
+  "parametros": {
+    "dias_inactividad": 90,
+    "max_intentos_fallidos": 5,
+    "max_vigencia_password_dias": 90,
+    "max_idle_time_min": 30,
+    "funcion_verificacion": "ORA12C_VERIFY_FUNCTION",
+    "cuentas_dba_autorizadas": [],
+    "cuentas_administrativas": [],
+    "cuentas_audit_admin_autorizadas": [],
+    "cuentas_pwfile_autorizadas": ["SYS"],
+    "privilegios_sistema_permitidos": ["CREATE SESSION"],
+    "paquetes_restringidos": ["UTL_FILE", "UTL_HTTP", "UTL_TCP", "UTL_SMTP"],
+    "dias_backup_reciente": 7,
+    "dias_max_sin_parche": 120,
+    "marcador_clasificacion": "CLASIFICACION",
+    "marcador_enmascarado": "ENMASCARADO",
+    "sufijos_no_productivos": ["_DEV", "_TEST"]
+  },
+  "patrones_sensibles": [
+    { "patron": "CEDULA",      "categoria": "Identificador personal",  "nivel": "Confidencial - dato personal" },
+    { "patron": "NACIMIENTO",  "categoria": "Dato demografico",        "nivel": "Confidencial - dato personal" },
+    { "patron": "TELEFONO",    "categoria": "Dato de contacto",        "nivel": "Confidencial - dato personal" },
+    { "patron": "CORREO",      "categoria": "Dato de contacto",        "nivel": "Confidencial - dato personal" },
+    { "patron": "DIRECCION",   "categoria": "Dato de contacto",        "nivel": "Confidencial - dato personal" },
+    { "patron": "SALARIO",     "categoria": "Dato financiero",         "nivel": "Confidencial - dato financiero" },
+    { "patron": "IBAN",        "categoria": "Dato financiero",         "nivel": "Confidencial - dato financiero" },
+    { "patron": "TARJETA",     "categoria": "Dato financiero",         "nivel": "Confidencial - dato financiero" },
+    { "patron": "DIAGNOSTICO", "categoria": "Dato de salud",           "nivel": "Restringido - dato sensible (salud)" },
+    { "patron": "TRATAMIENTO", "categoria": "Dato de salud",           "nivel": "Restringido - dato sensible (salud)" }
+  ],
+  "tipos_dato_candidatos": ["VARCHAR2", "NVARCHAR2", "CHAR", "NCHAR", "CLOB", "NCLOB", "NUMBER", "FLOAT", "DATE", "TIMESTAMP"],
+  "aceptaciones_riesgo": {}
+}

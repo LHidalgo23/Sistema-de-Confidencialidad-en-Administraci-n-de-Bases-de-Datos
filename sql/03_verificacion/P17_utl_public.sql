@@ -1,4 +1,0 @@
--- Prueba P-17 | Control A8.12 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: 0 EXECUTE de UTL_FILE/UTL_HTTP/UTL_TCP otorgados a PUBLIC
--- TODO: SELECT COUNT(*) FROM DBA_TAB_PRIVS
---       WHERE GRANTEE = 'PUBLIC' AND TABLE_NAME IN ('UTL_FILE','UTL_HTTP','UTL_TCP') AND PRIVILEGE = 'EXECUTE';

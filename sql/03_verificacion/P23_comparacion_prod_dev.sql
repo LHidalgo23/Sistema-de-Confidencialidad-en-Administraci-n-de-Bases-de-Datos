@@ -1,4 +1,0 @@
--- Prueba P-23 | Control A8.33 | Tipo: Comparación | Conexión: AUDITOR_APP
--- Resultado esperado: 0 cédulas coincidentes entre CLINICA (prod) y CLINICA_DEV
--- TODO: SELECT COUNT(*) FROM CLINICA.PACIENTES p
---       JOIN CLINICA_DEV.PACIENTES d ON p.CEDULA = d.CEDULA;

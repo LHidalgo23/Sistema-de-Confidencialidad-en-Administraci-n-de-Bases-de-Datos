@@ -1,5 +1,0 @@
--- Prueba P-03 | Control A5.15 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: 0 grants directos a usuarios sobre objetos CLINICA (solo vía roles)
--- TODO: SELECT COUNT(*) FROM DBA_TAB_PRIVS t
---       WHERE t.OWNER = 'CLINICA'
---         AND t.GRANTEE IN (SELECT USERNAME FROM DBA_USERS); -- grantee es usuario, no rol

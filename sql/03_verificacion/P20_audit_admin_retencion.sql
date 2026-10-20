@@ -1,4 +1,0 @@
--- Prueba P-20 | Control A5.33 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: AUDIT_ADMIN solo lo tiene el DBA nominal; retención configurada
--- TODO: SELECT GRANTEE FROM DBA_ROLE_PRIVS WHERE GRANTED_ROLE = 'AUDIT_ADMIN';
--- TODO: SELECT * FROM DBA_AUDIT_MGMT_CONFIG_PARAMS WHERE PARAMETER_NAME = 'AUDIT TRAIL RETENTION';

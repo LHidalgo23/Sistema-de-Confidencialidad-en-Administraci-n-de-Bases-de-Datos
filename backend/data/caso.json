@@ -1,8 +1,0 @@
-{
-  "cliente": "Clínica Los Robles S.A.",
-  "sector": "Salud",
-  "esquemaOracle": "CLINICA",
-  "descripcion": "Empresa ficticia usada como caso de evidencia. Maneja datos personales y datos sensibles de salud (Ley 8968).",
-  "baseLegal": "Ley 8968 - Protección de la persona frente al tratamiento de sus datos personales",
-  "notaReutilizacion": "El motor de auditoría (catálogo de controles ISO, motor de pruebas, API y dashboard) es genérico y no depende de este caso. Para auditar a otro cliente se sustituye este archivo y los scripts de sql/03_verificacion/ que apuntan al esquema CLINICA por los del esquema del nuevo cliente; riesgos.json, tareas.json y controles.json no cambian."
-}

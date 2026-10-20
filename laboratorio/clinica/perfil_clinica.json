@@ -1,0 +1,10 @@
+{
+  "dias_inactividad": 1,
+  "cuentas_dba_autorizadas": ["DBA_JSANCHEZ"],
+  "cuentas_administrativas": ["DBA_JSANCHEZ", "PDBADMIN"],
+  "cuentas_audit_admin_autorizadas": ["DBA_JSANCHEZ"],
+  "cuentas_pwfile_autorizadas": ["SYS"],
+  "aceptaciones_riesgo": {
+    "OBS-24": "Oracle Database XE no distribuye Release Updates trimestrales; se acepta el riesgo en el laboratorio y se documenta la migración a una edición con soporte de parches como plan de mejora."
+  }
+}

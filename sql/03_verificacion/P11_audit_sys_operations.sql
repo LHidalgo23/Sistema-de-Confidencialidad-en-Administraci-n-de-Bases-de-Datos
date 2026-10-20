@@ -1,3 +1,0 @@
--- Prueba P-11 | Control A8.2 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: AUDIT_SYS_OPERATIONS = TRUE
--- TODO: SELECT VALUE FROM V$PARAMETER WHERE NAME = 'audit_sys_operations';

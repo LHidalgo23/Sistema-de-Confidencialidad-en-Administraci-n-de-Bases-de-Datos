@@ -1,91 +1,119 @@
-# Sistema de Confidencialidad en Administración de Bases de Datos
+# Instrumento de auditoría de confidencialidad (ISO/IEC 27001:2022) para Oracle
 
-Controles ISO/IEC 27001:2022 e ISO/IEC 27002:2022 para la **confidencialidad** en tareas del DBA, aplicados sobre un caso ficticio (*Clínica Los Robles S.A.*) en **Oracle 21c XE**. Incluye un sistema web de auditoría en vivo (antes/después) construido con React + Vite y FastAPI + python-oracledb.
+Sistema web que se conecta a **cualquier** base Oracle 19c/21c, la analiza sin conocerla de antemano y evalúa controles de confidencialidad del Anexo A de ISO/IEC 27001:2022 con la secuencia **observable → hallazgo → correctivo → re-observación**.
 
 **Curso:** Administración de Bases de Datos (EIF402) — Escuela de Informática, Universidad Nacional de Costa Rica — Prof. Johnny Villalobos Murillo — II Ciclo 2026
-**Autor:** Luis Hidalgo — trabajo individual
-**Metodología:** PHVA (Planificar, Hacer, Verificar, Actuar)
+**Autor:** Luis Hidalgo — trabajo individual · **Metodología:** PHVA
 
-> El plan de trabajo detallado (fases, fechas, decisiones) está en [`docs_clase/plan-de-accion-iso27001-confidencialidad.md`](docs_clase/plan-de-accion-iso27001-confidencialidad.md). La asignación oficial está en [`docs_clase/`](docs_clase/).
+> Plan de trabajo vigente: [`docs_clase/plan-de-accion-v2-instrumento-escalable.md`](docs_clase/plan-de-accion-v2-instrumento-escalable.md). El plan v1 se conserva en `docs_clase/` como referencia histórica.
 
----
-
-## Estructura del repositorio
+## Concepto
 
 ```
-.
-├── docs/                   Informe, marco teórico, tabla de uso de IA, referencias, evidencias
-├── sql/
-│   ├── 00_setup/           Tablespaces, esquema CLINICA, datos ficticios, usuarios/roles
-│   ├── 01_linea_base_insegura.sql   Línea base con fallas intencionales (punto de partida "antes")
-│   ├── 02_controles/       Un script por control ISO (A5.12 … A8.33)
-│   └── 03_verificacion/    Pruebas P-01 a P-24 (una por control/escenario)
-├── backend/                FastAPI + python-oracledb: ejecuta los .sql y calcula madurez/estado
-└── frontend/                React + Vite: dashboard, matriz de evaluación, pruebas, plan de mejora
+          ┌──────────────── INSTRUMENTO (genérico) ────────────────┐
+          │  Catálogo de controles (JSON + SQL)  +  Motor           │
+          └───────────────────────────┬─────────────────────────────┘
+                                      │ se "pega" a cualquier base
+        Empresa ficticia          Empresa X               Empresa Y …
+      (Clínica Los Robles)      Oracle 19c/21c
+        ← demo en clase
 ```
 
-Detalle completo de cada carpeta en [`docs_clase/plan-de-accion-iso27001-confidencialidad.md`](docs_clase/plan-de-accion-iso27001-confidencialidad.md#3-estructura-del-repositorio).
+- El **instrumento** (`instrumento/` + `backend/` + `frontend/`) no contiene nada de ninguna empresa. Una consulta que mencione una empresa concreta está mal diseñada; una prueba automática lo verifica.
+- La **clínica ficticia** (`laboratorio/clinica/`) solo existe para la demostración y generar evidencia.
+- El instrumento **observa y propone; no ejecuta correcciones**. Las aplica el DBA de la empresa (separación de funciones y gestión de cambios).
+- Solo lee **metadatos y configuración**, nunca datos de negocio: auditar confidencialidad leyendo datos sensibles sería contradictorio.
 
----
+### Ciclo por empresa
+
+| Paso | Qué hace | Tipo de control | PHVA |
+|---|---|---|---|
+| 1. Registrar | Nombre, conexión, perfil de política | — | Planificar |
+| 2. Pre-vuelo | Versión, CDB/PDB, privilegios del auditor | — | Planificar |
+| 3. Descubrimiento | Esquemas de negocio y columnas sensibles (metadatos) | — | Planificar |
+| 4. **Observar** | Ejecuta los observables del catálogo | Detectivo | Verificar |
+| 5. Evaluar | Madurez 0-4 y estado por control | — | Verificar |
+| 6. **Corregir** | Script correctivo para que el DBA lo revise y aplique | Correctivo | Hacer / Actuar |
+| 7. **Re-observar** | Los mismos observables otra vez; matriz antes/después | Detectivo | Verificar |
+| 8. Prevenir y reportar | Controles preventivos, historial, exportación | Preventivo | Actuar |
+
+Estados: **Cumple · Parcial · No cumple · No evaluable** (cuando el usuario auditor no puede ver algo, el control no se marca como incumplido: se reporta que no se pudo observar).
+
+## Estructura
+
+```
+instrumento/                   GENÉRICO: sirve para cualquier empresa
+├── onboarding_auditor.sql     crea AUDITOR_ISO con privilegio mínimo
+├── catalogo_controles.json    la matriz-instrumento (24 observables)
+├── controles_iso.json         los 15 controles núcleo + 4 extras justificados
+├── riesgos.json, tareas.json  riesgos R-CONF y tareas del DBA que el catálogo referencia
+├── perfil_politica_default.json   umbrales ISO y patrones de datos sensibles
+└── sql/observables/           un .sql por observable (OBS-01 … OBS-24)
+laboratorio/clinica/           SOLO para la demo en clase (ver su README)
+backend/                       FastAPI + python-oracledb (thin) + SQLite propio
+├── app/                       empresas, conexiones, prevuelo, descubrimiento, motor,
+│                              evaluacion, correctivos, reportes, catalogo, almacen, config, main
+└── tests/                     pruebas automáticas (no requieren Oracle)
+frontend/                      React + Vite + Tailwind + Recharts
+docs/                          informe, marco teórico, tabla de uso de IA, referencias APA 7, evidencias
+docs_clase/                    asignación, apuntes y planes de acción
+```
+
+Cada observable es un `.sql` de solo lectura con variables *bind* (`:dias_inactividad`, `:cuentas_dba_autorizadas`, `:esquemas_negocio`, `:columnas_sensibles`…). Las listas se envían como un único arreglo JSON que la consulta lee con `JSON_TABLE`; las exclusiones usan `NOT EXISTS` y no `NOT IN`, porque un solo `NULL` en la lista haría que `NOT IN` ocultara todos los hallazgos. El mismo archivo se puede ejecutar a mano en SQL Developer.
 
 ## Requisitos
 
-- Oracle Database 21c XE con el PDB `XEPDB1` en `READ WRITE`
-- SQL Developer (para ejecutar y revisar los scripts manualmente)
-- Python 3.11+
-- Node.js 20+
+- Python 3.11+ y Node.js 20+
+- Una base Oracle 19c/21c con un usuario auditor creado con `instrumento/onboarding_auditor.sql`
 
-## Instalación y ejecución
-
-### 1. Base de datos
-
-1. Verificar que el PDB esté abierto: `sqlplus / as sysdba` → `SHOW PDBS`.
-2. Ejecutar en orden los scripts de `sql/00_setup/` contra `XEPDB1` (crean tablespaces, el esquema `CLINICA`, los datos ficticios y los usuarios de aplicación, incluyendo `AUDITOR_APP`).
-3. (Opcional, para reproducir el estado "antes") ejecutar `sql/01_linea_base_insegura.sql`.
-4. Ejecutar los scripts de `sql/02_controles/` para aplicar los controles (estado "después").
-5. Los scripts de `sql/03_verificacion/` contienen las pruebas P-01 a P-24 que el sistema ejecuta.
-
-### 2. Backend
+## Instalación
 
 ```bash
+# Backend
 cd backend
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-pip install -r requirements.txt
-cp .env.example .env          # completar credenciales de AUDITOR_APP y el DSN
+.venv\Scripts\activate                 # Windows
+pip install -r requirements-dev.txt    # requirements.txt si no se van a correr las pruebas
+cp .env.example .env
+python -c "from app.conexiones import generar_llave; print(generar_llave())"   # pegar en AUDITORIA_LLAVE_CIFRADO
 uvicorn app.main:app --reload --port 8000
-```
 
-### 3. Frontend
-
-```bash
+# Frontend (otra terminal)
 cd frontend
 npm install
-npm run dev
+npm run dev                            # http://localhost:5173
 ```
 
-La aplicación queda disponible en `http://localhost:5173` y consume la API en `http://localhost:8000`.
+Pruebas del backend: `cd backend && python -m pytest`.
 
-### Modo demo
+## Auditar una empresa nueva en 4 pasos
 
-Si no hay una instancia de Oracle disponible, el frontend puede leer los snapshots `backend/snapshots/antes.json` y `backend/snapshots/despues.json` en lugar de consultar la base en vivo.
+1. **Incorporar al auditor.** El DBA de la empresa ejecuta `instrumento/onboarding_auditor.sql` conectado a la PDB que se va a auditar.
+2. **Registrar la empresa** en la pantalla *Empresas* (conexión `host:puerto/servicio_de_la_PDB`, usuario `AUDITOR_ISO`, perfil de política opcional) y ejecutar el *Pre-vuelo* y el *Descubrimiento*.
+3. **Observar** desde el *Dashboard*, revisar los hallazgos y descargar el script correctivo; el DBA lo revisa, lo completa y lo aplica.
+4. **Re-observar** con otra ejecución y comparar en la *Matriz* (antes/después, exportable a CSV).
 
----
+La demostración con la clínica ficticia sigue el mismo flujo: ver [`laboratorio/clinica/README.md`](laboratorio/clinica/README.md).
 
-## Diseño: motor genérico, caso de evidencia específico
+## Coherencia: el instrumento aplica lo que audita
 
-El motor de auditoría (catálogo de controles/riesgos/tareas en `backend/data/*.json`, el runner de pruebas, la API y el dashboard) **no está acoplado a la clínica**: es un framework de auditoría de confidencialidad ISO/IEC 27001 para Oracle, reutilizable con cualquier esquema. `Clínica Los Robles S.A.` es únicamente el caso ficticio usado para generar evidencia real (datos, SQL, resultados antes/después) en este proyecto. La identidad del cliente auditado vive en `backend/data/caso.json` (servido vía `GET /api/caso`) y el resto del sistema no depende de ese archivo para funcionar.
+| Control | Cómo lo cumple el propio instrumento |
+|---|---|
+| A8.2 / A5.15 mínimo privilegio | El auditor solo tiene `CREATE SESSION`, `SELECT_CATALOG_ROLE` y `AUDIT_VIEWER`; el pre-vuelo advierte si tiene más |
+| A5.17 autenticación | Perfil dedicado con límites para `AUDITOR_ISO`; contraseña por consola, nunca en un script |
+| A8.24 criptografía | Contraseñas de las empresas cifradas en reposo (Fernet); la llave vive en `.env` |
+| A5.15 / A8.3 | Las consultas son de solo lectura y no leen datos de negocio |
 
-## Seguridad y credenciales
+Nada de esto se versiona: `.env`, `*.db` y wallets están en `.gitignore`. Los correctivos se generan escapando cada valor según su contexto y, si un nombre no es seguro, lo dejan como comentario «REVISAR MANUALMENTE».
 
-- Ninguna credencial real se versiona en este repositorio. El archivo `.env` (con usuario/contraseña de `AUDITOR_APP` y el DSN de conexión) está excluido vía `.gitignore`; usar `backend/.env.example` como plantilla.
-- Todos los datos del caso (`Clínica Los Robles S.A.`, pacientes, empleados, expedientes) son **ficticios**, generados por script.
-- El wallet de TDE y su contraseña no se versionan.
+## Estado de la validación
+
+Las pruebas automáticas cubren catálogo, motor, evaluación, correctivos y API con una conexión simulada. **Las consultas de `instrumento/sql/observables/` aún no se han ejecutado contra Oracle**: deben validarse contra una base abierta, empezando por OBS-02, OBS-04, OBS-06, OBS-09, OBS-10 y OBS-22 (los seis que exige el avance), y ajustar lo que Oracle rechace. Los observables y correctivos de auditoría unificada, redaction y retención dependen de nombres de vistas y columnas que conviene confirmar en la versión instalada.
 
 ## Uso de Inteligencia Artificial
 
-Todo uso de IA generativa en este proyecto está documentado en [`docs/tabla-uso-ia.md`](docs/tabla-uso-ia.md), incluyendo el prompt exacto, el aporte y la validación/corrección aplicada, según lo exige la asignación del curso.
+Todo uso de IA generativa está documentado en [`docs/tabla-uso-ia.md`](docs/tabla-uso-ia.md): prompt exacto, aporte y validación o corrección propia, como exige la asignación.
 
-## Licencia / Uso académico
+## Licencia / uso académico
 
-Proyecto desarrollado con fines estrictamente académicos para el curso Administración de Bases de Datos, UNA, II Ciclo 2026.
+Proyecto con fines estrictamente académicos para el curso Administración de Bases de Datos, UNA, II Ciclo 2026. Todos los datos del laboratorio son ficticios.

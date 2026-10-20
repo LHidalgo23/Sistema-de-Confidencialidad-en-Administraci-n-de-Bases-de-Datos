@@ -1,0 +1,21 @@
+[
+  { "id": "A5.12", "nombre": "Clasificación de la información", "tema": "Organizacional", "nucleo": true },
+  { "id": "A5.15", "nombre": "Control de acceso", "tema": "Organizacional", "nucleo": true },
+  { "id": "A5.16", "nombre": "Gestión de identidades", "tema": "Organizacional", "nucleo": true },
+  { "id": "A5.17", "nombre": "Información de autenticación", "tema": "Organizacional", "nucleo": true },
+  { "id": "A5.18", "nombre": "Derechos de acceso", "tema": "Organizacional", "nucleo": true },
+  { "id": "A5.33", "nombre": "Protección de registros", "tema": "Organizacional", "nucleo": true },
+  { "id": "A8.2", "nombre": "Derechos de acceso privilegiado", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.3", "nombre": "Restricción del acceso a la información", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.5", "nombre": "Autenticación segura", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.10", "nombre": "Eliminación de la información", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.11", "nombre": "Enmascaramiento de datos", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.12", "nombre": "Prevención de la fuga de datos", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.13", "nombre": "Respaldo de la información", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.15", "nombre": "Registro", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.20", "nombre": "Seguridad de redes", "tema": "Tecnológico", "nucleo": true },
+  { "id": "A8.24", "nombre": "Uso de criptografía", "tema": "Tecnológico", "nucleo": false },
+  { "id": "A8.8", "nombre": "Gestión de vulnerabilidades técnicas", "tema": "Tecnológico", "nucleo": false },
+  { "id": "A8.31", "nombre": "Separación de los entornos de desarrollo, prueba y producción", "tema": "Tecnológico", "nucleo": false },
+  { "id": "A8.33", "nombre": "Información de prueba", "tema": "Tecnológico", "nucleo": false }
+]

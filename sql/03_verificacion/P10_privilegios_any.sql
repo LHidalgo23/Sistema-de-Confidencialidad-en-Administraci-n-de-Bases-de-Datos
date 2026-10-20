@@ -1,5 +1,0 @@
--- Prueba P-10 | Control A8.2 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: 0 privilegios ANY otorgados a cuentas no administrativas
--- TODO: SELECT COUNT(*) FROM DBA_SYS_PRIVS
---       WHERE PRIVILEGE LIKE '%ANY%'
---         AND GRANTEE NOT IN ('DBA_JSANCHEZ', 'SYS', 'SYSTEM');

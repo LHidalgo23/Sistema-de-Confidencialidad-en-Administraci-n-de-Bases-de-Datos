@@ -6,6 +6,8 @@
 
 TODO: nuevo Anexo A con 93 controles agrupados en 4 temas (Organizacionales, Personas, Físicos, Tecnológicos); diferencias principales frente a los 114 controles / 14 dominios de 2013.
 
+TODO (clave para el diseño del instrumento): los **atributos** que ISO/IEC 27002:2022 asigna a cada control, en especial el *tipo de control* (preventivo, detectivo, correctivo). El instrumento los usa como secuencia de trabajo: el observable es el control detectivo, el script que se genera es el correctivo y la recomendación del catálogo es el preventivo. Citar el tipo de cada control directamente de la tabla de atributos del estándar (no se pudo verificar en una fuente abierta durante el diseño, así que no se copió de memoria al catálogo).
+
 ## 2. Principio de mínimo privilegio y separación de funciones en el rol DBA
 
 TODO.

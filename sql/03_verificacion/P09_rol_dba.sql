@@ -1,3 +1,0 @@
--- Prueba P-09 | Control A8.2 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: el rol DBA solo está asignado a cuentas autorizadas (no APP_CLINICA, etc.)
--- TODO: SELECT GRANTEE FROM DBA_ROLE_PRIVS WHERE GRANTED_ROLE = 'DBA';

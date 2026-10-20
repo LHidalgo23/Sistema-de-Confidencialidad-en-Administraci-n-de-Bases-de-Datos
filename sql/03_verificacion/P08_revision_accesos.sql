@@ -1,3 +1,0 @@
--- Prueba P-08 | Control A5.18 | Tipo: Configuración | Conexión: AUDITOR_APP
--- Resultado esperado: existe una revisión de accesos registrada hace menos de 90 días
--- TODO: SELECT COUNT(*) FROM CLINICA.REVISION_ACCESOS WHERE FECHA > SYSDATE - 90;

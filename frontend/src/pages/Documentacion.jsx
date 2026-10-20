@@ -1,40 +1,46 @@
-import { useEffect, useState } from "react";
-import { api } from "../api/client";
+const DOCUMENTOS = [
+  ["docs/informe.md", "Informe del proyecto (estructura y secciones)"],
+  ["docs/marco-teorico.md", "Marco teórico: ISO 27001:2022, mínimo privilegio, defensa en profundidad, TDE, Redaction, VPD, DLP, SIEM, Ley 8968"],
+  ["docs/tabla-uso-ia.md", "Tabla de uso de inteligencia artificial y declaración jurada"],
+  ["docs/referencias-apa7.md", "Referencias en formato APA 7"],
+  ["docs/evidencias/", "Capturas antes y después"],
+  ["instrumento/", "El instrumento genérico: catálogo, observables SQL, perfil de política y script de incorporación del auditor"],
+  ["laboratorio/clinica/", "Empresa ficticia de demostración: línea base insegura, datos y pruebas de laboratorio"],
+];
 
-const ENLACES = [
-  { href: "https://github.com", label: "Repositorio Git (completar enlace en README.md)" },
+const PASOS = [
+  "Pedir al DBA de la empresa que ejecute instrumento/onboarding_auditor.sql en la base que se va a auditar.",
+  "Registrar la empresa (conexión, usuario auditor y, si hace falta, un perfil de política).",
+  "Pre-vuelo: versión, contenedor, privilegios del auditor y controles que no podrán evaluarse.",
+  "Descubrimiento: confirmar o descartar las columnas sensibles detectadas por metadatos.",
+  "Observar: ejecutar los observables y obtener la madurez 0-4 y el estado de cada control.",
+  "Corregir: revisar y aplicar el script correctivo generado (lo aplica el DBA, nunca el instrumento).",
+  "Re-observar: volver a ejecutar los mismos observables y comparar en la matriz.",
 ];
 
 export default function Documentacion() {
-  const [caso, setCaso] = useState(null);
-
-  useEffect(() => {
-    api.caso().then(setCaso).catch(() => setCaso(null));
-  }, []);
-
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Documentación del proyecto</h2>
+    <div className="max-w-3xl space-y-6">
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold">Cómo auditar una empresa nueva</h2>
+        <ol className="list-inside list-decimal space-y-1 text-sm text-slate-700 dark:text-slate-300">
+          {PASOS.map((paso) => (
+            <li key={paso}>{paso}</li>
+          ))}
+        </ol>
+      </section>
 
-      {caso && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm dark:border-slate-800 dark:bg-slate-900">
-          <p className="font-medium">Caso auditado: {caso.cliente}</p>
-          <p className="mt-1 text-slate-500 dark:text-slate-400">{caso.descripcion}</p>
-          <p className="mt-2 text-xs text-slate-400">{caso.notaReutilizacion}</p>
-        </div>
-      )}
-
-      <ul className="list-inside list-disc text-sm text-slate-600 dark:text-slate-300">
-        <li>Informe: <code>docs/informe.md</code></li>
-        <li>Marco teórico: <code>docs/marco-teorico.md</code></li>
-        <li>Tabla de uso de IA: <code>docs/tabla-uso-ia.md</code></li>
-        <li>Referencias APA 7: <code>docs/referencias-apa7.md</code></li>
-        <li>Evidencias (capturas antes/después): <code>docs/evidencias/</code></li>
-        <li>Scripts SQL: <code>sql/</code></li>
-      </ul>
-      {ENLACES.length > 0 && (
-        <p className="text-xs text-slate-400">Actualizar estos enlaces antes de la entrega.</p>
-      )}
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold">Documentación del proyecto</h2>
+        <ul className="space-y-1 text-sm">
+          {DOCUMENTOS.map(([ruta, descripcion]) => (
+            <li key={ruta}>
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">{ruta}</code>{" "}
+              <span className="text-slate-600 dark:text-slate-300">{descripcion}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

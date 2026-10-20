@@ -1,4 +1,0 @@
--- Prueba P-16 | Control A8.11 | Tipo: Negativa | Conexión: DEV_USER
--- Resultado esperado: cédula, salario e IBAN aparecen redactados (no en texto plano)
--- TODO: (conectado como DEV_USER) SELECT CEDULA FROM CLINICA.PACIENTES WHERE ROWNUM = 1;
--- TODO: (conectado como DEV_USER) SELECT SALARIO, IBAN FROM CLINICA.EMPLEADOS WHERE ROWNUM = 1;

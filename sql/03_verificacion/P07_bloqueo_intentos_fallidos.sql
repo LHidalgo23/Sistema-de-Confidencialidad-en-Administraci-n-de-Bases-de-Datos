@@ -1,4 +1,0 @@
--- Prueba P-07 | Control A5.17 | Tipo: Negativa | Conexión: usuario de prueba
--- Resultado esperado: tras 5 intentos fallidos, la cuenta queda LOCKED(TIMED)
--- TODO: provocar 5 intentos de conexión con contraseña incorrecta sobre un usuario de prueba
--- TODO: SELECT ACCOUNT_STATUS FROM DBA_USERS WHERE USERNAME = '<usuario de prueba>'; -- esperado: LOCKED(TIMED)
