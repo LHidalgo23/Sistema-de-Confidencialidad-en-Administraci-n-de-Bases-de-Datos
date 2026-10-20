@@ -10,15 +10,18 @@ Clínica Los Robles S.A. maneja datos personales y **datos sensibles de salud**,
 |---|---|---|
 | 1 | `clinica_00_crear_pdb.sql` | SYSDBA en `CDB$ROOT` |
 | 2 | `clinica_00_esquema_y_datos.sql` | SYSDBA, crea tablespaces, esquema `CLINICA`, usuarios y datos |
-| 3 | `../../instrumento/onboarding_auditor.sql` | DBA en `PDB_CLINICA`, crea `AUDITOR_ISO` |
+| 3 | `../../instrumento/onboarding_auditor.sql` | DBA dentro de `PDB_CLINICA` (`ALTER SESSION SET CONTAINER = pdb_clinica;` antes), crea `AUDITOR_ISO` |
 | 4 | `clinica_01_linea_base_insegura.sql` | SYSDBA, introduce los errores intencionales |
-| 5 | Registrar la empresa en el sistema con `perfil_clinica.json` | Pantalla **Empresas**, DSN `localhost:1521/pdb_clinica`, usuario `AUDITOR_ISO` |
-| 6 | Pre-vuelo, descubrimiento y auditoría "antes" | Sistema |
-| 7 | Descargar el script correctivo generado y guardarlo en `clinica_02_correctivos/` | Sistema → repositorio |
-| 8 | Revisarlo, completar a mano lo que no se puede generar (TDE, VPD, RMAN, `sqlnet.ora`) y aplicarlo | DBA |
-| 9 | Auditoría "después" (re-observar) | Sistema |
+| 5 | `clinica_00_actividad_usuarios.sql` | SYSDBA: **repetir antes de cada observación** (ver notas) |
+| 6 | Registrar la empresa en el sistema con `perfil_clinica.json` | Pantalla **Empresas**, DSN `localhost:1521/pdb_clinica`, usuario `AUDITOR_ISO` |
+| 7 | Pre-vuelo, descubrimiento y auditoría "antes" | Sistema |
+| 8 | Descargar el script correctivo generado y guardarlo en `clinica_02_correctivos/` | Sistema → repositorio |
+| 9 | Revisarlo, completar a mano lo que no se puede generar (TDE, VPD, RMAN, `sqlnet.ora`) y aplicarlo | DBA |
+| 10 | Repetir el paso 5 y auditar "después" (re-observar) | Sistema |
 
-Los scripts piden las contraseñas por consola (`ACCEPT ... HIDE`): no hay secretos en el repositorio.
+Para repetir la demostración desde cero: `clinica_99_reiniciar_laboratorio.sql` borra el esquema, los usuarios y los tablespaces de la clínica (no toca la PDB ni a `AUDITOR_ISO`) y se vuelve a ejecutar desde el paso 2.
+
+Los scripts piden las contraseñas por consola (`ACCEPT ... HIDE`): no hay secretos en el repositorio. Si se ejecutan sin terminal interactiva, sustituir cada `ACCEPT` por un `DEFINE` con la contraseña. La contraseña del auditor debe cumplir `ORA12C_VERIFY_FUNCTION` (mínimo 8 caracteres, con letra, dígito y **al menos un carácter especial**), porque su perfil la aplica.
 
 ## Qué errores contiene la línea base
 
@@ -39,8 +42,10 @@ Los scripts piden las contraseñas por consola (`ACCEPT ... HIDE`): no hay secre
 
 ## Notas para la demostración
 
-- **`EXEMPLEADO_01` y los 90 días.** `last_login` no se puede falsear: una cuenta nueva que nunca inició sesión solo se marca tras superar el umbral. Por eso `perfil_clinica.json` baja `dias_inactividad` a 1 para el laboratorio; la cuenta aparece como hallazgo un día después de crearse. Es un ajuste de la empresa, no del catálogo.
+- **`EXEMPLEADO_01` y los 90 días.** `last_login` no se puede falsear: una cuenta nueva que nunca inició sesión solo se marca tras superar el umbral. Por eso `perfil_clinica.json` baja `dias_inactividad` a 1 para el laboratorio: `EXEMPLEADO_01` aparece como hallazgo un día después de crearse. Es un ajuste de la empresa, no del catálogo.
+- **Por qué repetir la actividad de usuarios.** Con ese umbral, cualquier usuario que no haya iniciado sesión en el último día también saldría como inactivo. `clinica_00_actividad_usuarios.sql` hace que todos inicien sesión salvo `EXEMPLEADO_01`, así que el único hallazgo de OBS-04 es el intencional. Ejecutarlo justo antes de cada observación.
+- **El auditor también aparece en algunos hallazgos, y es correcto.** OBS-13 marca a `AUDITOR_ISO` (y a todos) porque la base conserva el hash `11G` mientras `SQLNET.ALLOWED_LOGON_VERSION_SERVER` siga en su valor por defecto; OBS-20 lista la sesión del propio auditor mientras no haya cifrado de red. Se resuelven con el correctivo de red y renovando las contraseñas.
+- **Controles de instancia desde una PDB.** OBS-17 (respaldos) queda **No evaluable**: el catálogo de RMAN no es visible desde la PDB, y el instrumento no inventa un incumplimiento. OBS-11 (`AUDIT_SYS_OPERATIONS` y password file) y OBS-21 (keystore de TDE) sí se observan.
 - **OBS-24 (parches).** Oracle XE no recibe Release Updates trimestrales. El perfil registra una aceptación de riesgo documentada, de modo que A8.8 queda en **Parcial justificado**, como indica el plan.
-- **Controles de instancia** (OBS-11 y OBS-17): desde una PDB pueden no ser visibles y saldrán **No evaluable**. Es el comportamiento esperado: el instrumento no inventa un incumplimiento.
 - **Pruebas negativas.** `pruebas_laboratorio/` contiene verificaciones que dependen de los usuarios de la clínica (por ejemplo, que `RECEPCION_01` no pueda leer `EXPEDIENTES`). Son opcionales y están fuera del catálogo genérico.
 - **Respaldo antes de TDE y de `sqlnet.ora`.** Guardar también el wallet y su contraseña fuera del repositorio.

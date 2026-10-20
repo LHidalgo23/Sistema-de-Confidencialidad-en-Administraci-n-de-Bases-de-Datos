@@ -31,6 +31,7 @@ class Regla(BaseModel):
 class Observable(BaseModel):
     archivo: str
     columnas: list[str]
+    identificador: list[str] = []  # columnas que identifican un hallazgo en resúmenes
     regla: Regla
 
 
@@ -88,6 +89,7 @@ class Riesgo(BaseModel):
     probabilidad: int | None = None
     impacto: int | None = None
     nivel: int | None = None
+    justificacion: str | None = None
     base_legal: str | None = None
 
 

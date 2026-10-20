@@ -1,0 +1,671 @@
+[
+    {
+        "obs_id":  "OBS-01",
+        "control_iso":  "A5.12",
+        "nombre":  "Columnas sensibles sin clasificación registrada",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "CEDULA",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "IBAN",
+                              "nivel":  "Confidencial - dato financiero",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "SALARIO",
+                              "nivel":  "Confidencial - dato financiero",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES",
+                              "columna":  "DIAGNOSTICO",
+                              "nivel":  "Restringido - dato sensible (salud)",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES",
+                              "columna":  "TRATAMIENTO",
+                              "nivel":  "Restringido - dato sensible (salud)",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CEDULA",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CORREO",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "DIRECCION",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "FECHA_NACIMIENTO",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "TELEFONO",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-02",
+        "control_iso":  "A5.15",
+        "nombre":  "Objetos de negocio con privilegios para PUBLIC",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "objeto":  "PACIENTES",
+                              "privilegio":  "SELECT"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-03",
+        "control_iso":  "A5.15",
+        "nombre":  "Privilegios sobre objetos otorgados directo a usuarios",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "INSERT"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "UPDATE"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "EXPEDIENTES",
+                              "privilegio":  "INSERT"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "EXPEDIENTES",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "EXPEDIENTES",
+                              "privilegio":  "UPDATE"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "PACIENTES",
+                              "privilegio":  "INSERT"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "PACIENTES",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "esquema":  "CLINICA",
+                              "objeto":  "PACIENTES",
+                              "privilegio":  "UPDATE"
+                          },
+                          {
+                              "grantee":  "MEDICO_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "MEDICO_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "EXPEDIENTES",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "MEDICO_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "PACIENTES",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "MEDICO_02",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "MEDICO_02",
+                              "esquema":  "CLINICA",
+                              "objeto":  "EXPEDIENTES",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "MEDICO_02",
+                              "esquema":  "CLINICA",
+                              "objeto":  "PACIENTES",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "RECEPCION_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "INSERT"
+                          },
+                          {
+                              "grantee":  "RECEPCION_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "RECEPCION_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "CITAS",
+                              "privilegio":  "UPDATE"
+                          },
+                          {
+                              "grantee":  "RECEPCION_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "PACIENTES",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "RRHH_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "EMPLEADOS",
+                              "privilegio":  "SELECT"
+                          },
+                          {
+                              "grantee":  "RRHH_01",
+                              "esquema":  "CLINICA",
+                              "objeto":  "EMPLEADOS",
+                              "privilegio":  "UPDATE"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-06",
+        "control_iso":  "A5.17",
+        "nombre":  "Perfiles sin función de verificación o con límites débiles",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "perfil":  "DEFAULT",
+                              "parametro":  "FAILED_LOGIN_ATTEMPTS",
+                              "actual":  "10",
+                              "recomendado":  "5"
+                          },
+                          {
+                              "perfil":  "DEFAULT",
+                              "parametro":  "IDLE_TIME",
+                              "actual":  "UNLIMITED",
+                              "recomendado":  "30"
+                          },
+                          {
+                              "perfil":  "DEFAULT",
+                              "parametro":  "PASSWORD_LIFE_TIME",
+                              "actual":  "180",
+                              "recomendado":  "90"
+                          },
+                          {
+                              "perfil":  "DEFAULT",
+                              "parametro":  "PASSWORD_VERIFY_FUNCTION",
+                              "actual":  "NULL",
+                              "recomendado":  "ORA12C_VERIFY_FUNCTION"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-07",
+        "control_iso":  "A5.18",
+        "nombre":  "Privilegios de sistema directos no justificados",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "privilegio":  "UNLIMITED TABLESPACE",
+                              "con_admin_option":  "NO"
+                          },
+                          {
+                              "grantee":  "DEV_USER",
+                              "privilegio":  "SELECT ANY TABLE",
+                              "con_admin_option":  "NO"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-08",
+        "control_iso":  "A5.33",
+        "nombre":  "AUDIT_ADMIN indebido o sin purga de la pista de auditoría",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "tipo":  "RETENCION",
+                              "grantee":  null
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-09",
+        "control_iso":  "A8.2",
+        "nombre":  "Rol DBA fuera de las cuentas autorizadas",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "grantee":  "APP_CLINICA",
+                              "con_admin_option":  "NO"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-10",
+        "control_iso":  "A8.2",
+        "nombre":  "Privilegios ANY a cuentas no administrativas",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "grantee":  "DEV_USER",
+                              "privilegio":  "SELECT ANY TABLE",
+                              "con_admin_option":  "NO"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-12",
+        "control_iso":  "A8.3",
+        "nombre":  "Tablas sensibles sin política VPD",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-13",
+        "control_iso":  "A8.5",
+        "nombre":  "Cuentas con hashes de contraseña antiguos",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "usuario":  "APP_CLINICA",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "AUDITOR_ISO",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "DBA_JSANCHEZ",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "DEV_USER",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "EXEMPLEADO_01",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "MEDICO_01",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "MEDICO_02",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "PDBADMIN",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "RECEPCION_01",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "RRHH_01",
+                              "versiones":  "11G 12C"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-14",
+        "control_iso":  "A8.10",
+        "nombre":  "Objetos de negocio en la papelera de reciclaje",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "objeto":  "TMP_EXPORTACION",
+                              "tipo":  "TABLE",
+                              "tablespace":  "TS_SENSIBLE",
+                              "eliminado":  "2026-10-20:16:56:00"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-15",
+        "control_iso":  "A8.11",
+        "nombre":  "Columnas sensibles sin política de Data Redaction",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "CEDULA"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "IBAN"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "SALARIO"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES",
+                              "columna":  "DIAGNOSTICO"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES",
+                              "columna":  "TRATAMIENTO"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CEDULA"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CORREO"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "DIRECCION"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "FECHA_NACIMIENTO"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "TELEFONO"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-16",
+        "control_iso":  "A8.12",
+        "nombre":  "Canales de fuga: paquetes, directorios y Data Pump",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "tipo":  "PAQUETE",
+                              "grantee":  "PUBLIC",
+                              "objeto":  "UTL_FILE",
+                              "privilegio":  "EXECUTE"
+                          },
+                          {
+                              "tipo":  "PAQUETE",
+                              "grantee":  "PUBLIC",
+                              "objeto":  "UTL_HTTP",
+                              "privilegio":  "EXECUTE"
+                          },
+                          {
+                              "tipo":  "PAQUETE",
+                              "grantee":  "PUBLIC",
+                              "objeto":  "UTL_SMTP",
+                              "privilegio":  "EXECUTE"
+                          },
+                          {
+                              "tipo":  "PAQUETE",
+                              "grantee":  "PUBLIC",
+                              "objeto":  "UTL_TCP",
+                              "privilegio":  "EXECUTE"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-17",
+        "control_iso":  "A8.13",
+        "nombre":  "Respaldos recientes sin cifrar",
+        "estado":  "No evaluable",
+        "motivo":  "No se observaron respaldos recientes (o no son visibles desde este contenedor)",
+        "hallazgos":  [
+
+                      ]
+    },
+    {
+        "obs_id":  "OBS-18",
+        "control_iso":  "A8.15",
+        "nombre":  "Tablas sensibles sin política de auditoría unificada",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-19",
+        "control_iso":  "A8.15",
+        "nombre":  "Logons fallidos y acciones privilegiadas sin auditar",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "tipo":  "ACCION_PRIVILEGIADA",
+                              "accion":  "GRANT"
+                          },
+                          {
+                              "tipo":  "ACCION_PRIVILEGIADA",
+                              "accion":  "REVOKE"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-20",
+        "control_iso":  "A8.20",
+        "nombre":  "Sesiones sin cifrado de red",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "usuario":  "AUDITOR_ISO",
+                              "sid":  863,
+                              "serial":  39758,
+                              "programa":  "C:\\Users\\calvo\\OneDrive\\Documentos\\II?Ciclo?2026\\Administracion?",
+                              "maquina":  "DESKTOP-E064O9O"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-21",
+        "control_iso":  "A8.24",
+        "nombre":  "Keystore de TDE no abierto",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "estado":  "NOT_AVAILABLE",
+                              "ubicacion":  null,
+                              "tipo_wallet":  "UNKNOWN"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-22",
+        "control_iso":  "A8.24",
+        "nombre":  "Columnas sensibles en tablespaces sin cifrar",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "CEDULA",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "IBAN",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EMPLEADOS",
+                              "columna":  "SALARIO",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES",
+                              "columna":  "DIAGNOSTICO",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "EXPEDIENTES",
+                              "columna":  "TRATAMIENTO",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CEDULA",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CORREO",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "DIRECCION",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "FECHA_NACIMIENTO",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES",
+                              "columna":  "TELEFONO",
+                              "tablespace":  "TS_SENSIBLE"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-24",
+        "control_iso":  "A8.8",
+        "nombre":  "Versión y parches del motor",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "version":  "Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production",
+                              "ultimo_parche":  "SIN REGISTRO",
+                              "dias":  "N/D"
+                          }
+                      ]
+    }
+]

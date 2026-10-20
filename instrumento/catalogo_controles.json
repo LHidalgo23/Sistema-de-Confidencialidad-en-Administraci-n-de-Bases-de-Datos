@@ -12,6 +12,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-01.sql",
       "columnas": ["esquema", "tabla", "columna", "nivel", "marcador", "comentario_actual"],
+      "identificador": ["esquema", "tabla", "columna"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -34,6 +35,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-02.sql",
       "columnas": ["esquema", "objeto", "privilegio"],
+      "identificador": ["esquema", "objeto", "privilegio"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -56,6 +58,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-03.sql",
       "columnas": ["grantee", "esquema", "objeto", "privilegio"],
+      "identificador": ["grantee", "esquema", "objeto", "privilegio"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -78,6 +81,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-04.sql",
       "columnas": ["usuario", "estado", "ultimo_acceso", "creado"],
+      "identificador": ["usuario"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -100,6 +104,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-05.sql",
       "columnas": ["usuario", "estado"],
+      "identificador": ["usuario"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -123,6 +128,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-06.sql",
       "columnas": ["perfil", "parametro", "actual", "recomendado"],
+      "identificador": ["perfil", "parametro"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -145,6 +151,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-07.sql",
       "columnas": ["grantee", "privilegio", "con_admin_option"],
+      "identificador": ["grantee", "privilegio"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -168,6 +175,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-08.sql",
       "columnas": ["tipo", "grantee"],
+      "identificador": ["tipo", "grantee"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -194,6 +202,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-09.sql",
       "columnas": ["grantee", "con_admin_option"],
+      "identificador": ["grantee"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -216,6 +225,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-10.sql",
       "columnas": ["grantee", "privilegio", "con_admin_option"],
+      "identificador": ["grantee", "privilegio"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -239,6 +249,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-11.sql",
       "columnas": ["tipo", "objeto", "actual"],
+      "identificador": ["tipo", "objeto"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -266,6 +277,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-12.sql",
       "columnas": ["esquema", "tabla"],
+      "identificador": ["esquema", "tabla"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -288,6 +300,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-13.sql",
       "columnas": ["usuario", "versiones"],
+      "identificador": ["usuario"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -310,6 +323,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-14.sql",
       "columnas": ["esquema", "objeto", "tipo", "tablespace", "eliminado"],
+      "identificador": ["esquema", "objeto"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -332,6 +346,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-15.sql",
       "columnas": ["esquema", "tabla", "columna"],
+      "identificador": ["esquema", "tabla", "columna"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -354,6 +369,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-16.sql",
       "columnas": ["tipo", "grantee", "objeto", "privilegio"],
+      "identificador": ["tipo", "objeto"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -382,6 +398,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-17.sql",
       "columnas": ["pieza", "manejador", "finalizado"],
+      "identificador": ["pieza"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -405,6 +422,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-18.sql",
       "columnas": ["esquema", "tabla"],
+      "identificador": ["esquema", "tabla"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -427,6 +445,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-19.sql",
       "columnas": ["tipo", "accion"],
+      "identificador": ["tipo", "accion"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -453,6 +472,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-20.sql",
       "columnas": ["usuario", "sid", "serial", "programa", "maquina"],
+      "identificador": ["usuario", "sid"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -476,6 +496,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-21.sql",
       "columnas": ["estado", "ubicacion", "tipo_wallet"],
+      "identificador": ["estado"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -498,6 +519,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-22.sql",
       "columnas": ["esquema", "tabla", "columna", "tablespace"],
+      "identificador": ["esquema", "tabla", "columna"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -520,6 +542,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-23.sql",
       "columnas": ["esquema", "tabla", "columna", "marcador"],
+      "identificador": ["esquema", "tabla", "columna"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {
@@ -543,6 +566,7 @@
     "observable": {
       "archivo": "sql/observables/OBS-24.sql",
       "columnas": ["version", "ultimo_parche", "dias"],
+      "identificador": ["ultimo_parche"],
       "regla": { "tipo": "sin_filas" }
     },
     "correctivo": {

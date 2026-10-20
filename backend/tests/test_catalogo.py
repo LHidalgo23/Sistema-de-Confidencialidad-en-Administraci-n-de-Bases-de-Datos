@@ -97,3 +97,50 @@ def test_rechaza_un_archivo_fuera_del_instrumento(tmp_path):
     ruta.write_text(json.dumps(entradas), encoding="utf-8")
     with pytest.raises(CatalogoInvalido, match="no existe en el instrumento"):
         cargar_catalogo(base)
+
+
+# ---------------------------------------------------------------- Fase 1: riesgos y tareas
+def test_los_seis_riesgos_estan_redactados_con_su_escala(catalogo):
+    assert [r.id for r in catalogo.riesgos] == [f"R-CONF-0{n}" for n in range(1, 7)]
+    for r in catalogo.riesgos:
+        for campo in ("descripcion", "causa", "consecuencia", "justificacion", "base_legal"):
+            assert getattr(r, campo), (r.id, campo)
+        assert 1 <= r.probabilidad <= 5 and 1 <= r.impacto <= 5, r.id
+        assert r.nivel == r.probabilidad * r.impacto, r.id
+
+
+def test_las_doce_tareas_estan_redactadas_y_ligadas_a_riesgos_reales(catalogo):
+    assert [t.id for t in catalogo.tareas] == [f"T-{n:02d}" for n in range(1, 13)]
+    riesgos = {r.id for r in catalogo.riesgos}
+    for t in catalogo.tareas:
+        assert t.descripcion and t.frecuencia, t.id
+        assert t.riesgos_asociados and set(t.riesgos_asociados) <= riesgos, t.id
+
+
+def test_cada_riesgo_y_cada_tarea_tienen_algun_observable(catalogo):
+    assert {e.riesgo for e in catalogo.entradas} == {r.id for r in catalogo.riesgos}
+    assert {e.tarea for e in catalogo.entradas} == {t.id for t in catalogo.tareas}
+
+
+def test_las_tareas_declaran_los_riesgos_de_sus_observables(catalogo):
+    por_tarea = {t.id: set(t.riesgos_asociados) for t in catalogo.tareas}
+    for e in catalogo.entradas:
+        assert e.riesgo in por_tarea[e.tarea], f"{e.id}: {e.tarea} no declara el riesgo {e.riesgo}"
+
+
+# ---------------------------------------------------------------- identificación de hallazgos
+def test_cada_observable_declara_como_se_identifica_un_hallazgo(catalogo):
+    for e in catalogo.entradas:
+        assert e.observable.identificador, e.id
+        assert set(e.observable.identificador) <= set(e.observable.columnas), e.id
+
+
+def test_la_etiqueta_de_un_hallazgo_es_legible(catalogo):
+    from app.reportes import etiqueta_hallazgo
+
+    assert etiqueta_hallazgo(
+        catalogo.entrada("OBS-01"),
+        {"esquema": "CLINICA", "tabla": "EMPLEADOS", "columna": "CEDULA", "nivel": "x"},
+    ) == "CLINICA.EMPLEADOS.CEDULA"
+    assert etiqueta_hallazgo(catalogo.entrada("OBS-08"), {"tipo": "RETENCION", "grantee": None}) == "RETENCION"
+    assert etiqueta_hallazgo(catalogo.entrada("OBS-09"), {}) == "(sin identificar)"

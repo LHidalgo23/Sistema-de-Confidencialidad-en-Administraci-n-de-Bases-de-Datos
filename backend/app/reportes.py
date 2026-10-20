@@ -11,7 +11,7 @@ from typing import Any
 from . import almacen
 from .catalogo import Catalogo
 from .evaluacion import ResultadoControl, evaluar_controles
-from .modelos import Estado, Severidad
+from .modelos import EntradaCatalogo, Estado, Severidad
 from .motor import ResultadoObservable
 
 
@@ -116,7 +116,14 @@ def evaluar_ejecucion(ejecucion: dict[str, Any], catalogo: Catalogo) -> list[Res
     )
 
 
-def _evidencia(ejecucion: dict[str, Any], observables: Sequence[str]) -> str:
+def etiqueta_hallazgo(entrada: EntradaCatalogo, hallazgo: dict[str, Any]) -> str:
+    """Texto corto que identifica un hallazgo, p. ej. CLINICA.EMPLEADOS.CEDULA."""
+    claves = entrada.observable.identificador or entrada.observable.columnas[:1]
+    partes = [str(hallazgo[c]) for c in claves if hallazgo.get(c) not in (None, "")]
+    return ".".join(partes) or "(sin identificar)"
+
+
+def _evidencia(ejecucion: dict[str, Any], observables: Sequence[str], catalogo: Catalogo) -> str:
     por_obs = {r["obs_id"]: r for r in ejecucion["resultados"]}
     partes = []
     for obs_id in observables:
@@ -126,7 +133,10 @@ def _evidencia(ejecucion: dict[str, Any], observables: Sequence[str]) -> str:
         if r["estado"] == Estado.NO_EVALUABLE.value:
             partes.append(f"{obs_id}: no evaluable ({r['motivo']})")
             continue
-        muestra = ", ".join(str(next(iter(h.values()), "")) for h in r["hallazgos"][:3])
+        entrada = catalogo.entrada(obs_id)
+        muestra = ", ".join(etiqueta_hallazgo(entrada, h) for h in r["hallazgos"][:3])
+        if len(r["hallazgos"]) > 3:
+            muestra += ", …"
         partes.append(f"{obs_id}: {len(r['hallazgos'])} hallazgo(s) [{muestra}]")
     return " | ".join(partes) if partes else "Sin hallazgos"
 
@@ -168,7 +178,7 @@ def matriz(
                 "riesgo": ", ".join(sorted({e.riesgo for e in entradas})),
                 "control": f"{control_id} {antes_ctl.nombre}",
                 "control_id": control_id,
-                "hallazgo": _evidencia(antes, observables),
+                "hallazgo": _evidencia(antes, observables, catalogo),
                 "criterio_antes": antes_ctl.madurez,
                 "estado_antes": antes_ctl.estado.value,
                 "correctivo_aplicado": _correctivo_aplicado(antes, despues, observables),

@@ -28,6 +28,7 @@ from .conexiones import (
 )
 from .correctivos import ErrorRender, generar_script, renderizar
 from .evaluacion import ResultadoControl
+from .frontend import montar_frontend
 from .modelos import (
     AuditarPeticion,
     ConfirmacionDescubrimiento,
@@ -380,3 +381,7 @@ def exportar_matriz(
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="matriz_empresa_{empresa_id}.csv"'},
     )
+
+
+# Debe ir al final: la ruta comodín del frontend no puede tapar las rutas de la API.
+montar_frontend(app, get_config().frontend_dir)

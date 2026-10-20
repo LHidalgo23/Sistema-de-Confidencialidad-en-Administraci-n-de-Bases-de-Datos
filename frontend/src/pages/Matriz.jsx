@@ -100,7 +100,7 @@ export default function Matriz() {
                 <tr key={f.control_id}>
                   <td className={`${td} font-medium`}>{f.control}</td>
                   <td className={`${td} text-xs`}>{f.tarea}</td>
-                  <td className={`${td} font-mono text-xs`}>{f.riesgo}</td>
+                  <td className={`${td} font-mono text-xs whitespace-nowrap`}>{f.riesgo}</td>
                   <td className={`${td} max-w-xs text-xs`}>{f.hallazgo}</td>
                   <td className={td}>{f.criterio_antes ?? "—"}</td>
                   <td className={td}>

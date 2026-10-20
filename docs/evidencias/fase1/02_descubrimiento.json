@@ -1,0 +1,100 @@
+{
+    "esquemas":  [
+                     {
+                         "esquema":  "CLINICA",
+                         "tablas":  4
+                     }
+                 ],
+    "columnas":  [
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "EMPLEADOS",
+                         "columna":  "CEDULA",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Identificador personal",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "EMPLEADOS",
+                         "columna":  "IBAN",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato financiero",
+                         "nivel":  "Confidencial - dato financiero",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "EMPLEADOS",
+                         "columna":  "SALARIO",
+                         "tipo_dato":  "NUMBER",
+                         "categoria":  "Dato financiero",
+                         "nivel":  "Confidencial - dato financiero",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "EXPEDIENTES",
+                         "columna":  "DIAGNOSTICO",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de salud",
+                         "nivel":  "Restringido - dato sensible (salud)",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "EXPEDIENTES",
+                         "columna":  "TRATAMIENTO",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de salud",
+                         "nivel":  "Restringido - dato sensible (salud)",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "PACIENTES",
+                         "columna":  "CEDULA",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Identificador personal",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "PACIENTES",
+                         "columna":  "CORREO",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de contacto",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "PACIENTES",
+                         "columna":  "DIRECCION",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de contacto",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "PACIENTES",
+                         "columna":  "FECHA_NACIMIENTO",
+                         "tipo_dato":  "DATE",
+                         "categoria":  "Dato demografico",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA",
+                         "tabla":  "PACIENTES",
+                         "columna":  "TELEFONO",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de contacto",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     }
+                 ]
+}

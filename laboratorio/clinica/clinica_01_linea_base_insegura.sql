@@ -50,7 +50,8 @@ GRANT SELECT, UPDATE ON clinica.empleados TO rrhh_01;
 -- Requiere que el parametro RECYCLEBIN este en ON (valor por defecto).
 CREATE TABLE clinica.tmp_exportacion TABLESPACE ts_sensible
   AS SELECT * FROM clinica.pacientes WHERE ROWNUM <= 20;
-DROP TABLE clinica.tmp_exportacion;                       -- sin PURGE, a proposito
+-- Sin PURGE, a proposito:
+DROP TABLE clinica.tmp_exportacion;
 
 -- OBS-16 | A8.12 EXECUTE sobre UTL_FILE/UTL_HTTP/UTL_TCP/UTL_SMTP a PUBLIC.
 -- En Oracle 21c esos grants vienen por defecto: no hay que crear nada. Verificar:

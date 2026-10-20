@@ -1,0 +1,628 @@
+{
+    "id":  1,
+    "empresa_id":  1,
+    "etiqueta":  "antes",
+    "iniciada_en":  "2026-10-20T23:13:12+00:00",
+    "finalizada_en":  "2026-10-20T23:13:20+00:00",
+    "version_oracle":  "21.3.0.0.0",
+    "contenedor":  "PDB_CLINICA",
+    "revisada_por":  null,
+    "revisada_en":  null,
+    "notas_revision":  null,
+    "madurez_promedio":  0.78,
+    "conteo_controles":  {
+                             "Cumple":  3,
+                             "No cumple":  13,
+                             "Parcial":  2,
+                             "No evaluable":  1
+                         },
+    "controles":  [
+                      {
+                          "control_id":  "A5.12",
+                          "nombre":  "Clasificación de la información",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-01"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A5.15",
+                          "nombre":  "Control de acceso",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  2,
+                          "observables_evaluados":  2,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-02",
+                                                "OBS-03"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A5.16",
+                          "nombre":  "Gestión de identidades",
+                          "nucleo":  true,
+                          "madurez":  3,
+                          "estado":  "Cumple",
+                          "observables_total":  2,
+                          "observables_evaluados":  2,
+                          "observables_ok":  2,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A5.17",
+                          "nombre":  "Información de autenticación",
+                          "nucleo":  true,
+                          "madurez":  2,
+                          "estado":  "Parcial",
+                          "observables_total":  2,
+                          "observables_evaluados":  2,
+                          "observables_ok":  1,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-06"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A5.18",
+                          "nombre":  "Derechos de acceso",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-07"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A5.33",
+                          "nombre":  "Protección de registros",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-08"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.2",
+                          "nombre":  "Derechos de acceso privilegiado",
+                          "nucleo":  true,
+                          "madurez":  1,
+                          "estado":  "No cumple",
+                          "observables_total":  3,
+                          "observables_evaluados":  3,
+                          "observables_ok":  1,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-09",
+                                                "OBS-10"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.3",
+                          "nombre":  "Restricción del acceso a la información",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-12"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.5",
+                          "nombre":  "Autenticación segura",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-13"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.10",
+                          "nombre":  "Eliminación de la información",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-14"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.11",
+                          "nombre":  "Enmascaramiento de datos",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-15"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.12",
+                          "nombre":  "Prevención de la fuga de datos",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-16"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.13",
+                          "nombre":  "Respaldo de la información",
+                          "nucleo":  true,
+                          "madurez":  null,
+                          "estado":  "No evaluable",
+                          "observables_total":  1,
+                          "observables_evaluados":  0,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+                                                "OBS-17"
+                                            ],
+                          "con_hallazgos":  [
+
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  0.0
+                      },
+                      {
+                          "control_id":  "A8.15",
+                          "nombre":  "Registro",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  2,
+                          "observables_evaluados":  2,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-18",
+                                                "OBS-19"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.20",
+                          "nombre":  "Seguridad de redes",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-20"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.24",
+                          "nombre":  "Uso de criptografía",
+                          "nucleo":  false,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  2,
+                          "observables_evaluados":  2,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-21",
+                                                "OBS-22"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.8",
+                          "nombre":  "Gestión de vulnerabilidades técnicas",
+                          "nucleo":  false,
+                          "madurez":  2,
+                          "estado":  "Parcial",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-24"
+                                            ],
+                          "aceptado":  true,
+                          "justificacion":  "OBS-24: Oracle Database XE no distribuye Release Updates trimestrales; se acepta el riesgo en el laboratorio y se documenta la migración a una edición con soporte de parches como plan de mejora.",
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.31",
+                          "nombre":  "Separación de los entornos de desarrollo, prueba y producción",
+                          "nucleo":  false,
+                          "madurez":  3,
+                          "estado":  "Cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  1,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A8.33",
+                          "nombre":  "Información de prueba",
+                          "nucleo":  false,
+                          "madurez":  3,
+                          "estado":  "Cumple",
+                          "observables_total":  1,
+                          "observables_evaluados":  1,
+                          "observables_ok":  1,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      }
+                  ],
+    "observables":  [
+                        {
+                            "obs_id":  "OBS-01",
+                            "nombre":  "Columnas sensibles sin clasificación registrada",
+                            "control_iso":  "A5.12",
+                            "severidad":  "media",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  10,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-02",
+                            "nombre":  "Objetos de negocio con privilegios para PUBLIC",
+                            "control_iso":  "A5.15",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-03",
+                            "nombre":  "Privilegios sobre objetos otorgados directo a usuarios",
+                            "control_iso":  "A5.15",
+                            "severidad":  "media",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  21,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-04",
+                            "nombre":  "Cuentas abiertas sin uso reciente",
+                            "control_iso":  "A5.16",
+                            "severidad":  "alta",
+                            "estado":  "Cumple",
+                            "motivo":  null,
+                            "hallazgos":  0,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-05",
+                            "nombre":  "Cuentas abiertas con contraseña por defecto",
+                            "control_iso":  "A5.17",
+                            "severidad":  "alta",
+                            "estado":  "Cumple",
+                            "motivo":  null,
+                            "hallazgos":  0,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-06",
+                            "nombre":  "Perfiles sin función de verificación o con límites débiles",
+                            "control_iso":  "A5.17",
+                            "severidad":  "media",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  4,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-07",
+                            "nombre":  "Privilegios de sistema directos no justificados",
+                            "control_iso":  "A5.18",
+                            "severidad":  "media",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  2,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-08",
+                            "nombre":  "AUDIT_ADMIN indebido o sin purga de la pista de auditoría",
+                            "control_iso":  "A5.33",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-09",
+                            "nombre":  "Rol DBA fuera de las cuentas autorizadas",
+                            "control_iso":  "A8.2",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-10",
+                            "nombre":  "Privilegios ANY a cuentas no administrativas",
+                            "control_iso":  "A8.2",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-11",
+                            "nombre":  "AUDIT_SYS_OPERATIONS desactivado o cuentas en el password file",
+                            "control_iso":  "A8.2",
+                            "severidad":  "alta",
+                            "estado":  "Cumple",
+                            "motivo":  null,
+                            "hallazgos":  0,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-12",
+                            "nombre":  "Tablas sensibles sin política VPD",
+                            "control_iso":  "A8.3",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  3,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-13",
+                            "nombre":  "Cuentas con hashes de contraseña antiguos",
+                            "control_iso":  "A8.5",
+                            "severidad":  "media",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  10,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-14",
+                            "nombre":  "Objetos de negocio en la papelera de reciclaje",
+                            "control_iso":  "A8.10",
+                            "severidad":  "media",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-15",
+                            "nombre":  "Columnas sensibles sin política de Data Redaction",
+                            "control_iso":  "A8.11",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  10,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-16",
+                            "nombre":  "Canales de fuga: paquetes, directorios y Data Pump",
+                            "control_iso":  "A8.12",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  4,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-17",
+                            "nombre":  "Respaldos recientes sin cifrar",
+                            "control_iso":  "A8.13",
+                            "severidad":  "alta",
+                            "estado":  "No evaluable",
+                            "motivo":  "No se observaron respaldos recientes (o no son visibles desde este contenedor)",
+                            "hallazgos":  0,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-18",
+                            "nombre":  "Tablas sensibles sin política de auditoría unificada",
+                            "control_iso":  "A8.15",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  3,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-19",
+                            "nombre":  "Logons fallidos y acciones privilegiadas sin auditar",
+                            "control_iso":  "A8.15",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  2,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-20",
+                            "nombre":  "Sesiones sin cifrado de red",
+                            "control_iso":  "A8.20",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-21",
+                            "nombre":  "Keystore de TDE no abierto",
+                            "control_iso":  "A8.24",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-22",
+                            "nombre":  "Columnas sensibles en tablespaces sin cifrar",
+                            "control_iso":  "A8.24",
+                            "severidad":  "alta",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  10,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-23",
+                            "nombre":  "Esquemas de desarrollo o prueba con datos sensibles sin enmascarar",
+                            "control_iso":  "A8.33",
+                            "severidad":  "alta",
+                            "estado":  "Cumple",
+                            "motivo":  null,
+                            "hallazgos":  0,
+                            "truncado":  false
+                        },
+                        {
+                            "obs_id":  "OBS-24",
+                            "nombre":  "Versión y parches del motor",
+                            "control_iso":  "A8.8",
+                            "severidad":  "media",
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  1,
+                            "truncado":  false
+                        }
+                    ]
+}

@@ -11,6 +11,7 @@ import oracledb
 
 from .catalogo import Catalogo
 from .conexiones import codigo_ora, consultar
+from .descubrimiento import VISTAS_REQUERIDAS as VISTAS_DESCUBRIMIENTO
 from .motor import CODIGOS_SIN_VISIBILIDAD, motivo_por_version
 
 ROLES_PERMITIDOS_AUDITOR = frozenset({"SELECT_CATALOG_ROLE", "HS_ADMIN_SELECT_ROLE", "AUDIT_VIEWER"})
@@ -67,13 +68,19 @@ def ejecutar_prevuelo(conexion: oracledb.Connection, catalogo: Catalogo) -> dict
     privilegios = [p[0] for p in privilegios]
 
     requeridos = {obj for entrada in catalogo.entradas for obj in entrada.requiere}
-    visibles = objetos_visibles(conexion, requeridos)
+    visibles = objetos_visibles(conexion, requeridos | VISTAS_DESCUBRIMIENTO)
 
     advertencias: list[str] = []
     if contexto["tipo_contenedor"] == "CDB$ROOT":
         advertencias.append(
             "La conexión apunta a CDB$ROOT: los controles de alcance PDB solo observarían el contenedor raíz. "
             "Use el servicio de la PDB que se va a auditar."
+        )
+    sin_descubrimiento = sorted(v for v in VISTAS_DESCUBRIMIENTO if not visibles.get(v, False))
+    if sin_descubrimiento:
+        advertencias.append(
+            "El descubrimiento de datos sensibles no podrá ejecutarse: el auditor no puede consultar "
+            + ", ".join(sin_descubrimiento) + "."
         )
     excedentes = sorted(set(roles) - ROLES_PERMITIDOS_AUDITOR) + sorted(set(privilegios) - PRIVILEGIOS_PERMITIDOS_AUDITOR)
     if excedentes:

@@ -6,14 +6,15 @@
 --     sqlplus / as sysdba
 --     @clinica_00_crear_pdb.sql
 --
--- Ajustar &ruta_oradata a la carpeta de datos de la instancia (en esta maquina
--- se observo C:\app\calvo\product\21c\oradata\XE). Como no hay OMF
+-- Ajustar &ruta_oradata a la carpeta de datos de la instancia, con las mayusculas
+-- exactas de V$DATAFILE (en esta maquina C:\APP\CALVO\PRODUCT\21C\ORADATA\XE;
+-- se consulta con SELECT name FROM v$datafile WHERE con_id = 2). Como no hay OMF
 -- (DB_CREATE_FILE_DEST vacio), FILE_NAME_CONVERT es obligatorio.
 -- ============================================================================
 
 WHENEVER SQLERROR EXIT FAILURE ROLLBACK
 
-DEFINE ruta_oradata = 'C:\app\calvo\product\21c\oradata\XE'
+DEFINE ruta_oradata = 'C:\APP\CALVO\PRODUCT\21C\ORADATA\XE'
 
 PROMPT Esta sesion debe estar en CDB$ROOT:
 SELECT SYS_CONTEXT('USERENV', 'CON_NAME') AS contenedor FROM dual;

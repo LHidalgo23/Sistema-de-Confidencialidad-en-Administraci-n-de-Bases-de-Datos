@@ -129,7 +129,8 @@ export default function Dashboard() {
                   <EstadoBadge estado={control.estado} />
                 </div>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  Madurez {control.madurez ?? "—"}/4 · cobertura {Math.round(control.cobertura * 100)} %
+                  {control.madurez === null ? "Sin madurez calculable" : `Madurez ${control.madurez}/4`} · cobertura{" "}
+                  {Math.round(control.cobertura * 100)} %
                 </p>
                 {control.aceptado && (
                   <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Parcial justificado: {control.justificacion}</p>

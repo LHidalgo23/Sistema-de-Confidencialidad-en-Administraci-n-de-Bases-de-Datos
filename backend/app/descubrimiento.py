@@ -1,6 +1,6 @@
 """Descubrimiento de esquemas de negocio y columnas sensibles.
 
-Trabaja solo con metadatos (DBA_TABLES, DBA_TAB_COLUMNS): nunca lee datos
+Trabaja solo con metadatos (DBA_TABLES, DBA_TAB_COLS): nunca lee datos
 reales. Auditar confidencialidad leyendo los datos sensibles sería contradictorio.
 """
 
@@ -14,6 +14,9 @@ import oracledb
 
 from . import almacen
 from .conexiones import consultar
+
+# Vistas que el descubrimiento necesita; el pre-vuelo comprueba que el auditor las vea.
+VISTAS_REQUERIDAS = frozenset({"DBA_USERS", "DBA_TABLES", "DBA_TAB_COLS"})
 
 SQL_ESQUEMAS = """
 SELECT t.owner AS esquema, COUNT(*) AS tablas
@@ -30,7 +33,7 @@ SELECT c.owner       AS esquema,
        c.table_name  AS tabla,
        c.column_name AS columna,
        c.data_type   AS tipo_dato
-FROM   dba_tab_columns c
+FROM   dba_tab_cols c
 JOIN   dba_tables t ON t.owner = c.owner AND t.table_name = c.table_name
 WHERE  EXISTS (SELECT 1
                FROM   JSON_TABLE(TO_CLOB(:esquemas), '$[*]'

@@ -1,0 +1,53 @@
+{
+    "version":  "21.3.0.0.0",
+    "contenedor":  "PDB_CLINICA",
+    "con_id":  5,
+    "tipo_contenedor":  "PDB",
+    "usuario":  "AUDITOR_ISO",
+    "roles":  [
+                  "AUDIT_VIEWER",
+                  "HS_ADMIN_SELECT_ROLE",
+                  "SELECT_CATALOG_ROLE"
+              ],
+    "privilegios":  [
+                        "CREATE SESSION"
+                    ],
+    "objetos_visibles":  {
+                             "AUDIT_UNIFIED_ENABLED_POLICIES":  true,
+                             "AUDIT_UNIFIED_POLICIES":  true,
+                             "DBA_AUDIT_MGMT_CLEANUP_JOBS":  true,
+                             "DBA_COL_COMMENTS":  true,
+                             "DBA_DIRECTORIES":  true,
+                             "DBA_ENCRYPTED_COLUMNS":  true,
+                             "DBA_POLICIES":  true,
+                             "DBA_PROFILES":  true,
+                             "DBA_RECYCLEBIN":  true,
+                             "DBA_REGISTRY_SQLPATCH":  true,
+                             "DBA_ROLES":  true,
+                             "DBA_ROLE_PRIVS":  true,
+                             "DBA_SYS_PRIVS":  true,
+                             "DBA_TABLES":  true,
+                             "DBA_TABLESPACES":  true,
+                             "DBA_TAB_COLS":  true,
+                             "DBA_TAB_PARTITIONS":  true,
+                             "DBA_TAB_PRIVS":  true,
+                             "DBA_USERS":  true,
+                             "DBA_USERS_WITH_DEFPWD":  true,
+                             "REDACTION_COLUMNS":  true,
+                             "REDACTION_POLICIES":  true,
+                             "V$BACKUP_PIECE":  true,
+                             "V$ENCRYPTION_WALLET":  true,
+                             "V$PARAMETER":  true,
+                             "V$PWFILE_USERS":  true,
+                             "V$SESSION":  true,
+                             "V$SESSION_CONNECT_INFO":  true,
+                             "V$VERSION":  true
+                         },
+    "advertencias":  [
+
+                     ],
+    "no_evaluables":  [
+
+                      ],
+    "observables_total":  24
+}

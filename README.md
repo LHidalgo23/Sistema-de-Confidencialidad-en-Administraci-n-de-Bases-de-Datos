@@ -86,6 +86,23 @@ npm run dev                            # http://localhost:5173
 
 Pruebas del backend: `cd backend && python -m pytest`.
 
+## Ejecutable (todo en un clic)
+
+`AuditorISO.exe` empaqueta backend, frontend y catálogo: levanta un solo servidor en `http://127.0.0.1:8000` (o el siguiente puerto libre), abre el navegador y no necesita Python ni Node en la máquina donde se usa.
+
+```powershell
+# Construir (desde la raíz del repositorio; requiere Python y Node)
+powershell -ExecutionPolicy Bypass -File scripts\construir_exe.ps1
+
+# Usar
+dist\AuditorISO\AuditorISO.exe
+```
+
+- Se distribuye la carpeta `dist\AuditorISO\` completa, no solo el `.exe`. Está en `.gitignore`.
+- Los datos (base SQLite de empresas y ejecuciones, y la llave de cifrado) viven en `%LOCALAPPDATA%\AuditorISO`, no en `dist\`: reconstruir el `.exe` no los borra. La primera vez se genera la llave; **respalde** `%LOCALAPPDATA%\AuditorISO\.env`, porque sin ella no se pueden descifrar las contraseñas guardadas.
+- Escucha solo en `127.0.0.1`. Opciones: `--puerto 9000` y `--sin-navegador`. Para detenerlo se cierra la ventana de consola.
+- En desarrollo, el mismo lanzador sirve sin empaquetar: compile el frontend (`npm run build`) y ejecute `python lanzador.py` dentro de `backend`.
+
 ## Auditar una empresa nueva en 4 pasos
 
 1. **Incorporar al auditor.** El DBA de la empresa ejecuta `instrumento/onboarding_auditor.sql` conectado a la PDB que se va a auditar.
@@ -108,7 +125,19 @@ Nada de esto se versiona: `.env`, `*.db` y wallets están en `.gitignore`. Los c
 
 ## Estado de la validación
 
-Las pruebas automáticas cubren catálogo, motor, evaluación, correctivos y API con una conexión simulada. **Las consultas de `instrumento/sql/observables/` aún no se han ejecutado contra Oracle**: deben validarse contra una base abierta, empezando por OBS-02, OBS-04, OBS-06, OBS-09, OBS-10 y OBS-22 (los seis que exige el avance), y ajustar lo que Oracle rechace. Los observables y correctivos de auditoría unificada, redaction y retención dependen de nombres de vistas y columnas que conviene confirmar en la versión instalada.
+Los 24 observables **se ejecutaron contra Oracle 21c XE real** (PDB `PDB_CLINICA`, usuario `AUDITOR_ISO`) y la validación corrigió varios errores de consultas, scripts y empaquetado que las pruebas con una conexión simulada no podían detectar. Los seis que exige el avance (OBS-02, 04, 06, 09, 10 y 22) funcionan.
+
+| Resultado en la línea base de la clínica | Observables |
+|---|---|
+| Detectan el hallazgo intencional | OBS-01, 02, 03, 04*, 06, 07, 09, 10, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 24 |
+| Cumple (no hay hallazgo) | OBS-05, 11, 23 |
+| No evaluable (no visible desde una PDB) | OBS-17 |
+
+\* OBS-04 usa el umbral `dias_inactividad = 1` del laboratorio: `EXEMPLEADO_01` aparece como hallazgo un día después de crearse (ver `laboratorio/clinica/README.md`).
+
+Evidencia "antes" en [`docs/evidencias/fase1/`](docs/evidencias/fase1/): pre-vuelo, descubrimiento, la ejecución completa, los hallazgos por observable, la matriz (CSV), el script correctivo generado y 11 capturas de pantalla.
+
+Sigue pendiente validar contra Oracle los **correctivos** (se aplican en la Fase 3), en particular los de auditoría unificada (nombres de acciones como `GRANT`/`REVOKE`), la purga de la pista (`DBMS_AUDIT_MGMT`), TDE y Data Redaction. Las pruebas automáticas (`python -m pytest`) cubren catálogo, motor, evaluación, correctivos y API con una conexión simulada.
 
 ## Uso de Inteligencia Artificial
 

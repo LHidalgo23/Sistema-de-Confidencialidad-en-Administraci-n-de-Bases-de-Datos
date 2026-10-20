@@ -5,7 +5,7 @@
 -- Binds: (ninguno)
 -- Regla: cada fila es un hallazgo.
 SELECT u.username          AS usuario,
-       u.password_versions AS versiones
+       TRIM(u.password_versions) AS versiones
 FROM   dba_users u
 WHERE  u.oracle_maintained = 'N'
 AND    u.authentication_type = 'PASSWORD'

@@ -129,6 +129,8 @@ def validar_catalogo(catalogo: Catalogo) -> list[str]:
                 continue
             if usados - columnas:
                 problemas.append(f"{e.id}: la plantilla usa columnas que el observable no devuelve: {sorted(usados - columnas)}")
+        if not e.observable.identificador or set(e.observable.identificador) - columnas:
+            problemas.append(f"{e.id}: el identificador debe ser un subconjunto no vacío de las columnas del observable")
         if e.correctivo.discriminador and e.correctivo.discriminador not in columnas:
             problemas.append(f"{e.id}: el discriminador {e.correctivo.discriminador} no es una columna del observable")
 
