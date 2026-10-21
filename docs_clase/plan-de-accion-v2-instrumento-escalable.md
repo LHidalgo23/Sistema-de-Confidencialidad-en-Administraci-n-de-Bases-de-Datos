@@ -178,7 +178,7 @@ Cumple las columnas oficiales y agrega la secuencia observable → correctivo:
 | `RRHH_01` | Recursos humanos |
 | `DEV_USER` | Desarrollador |
 | `EXEMPLEADO_01` | Cuenta inactiva (hallazgo intencional) |
-| `USUARIO1` | DBA nominal |
+| `DBA_LHIDALGO` | DBA nominal |
 | `AUDITOR_ISO` | Usuario del instrumento (creado con `onboarding_auditor.sql`) |
 
 ### 4.3 Línea base insegura (`clinica_01_linea_base_insegura.sql`)

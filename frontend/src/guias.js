@@ -445,7 +445,7 @@ export const GUIAS = {
       "La batería de pruebas que pide la asignación: ID, tipo, procedimiento, resultado esperado y herramienta de cada observable.",
     queMuestra: ["Una fila por observable con el archivo .sql a ejecutar, las variables que usa y lo que se espera."],
     comoProbar: [
-      "Abre el archivo indicado en el procedimiento y ejecútalo a mano en SQL Developer; las variables son JSON, por ejemplo [\"USUARIO1\"].",
+      "Abre el archivo indicado en el procedimiento y ejecútalo a mano en SQL Developer; las variables son JSON, por ejemplo [\"DBA_LHIDALGO\"].",
       "Compara lo que devuelve con lo que muestra el instrumento: debe coincidir.",
     ],
     esperado: [

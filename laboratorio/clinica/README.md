@@ -24,7 +24,7 @@ Clínica Los Robles S.A. maneja datos personales y **datos sensibles de salud**,
 
 **Usuario común `C##AUDITOR_ISO`.** Es un usuario del contenedor raíz, así que existe también en las demás PDB de la instancia (solo con `CREATE SESSION` y `SELECT_CATALOG_ROLE`). Para quitarlo: `DROP USER c##auditor_iso CASCADE;` y `DROP PROFILE c##perfil_auditor_iso;` como SYSDBA en `CDB$ROOT`.
 
-El DBA nominal de la clínica es `USUARIO1`. En una `PDB_CLINICA` montada antes de ese cambio, `clinica_98_migrar_usuario1.sql` (SYSDBA, una sola vez) crea `USUARIO1` con los mismos privilegios y borra la cuenta anterior; después se repite la actividad de usuarios.
+El DBA nominal de la clínica es `DBA_LHIDALGO`. En una `PDB_CLINICA` montada antes de ese cambio, `clinica_98_migrar_dba_lhidalgo.sql` (SYSDBA, una sola vez) crea `DBA_LHIDALGO` con los mismos privilegios y borra la cuenta anterior; después se repite la actividad de usuarios.
 
 Para repetir la demostración desde cero: `clinica_99_reiniciar_laboratorio.sql` borra el esquema, los usuarios y los tablespaces de la clínica (no toca la PDB ni a `AUDITOR_ISO`) y se vuelve a ejecutar desde el paso 2.
 

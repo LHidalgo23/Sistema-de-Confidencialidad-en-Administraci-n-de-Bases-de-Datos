@@ -1,10 +1,10 @@
 {
   "titulo": "Guía de práctica: Clínica Los Robles S.A.",
   "descripcion": "Escenarios para ver funcionar el instrumento con la empresa de demostración. En cada uno provocas un hallazgo con SQL, lo observas en el instrumento, lo corriges y confirmas que se cerró. Al final de cada escenario hay un bloque para dejar la base como estaba.",
-  "conexion_sql": "USUARIO1 en localhost:1521/pdb_clinica",
+  "conexion_sql": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
   "preparacion": [
     "Con Oracle abierto, ejecuta laboratorio/clinica/clinica_00_actividad_usuarios.sql con SQL*Plus como SYSDBA (pide clave_lab y clave_pdbadmin, ambas en %LOCALAPPDATA%\\AuditorISO\\credenciales_laboratorio.txt). Renueva el último acceso de los usuarios; si no, OBS-04 marcaría también a quienes lleven más de un día sin entrar.",
-    "Abre una sesión SQL como USUARIO1 (SQL Developer: host localhost, puerto 1521, nombre de servicio pdb_clinica). La contraseña es la clave_lab de %LOCALAPPDATA%\\AuditorISO\\credenciales_laboratorio.txt. El SQL de los escenarios se ejecuta con esa sesión salvo que se indique otra.",
+    "Abre una sesión SQL como DBA_LHIDALGO (SQL Developer: host localhost, puerto 1521, nombre de servicio pdb_clinica). La contraseña es la clave_lab de %LOCALAPPDATA%\\AuditorISO\\credenciales_laboratorio.txt. El SQL de los escenarios se ejecuta con esa sesión salvo que se indique otra.",
     "En el instrumento abre la clínica, ve al Dashboard y pulsa «Observar la base» con la etiqueta «base». Será tu punto de comparación."
   ],
   "escenarios": [
@@ -20,7 +20,7 @@
       "pasos": [
         {
           "tipo": "sql",
-          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "conexion": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
           "codigo": "GRANT SELECT ANY TABLE TO rrhh_01;"
         },
         {
@@ -41,7 +41,7 @@
         },
         {
           "tipo": "sql",
-          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "conexion": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
           "codigo": "REVOKE SELECT ANY TABLE FROM rrhh_01;"
         },
         {
@@ -79,7 +79,7 @@
         },
         {
           "tipo": "sql",
-          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "conexion": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
           "codigo": "REVOKE SELECT ON clinica.pacientes FROM PUBLIC;"
         },
         {
@@ -119,7 +119,7 @@
         },
         {
           "tipo": "sql",
-          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "conexion": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
           "codigo": "REVOKE DBA FROM app_clinica;"
         },
         {
@@ -152,7 +152,7 @@
         },
         {
           "tipo": "sql",
-          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "conexion": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
           "codigo": "ALTER USER scott PASSWORD EXPIRE;"
         },
         {
@@ -189,7 +189,7 @@
         },
         {
           "tipo": "sql",
-          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "conexion": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
           "codigo": "ALTER USER exempleado_01 ACCOUNT LOCK;\nALTER USER scott ACCOUNT LOCK;"
         },
         {
@@ -218,7 +218,7 @@
         },
         {
           "tipo": "sql",
-          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "conexion": "DBA_LHIDALGO en localhost:1521/pdb_clinica",
           "codigo": "ALTER PROFILE default LIMIT failed_login_attempts 5 idle_time 30;"
         },
         {
