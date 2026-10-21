@@ -11,6 +11,7 @@ import Empresas from "./pages/Empresas";
 import Hallazgo from "./pages/Hallazgo";
 import Matriz from "./pages/Matriz";
 import PlanMejora from "./pages/PlanMejora";
+import Practica from "./pages/Practica";
 import Prevuelo from "./pages/Prevuelo";
 
 // El Dashboard es el único que usa Recharts: se carga bajo demanda para aligerar el resto.
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="correctivos" element={<Correctivos />} />
           <Route path="plan-mejora" element={<PlanMejora />} />
         </Route>
+        <Route path="practica" element={<Practica />} />
         <Route path="catalogo" element={<Catalogo />} />
         <Route path="documentacion" element={<Documentacion />} />
       </Route>

@@ -12,7 +12,28 @@
     "privilegios":  [
                         "CREATE SESSION"
                     ],
+    "instancia":  {
+                      "configurada":  true,
+                      "contenedor":  "CDB$ROOT",
+                      "con_id":  1,
+                      "tipo_contenedor":  "CDB$ROOT",
+                      "usuario":  "C##AUDITOR_ISO",
+                      "roles":  [
+                                    "HS_ADMIN_SELECT_ROLE",
+                                    "SELECT_CATALOG_ROLE"
+                                ],
+                      "privilegios":  [
+                                          "CREATE SESSION"
+                                      ]
+                  },
     "objetos_visibles":  {
+                             "DBA_REGISTRY_SQLPATCH":  true,
+                             "V$BACKUP_PIECE":  true,
+                             "V$PARAMETER":  true,
+                             "V$PWFILE_USERS":  true,
+                             "V$SESSION":  true,
+                             "V$SESSION_CONNECT_INFO":  true,
+                             "V$VERSION":  true,
                              "AUDIT_UNIFIED_ENABLED_POLICIES":  true,
                              "AUDIT_UNIFIED_POLICIES":  true,
                              "DBA_AUDIT_MGMT_CLEANUP_JOBS":  true,
@@ -22,7 +43,6 @@
                              "DBA_POLICIES":  true,
                              "DBA_PROFILES":  true,
                              "DBA_RECYCLEBIN":  true,
-                             "DBA_REGISTRY_SQLPATCH":  true,
                              "DBA_ROLES":  true,
                              "DBA_ROLE_PRIVS":  true,
                              "DBA_SYS_PRIVS":  true,
@@ -35,13 +55,7 @@
                              "DBA_USERS_WITH_DEFPWD":  true,
                              "REDACTION_COLUMNS":  true,
                              "REDACTION_POLICIES":  true,
-                             "V$BACKUP_PIECE":  true,
-                             "V$ENCRYPTION_WALLET":  true,
-                             "V$PARAMETER":  true,
-                             "V$PWFILE_USERS":  true,
-                             "V$SESSION":  true,
-                             "V$SESSION_CONNECT_INFO":  true,
-                             "V$VERSION":  true
+                             "V$ENCRYPTION_WALLET":  true
                          },
     "advertencias":  [
 

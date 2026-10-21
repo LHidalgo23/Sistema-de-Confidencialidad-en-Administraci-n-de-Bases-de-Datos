@@ -119,3 +119,37 @@ def test_clasificacion_de_columnas_por_nombre(catalogo):
     assert clasificar_columna("fecha_nacimiento", patrones)["patron"] == "NACIMIENTO"
     assert clasificar_columna("DIAGNOSTICO", patrones)["nivel"].startswith("Restringido")
     assert clasificar_columna("NOMBRE_PRODUCTO", patrones) is None
+
+
+# ---------------------------------------------------------------- enrutamiento por alcance
+def _auditar_con_conexiones(monkeypatch, catalogo, conexion_instancia):
+    por_sql = {catalogo.sql_por_obs[e.id]: e for e in catalogo.entradas}
+    usadas = {}
+
+    def falso_consultar(conexion, sentencia, binds=None, *, max_filas=None):
+        entrada = por_sql[sentencia]
+        usadas[entrada.id] = conexion
+        return list(entrada.observable.columnas), [], False
+
+    monkeypatch.setattr(motor, "consultar", falso_consultar)
+    parametros = {**catalogo.perfil_default["parametros"], "esquemas_negocio": [], "columnas_sensibles": []}
+    resultados = motor.auditar(
+        "CONEXION_PDB", catalogo, parametros, version_servidor="21.3.0.0.0", conexion_instancia=conexion_instancia
+    )
+    return usadas, {r.obs_id: r for r in resultados}
+
+
+def test_los_controles_de_instancia_se_observan_con_la_conexion_de_instancia(monkeypatch, catalogo):
+    usadas, resultados = _auditar_con_conexiones(monkeypatch, catalogo, "CONEXION_INSTANCIA")
+    de_instancia = {e.id for e in catalogo.entradas if e.alcance == "Instancia"}
+    assert de_instancia == {"OBS-11", "OBS-17", "OBS-20", "OBS-24"}
+    for obs_id, conexion in usadas.items():
+        esperada = "CONEXION_INSTANCIA" if obs_id in de_instancia else "CONEXION_PDB"
+        assert conexion == esperada, obs_id
+        assert resultados[obs_id].origen == ("Instancia" if obs_id in de_instancia else "PDB")
+
+
+def test_sin_conexion_de_instancia_todo_se_observa_desde_la_pdb(monkeypatch, catalogo):
+    usadas, resultados = _auditar_con_conexiones(monkeypatch, catalogo, None)
+    assert set(usadas.values()) == {"CONEXION_PDB"}
+    assert {r.origen for r in resultados.values()} == {"PDB"}

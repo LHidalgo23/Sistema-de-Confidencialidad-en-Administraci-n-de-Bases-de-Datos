@@ -6,6 +6,8 @@ Corrección manual de **OBS-20** (sesiones sin cifrado de red). El instrumento n
 
 ## Estado "antes" (línea base)
 
+> **Nota:** en esta instalación de Oracle XE el archivo `%ORACLE_HOME%\network\admin\sqlnet.ora` **no existe**. Al crearlo, incluir también `SQLNET.AUTHENTICATION_SERVICES = (NTS)`; sin esa línea `sqlplus / as sysdba` deja de autenticar por el sistema operativo y se pierde el acceso local como SYSDBA. Hasta que se cree, OBS-13 (hashes 11G) marca todas las cuentas, incluida la del auditor.
+
 Guardar una copia del `sqlnet.ora` original en `docs/evidencias/` antes de tocarlo. En la línea base no existen `SQLNET.ENCRYPTION_SERVER` ni `TCP.VALIDNODE_CHECKING`. Ubicación: `%ORACLE_HOME%\network\admin\sqlnet.ora`.
 
 ## Cambios a aplicar

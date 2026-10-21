@@ -11,7 +11,7 @@ from typing import Any
 
 from . import almacen
 from .conexiones import cifrar
-from .modelos import EmpresaCrear, EmpresaPublica
+from .modelos import EmpresaCrear, EmpresaPublica, InstanciaCrear
 
 # host[:puerto]/servicio (Easy Connect). Rechaza cualquier otra forma de DSN.
 RE_DSN = re.compile(r"^[A-Za-z0-9_.\-]+(:\d{1,5})?/[A-Za-z0-9_.$#\-]+$")
@@ -98,6 +98,10 @@ def a_publica(fila: Mapping[str, Any]) -> EmpresaPublica:
         credenciales_guardadas=bool(fila["password_cifrada"]),
         perfil=json.loads(fila["perfil_json"]),
         creada_en=fila["creada_en"],
+        instancia_configurada=bool(fila["dsn_instancia"] and fila["usuario_instancia"]),
+        dsn_instancia=fila["dsn_instancia"],
+        usuario_instancia=fila["usuario_instancia"],
+        credenciales_instancia_guardadas=bool(fila["password_instancia_cifrada"]),
     )
 
 
@@ -105,11 +109,17 @@ def crear_empresa(datos: EmpresaCrear, perfil_default: dict) -> EmpresaPublica:
     validar_dsn(datos.dsn)
     perfil = validar_perfil(datos.perfil, perfil_default)
     password_cifrada = cifrar(datos.password) if datos.password else None
+    dsn_instancia = usuario_instancia = password_instancia = None
+    if datos.instancia:
+        dsn_instancia = validar_dsn(datos.instancia.dsn)
+        usuario_instancia = datos.instancia.usuario.strip()
+        password_instancia = cifrar(datos.instancia.password) if datos.instancia.password else None
     try:
         with almacen.conexion() as con:
             cursor = con.execute(
-                "INSERT INTO empresas (nombre, sector, dsn, usuario, password_cifrada, perfil_json, creada_en) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO empresas (nombre, sector, dsn, usuario, password_cifrada, perfil_json, creada_en, "
+                "dsn_instancia, usuario_instancia, password_instancia_cifrada) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     datos.nombre.strip(),
                     datos.sector.strip(),
@@ -118,6 +128,9 @@ def crear_empresa(datos: EmpresaCrear, perfil_default: dict) -> EmpresaPublica:
                     password_cifrada,
                     json.dumps(perfil, ensure_ascii=False),
                     almacen.ahora_iso(),
+                    dsn_instancia,
+                    usuario_instancia,
+                    password_instancia,
                 ),
             )
             fila = con.execute("SELECT * FROM empresas WHERE id = ?", (cursor.lastrowid,)).fetchone()
@@ -155,3 +168,28 @@ def actualizar_perfil(empresa_id: int, override: dict, perfil_default: dict) -> 
 
 def perfil_de_empresa(fila: Mapping[str, Any], perfil_default: dict) -> dict:
     return perfil_efectivo(perfil_default, json.loads(fila["perfil_json"]))
+
+
+def configurar_instancia(empresa_id: int, datos: InstanciaCrear) -> EmpresaPublica:
+    """Guarda (o reemplaza) la conexión de instancia. Si no se envía contraseña, se conserva la guardada."""
+    anterior = obtener_empresa(empresa_id)
+    dsn = validar_dsn(datos.dsn)
+    cifrada = cifrar(datos.password) if datos.password else anterior["password_instancia_cifrada"]
+    with almacen.conexion() as con:
+        con.execute(
+            "UPDATE empresas SET dsn_instancia = ?, usuario_instancia = ?, password_instancia_cifrada = ? WHERE id = ?",
+            (dsn, datos.usuario.strip(), cifrada, empresa_id),
+        )
+        fila = con.execute("SELECT * FROM empresas WHERE id = ?", (empresa_id,)).fetchone()
+    return a_publica(fila)
+
+
+def quitar_instancia(empresa_id: int) -> EmpresaPublica:
+    obtener_empresa(empresa_id)
+    with almacen.conexion() as con:
+        con.execute(
+            "UPDATE empresas SET dsn_instancia = NULL, usuario_instancia = NULL, password_instancia_cifrada = NULL WHERE id = ?",
+            (empresa_id,),
+        )
+        fila = con.execute("SELECT * FROM empresas WHERE id = ?", (empresa_id,)).fetchone()
+    return a_publica(fila)

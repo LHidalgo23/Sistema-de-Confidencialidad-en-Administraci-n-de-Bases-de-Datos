@@ -57,6 +57,8 @@ class EntradaCatalogo(BaseModel):
     control_iso: str
     controles_adicionales: list[str] = []
     nombre: str
+    tipo_prueba: Literal["Consulta de catálogo", "Revisión de configuración", "Revisión de auditoría"]
+    resultado_esperado: str
     riesgo: str
     tarea: str
     alcance: Literal["PDB", "Instancia", "Instancia/PDB"]
@@ -78,6 +80,9 @@ class ControlISO(BaseModel):
     nombre: str
     tema: str
     nucleo: bool
+    justificacion: str = ""  # por qué el mecanismo de Oracle mitiga el riesgo
+    implementacion: str = ""  # cómo se implementa en Oracle
+    evidencia: str = ""  # vistas o parámetros que lo evidencian
 
 
 class Riesgo(BaseModel):
@@ -104,6 +109,14 @@ class Tarea(BaseModel):
 # --------------------------------------------------------------------------
 # API
 # --------------------------------------------------------------------------
+class InstanciaCrear(BaseModel):
+    """Conexión opcional a CDB$ROOT para los controles de instancia (respaldos, parámetros, sesiones)."""
+
+    dsn: str = Field(description="host:puerto/servicio del contenedor raíz")
+    usuario: str = Field(min_length=1, max_length=128)
+    password: str | None = Field(default=None, repr=False)
+
+
 class EmpresaCrear(BaseModel):
     nombre: str = Field(min_length=2, max_length=80)
     sector: str = Field(default="", max_length=60)
@@ -111,6 +124,7 @@ class EmpresaCrear(BaseModel):
     usuario: str = Field(min_length=1, max_length=128)
     password: str | None = Field(default=None, repr=False)
     perfil: dict = Field(default_factory=dict)
+    instancia: InstanciaCrear | None = None
 
 
 class EmpresaPublica(BaseModel):
@@ -122,10 +136,15 @@ class EmpresaPublica(BaseModel):
     credenciales_guardadas: bool
     perfil: dict
     creada_en: str
+    instancia_configurada: bool = False
+    dsn_instancia: str | None = None
+    usuario_instancia: str | None = None
+    credenciales_instancia_guardadas: bool = False
 
 
 class Credencial(BaseModel):
     password: str | None = Field(default=None, repr=False)
+    password_instancia: str | None = Field(default=None, repr=False)
 
 
 class AuditarPeticion(Credencial):

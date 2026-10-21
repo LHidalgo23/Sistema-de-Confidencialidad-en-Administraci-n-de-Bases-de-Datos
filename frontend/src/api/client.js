@@ -27,7 +27,10 @@ async function solicitar(ruta, { metodo = "GET", cuerpo } = {}) {
   return tipo.includes("application/json") ? respuesta.json() : respuesta.text();
 }
 
-const credencial = (password) => ({ password: password || null });
+const credencial = (claves = {}) => ({
+  password: claves.password || null,
+  password_instancia: claves.passwordInstancia || null,
+});
 
 function consulta(parametros) {
   const busqueda = new URLSearchParams();
@@ -42,25 +45,31 @@ export const api = {
   // catálogo genérico
   catalogo: () => solicitar("/api/catalogo"),
   controlesIso: () => solicitar("/api/controles-iso"),
+  mapeo: () => solicitar("/api/mapeo"),
+  bateria: () => solicitar("/api/bateria"),
   riesgos: () => solicitar("/api/riesgos"),
   tareas: () => solicitar("/api/tareas"),
   perfilDefault: () => solicitar("/api/perfil-default"),
+  laboratorios: () => solicitar("/api/laboratorios"),
 
   // empresas
   empresas: () => solicitar("/api/empresas"),
   crearEmpresa: (datos) => solicitar("/api/empresas", { metodo: "POST", cuerpo: datos }),
   empresa: (id) => solicitar(`/api/empresas/${id}`),
-  probar: (id, password) => solicitar(`/api/empresas/${id}/probar`, { metodo: "POST", cuerpo: credencial(password) }),
-  prevuelo: (id, password) => solicitar(`/api/empresas/${id}/prevuelo`, { metodo: "POST", cuerpo: credencial(password) }),
+  actualizarPerfil: (id, perfil) => solicitar(`/api/empresas/${id}/perfil`, { metodo: "PUT", cuerpo: perfil }),
+  configurarInstancia: (id, datos) => solicitar(`/api/empresas/${id}/instancia`, { metodo: "PUT", cuerpo: datos }),
+  quitarInstancia: (id) => solicitar(`/api/empresas/${id}/instancia`, { metodo: "DELETE" }),
+  probar: (id, claves) => solicitar(`/api/empresas/${id}/probar`, { metodo: "POST", cuerpo: credencial(claves) }),
+  prevuelo: (id, claves) => solicitar(`/api/empresas/${id}/prevuelo`, { metodo: "POST", cuerpo: credencial(claves) }),
 
   // descubrimiento
-  descubrir: (id, password) => solicitar(`/api/empresas/${id}/descubrir`, { metodo: "POST", cuerpo: credencial(password) }),
+  descubrir: (id, claves) => solicitar(`/api/empresas/${id}/descubrir`, { metodo: "POST", cuerpo: credencial(claves) }),
   descubrimiento: (id) => solicitar(`/api/empresas/${id}/descubrimiento`),
   confirmarDescubrimiento: (id, cuerpo) => solicitar(`/api/empresas/${id}/descubrimiento`, { metodo: "PUT", cuerpo }),
 
   // auditoría
-  auditar: (id, password, etiqueta) =>
-    solicitar(`/api/empresas/${id}/auditar`, { metodo: "POST", cuerpo: { ...credencial(password), etiqueta } }),
+  auditar: (id, claves, etiqueta) =>
+    solicitar(`/api/empresas/${id}/auditar`, { metodo: "POST", cuerpo: { ...credencial(claves), etiqueta } }),
   ejecuciones: (id) => solicitar(`/api/empresas/${id}/ejecuciones`),
   ejecucion: (id) => solicitar(`/api/ejecuciones/${id}`),
   revisar: (id, cuerpo) => solicitar(`/api/ejecuciones/${id}/revision`, { metodo: "POST", cuerpo }),

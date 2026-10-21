@@ -3,6 +3,10 @@
                      {
                          "esquema":  "CLINICA",
                          "tablas":  4
+                     },
+                     {
+                         "esquema":  "CLINICA_DEV",
+                         "tablas":  1
                      }
                  ],
     "columnas":  [
@@ -13,7 +17,7 @@
                          "tipo_dato":  "VARCHAR2",
                          "categoria":  "Identificador personal",
                          "nivel":  "Confidencial - dato personal",
-                         "confirmada":  null
+                         "confirmada":  1
                      },
                      {
                          "esquema":  "CLINICA",
@@ -89,6 +93,51 @@
                      },
                      {
                          "esquema":  "CLINICA",
+                         "tabla":  "PACIENTES",
+                         "columna":  "TELEFONO",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de contacto",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA_DEV",
+                         "tabla":  "PACIENTES",
+                         "columna":  "CEDULA",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Identificador personal",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA_DEV",
+                         "tabla":  "PACIENTES",
+                         "columna":  "CORREO",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de contacto",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA_DEV",
+                         "tabla":  "PACIENTES",
+                         "columna":  "DIRECCION",
+                         "tipo_dato":  "VARCHAR2",
+                         "categoria":  "Dato de contacto",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA_DEV",
+                         "tabla":  "PACIENTES",
+                         "columna":  "FECHA_NACIMIENTO",
+                         "tipo_dato":  "DATE",
+                         "categoria":  "Dato demografico",
+                         "nivel":  "Confidencial - dato personal",
+                         "confirmada":  null
+                     },
+                     {
+                         "esquema":  "CLINICA_DEV",
                          "tabla":  "PACIENTES",
                          "columna":  "TELEFONO",
                          "tipo_dato":  "VARCHAR2",

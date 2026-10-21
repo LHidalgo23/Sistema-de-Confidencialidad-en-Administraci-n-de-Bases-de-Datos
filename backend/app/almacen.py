@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS empresas (
     dsn              TEXT NOT NULL,
     usuario          TEXT NOT NULL,
     password_cifrada TEXT,
+    dsn_instancia    TEXT,
+    usuario_instancia TEXT,
+    password_instancia_cifrada TEXT,
     perfil_json      TEXT NOT NULL DEFAULT '{}',
     creada_en        TEXT NOT NULL
 );
@@ -57,6 +60,7 @@ CREATE TABLE IF NOT EXISTS resultados (
     hallazgos_json TEXT NOT NULL DEFAULT '[]',
     duracion_ms   INTEGER NOT NULL DEFAULT 0,
     truncado      INTEGER NOT NULL DEFAULT 0,
+    origen        TEXT NOT NULL DEFAULT 'PDB',
     PRIMARY KEY (ejecucion_id, obs_id)
 );
 
@@ -86,6 +90,26 @@ def conexion() -> Iterator[sqlite3.Connection]:
         con.close()
 
 
+# Columnas agregadas después de la primera versión del esquema: las bases ya creadas se migran al iniciar.
+COLUMNAS_NUEVAS = {
+    "empresas": {
+        "dsn_instancia": "TEXT",
+        "usuario_instancia": "TEXT",
+        "password_instancia_cifrada": "TEXT",
+    },
+    "resultados": {"origen": "TEXT NOT NULL DEFAULT 'PDB'"},
+}
+
+
+def _migrar(con: sqlite3.Connection) -> None:
+    for tabla, columnas in COLUMNAS_NUEVAS.items():
+        existentes = {fila["name"] for fila in con.execute(f"PRAGMA table_info({tabla})")}
+        for nombre, definicion in columnas.items():
+            if nombre not in existentes:
+                con.execute(f"ALTER TABLE {tabla} ADD COLUMN {nombre} {definicion}")
+
+
 def inicializar() -> None:
     with conexion() as con:
         con.executescript(ESQUEMA_SQL)
+        _migrar(con)

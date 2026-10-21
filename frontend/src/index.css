@@ -1,9 +1,223 @@
 @import "tailwindcss";
 
+/* El tema lo decide data-theme en <html> (claro, oscuro o el del sistema; ver hooks/useTema.js). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Tokens del instrumento.
+ * Tinta y papel para la estructura; un solo acento (azul expediente) para lo interactivo.
+ * Los cuatro colores de estado se reservan para Cumple, Parcial, No cumple y No evaluable:
+ * nada más en la interfaz los usa, así que el color siempre significa un estado.
+ */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+  --fondo: #eef1f5;
+  --superficie: #ffffff;
+  --superficie-2: #f5f7fa;
+  --linea: #d9dfe7;
+  --linea-fuerte: #b8c2cf;
+  --texto: #142033;
+  --texto-2: #3c4a5e;
+  --texto-3: #5a6779;
+  --acento: #1d5fb0;
+  --acento-hover: #174d90;
+  --acento-texto: #ffffff;
+  --acento-suave: #e6eef9;
+  --barra: #13213a;
+  --barra-texto: #e8edf5;
+  --barra-texto-2: #9aa8bd;
+  --barra-activo: #22365a;
+  --barra-linea: #24365a;
+  --cumple: #12733a;
+  --cumple-suave: #e3f3e8;
+  --parcial: #9a5300;
+  --parcial-suave: #fbf0dc;
+  --nocumple: #b42318;
+  --nocumple-suave: #fce8e6;
+  --noeval: #4f5d75;
+  --noeval-suave: #e9edf3;
+  --sombra: 0 0 0 1px var(--linea), 0 1px 2px rgb(16 24 40 / 0.05);
+  --sombra-flotante: 0 0 0 1px var(--linea), 0 12px 32px -8px rgb(16 24 40 / 0.22);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --fondo: #0c1420;
+  --superficie: #121c2b;
+  --superficie-2: #172335;
+  --linea: #243247;
+  --linea-fuerte: #33445e;
+  --texto: #e5eaf1;
+  --texto-2: #b6c1d0;
+  --texto-3: #8e9bae;
+  --acento: #78aef5;
+  --acento-hover: #9cc4f8;
+  --acento-texto: #0c1420;
+  --acento-suave: #17304f;
+  --barra: #09101a;
+  --barra-texto: #e5eaf1;
+  --barra-texto-2: #8593a8;
+  --barra-activo: #1a2a42;
+  --barra-linea: #1a2638;
+  --cumple: #5cc98a;
+  --cumple-suave: #12301f;
+  --parcial: #e8ae57;
+  --parcial-suave: #33260f;
+  --nocumple: #f28b82;
+  --nocumple-suave: #3a1716;
+  --noeval: #a4b1c6;
+  --noeval-suave: #1e2838;
+  --sombra: 0 0 0 1px var(--linea);
+  --sombra-flotante: 0 0 0 1px var(--linea-fuerte), 0 16px 40px -8px rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --font-sans: "Public Sans Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-2: var(--superficie-2);
+  --color-linea: var(--linea);
+  --color-linea-fuerte: var(--linea-fuerte);
+  --color-texto: var(--texto);
+  --color-texto-2: var(--texto-2);
+  --color-texto-3: var(--texto-3);
+  --color-acento: var(--acento);
+  --color-acento-hover: var(--acento-hover);
+  --color-acento-texto: var(--acento-texto);
+  --color-acento-suave: var(--acento-suave);
+  --color-barra: var(--barra);
+  --color-barra-texto: var(--barra-texto);
+  --color-barra-texto-2: var(--barra-texto-2);
+  --color-barra-activo: var(--barra-activo);
+  --color-barra-linea: var(--barra-linea);
+  --color-cumple: var(--cumple);
+  --color-cumple-suave: var(--cumple-suave);
+  --color-parcial: var(--parcial);
+  --color-parcial-suave: var(--parcial-suave);
+  --color-nocumple: var(--nocumple);
+  --color-nocumple-suave: var(--nocumple-suave);
+  --color-noeval: var(--noeval);
+  --color-noeval-suave: var(--noeval-suave);
+
+  --shadow-tarjeta: var(--sombra);
+  --shadow-flotante: var(--sombra-flotante);
+}
+
+html {
+  background: var(--fondo);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  font-feature-settings: "ss01";
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+  letter-spacing: -0.012em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Números alineados en tablas, contadores y fechas. */
+table,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--acento-suave);
+  color: var(--texto);
+}
+
+/* Diálogo de ayuda: entra deslizando desde la derecha; sale más suave de lo que entra. */
+dialog.panel-ayuda {
+  margin: 0 0 0 auto;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: min(30rem, 100vw);
+  max-width: 100vw;
+  padding: 0;
+  border: 0;
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: var(--sombra-flotante);
+  opacity: 0;
+  translate: 2rem 0;
+  transition-property: opacity, translate, overlay, display;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  transition-behavior: allow-discrete;
+}
+
+dialog.panel-ayuda[open] {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@starting-style {
+  dialog.panel-ayuda[open] {
+    opacity: 0;
+    translate: 2rem 0;
+  }
+}
+
+dialog.panel-ayuda::backdrop {
+  background: rgb(9 16 26 / 0);
+  transition-property: background-color, overlay, display;
+  transition-duration: 200ms;
+  transition-behavior: allow-discrete;
+}
+
+dialog.panel-ayuda[open]::backdrop {
+  background: rgb(9 16 26 / 0.45);
+}
+
+@starting-style {
+  dialog.panel-ayuda[open]::backdrop {
+    background: rgb(9 16 26 / 0);
+  }
+}
+
+/* Marcador nativo de <details> fuera: cada acordeón dibuja su propio chevrón. */
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] > summary .chevron {
+  rotate: 90deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

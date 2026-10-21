@@ -1,0 +1,387 @@
+{
+  "titulo": "Guía de práctica: Clínica Los Robles S.A.",
+  "descripcion": "Escenarios para ver funcionar el instrumento con la empresa de demostración. En cada uno provocas un hallazgo con SQL, lo observas en el instrumento, lo corriges y confirmas que se cerró. Al final de cada escenario hay un bloque para dejar la base como estaba.",
+  "conexion_sql": "USUARIO1 en localhost:1521/pdb_clinica",
+  "preparacion": [
+    "Con Oracle abierto, ejecuta laboratorio/clinica/clinica_00_actividad_usuarios.sql con SQL*Plus como SYSDBA (pide clave_lab y clave_pdbadmin, ambas en %LOCALAPPDATA%\\AuditorISO\\credenciales_laboratorio.txt). Renueva el último acceso de los usuarios; si no, OBS-04 marcaría también a quienes lleven más de un día sin entrar.",
+    "Abre una sesión SQL como USUARIO1 (SQL Developer: host localhost, puerto 1521, nombre de servicio pdb_clinica). La contraseña es la clave_lab de %LOCALAPPDATA%\\AuditorISO\\credenciales_laboratorio.txt. El SQL de los escenarios se ejecuta con esa sesión salvo que se indique otra.",
+    "En el instrumento abre la clínica, ve al Dashboard y pulsa «Observar la base» con la etiqueta «base». Será tu punto de comparación."
+  ],
+  "escenarios": [
+    {
+      "id": "E1",
+      "titulo": "Un privilegio ANY: observar, corregir y re-observar",
+      "nivel": "básico",
+      "objetivo": "Provocar un hallazgo a propósito y ver cómo el instrumento lo detecta, propone el correctivo y confirma que se cerró.",
+      "observables": [
+        "OBS-10",
+        "OBS-07"
+      ],
+      "pasos": [
+        {
+          "tipo": "sql",
+          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "codigo": "GRANT SELECT ANY TABLE TO rrhh_01;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "En el Dashboard escribe la etiqueta «con-any» y pulsa «Observar la base»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-10 pasa de 1 a 2 hallazgos (DEV_USER y RRHH_01) y OBS-07 de 2 a 3. El control A8.2 sigue en No cumple."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "En la tabla de observables pulsa OBS-10 y mira la evidencia y el correctivo propuesto."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "La evidencia lista a RRHH_01 y el correctivo es REVOKE SELECT ANY TABLE FROM RRHH_01, con la nota de otorgar antes el acceso necesario mediante un rol."
+        },
+        {
+          "tipo": "sql",
+          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "codigo": "REVOKE SELECT ANY TABLE FROM rrhh_01;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa otra vez con la etiqueta «sin-any»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "RRHH_01 desaparece de OBS-10 y de OBS-07. Quedan DEV_USER (SELECT ANY TABLE) y APP_CLINICA (UNLIMITED TABLESPACE)."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "En la Matriz elige «con-any» como Antes y «sin-any» como Después."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "Los hallazgos de RRHH_01 ya no están, pero «Correctivo aplicado» de A8.2 dice «No»: ese texto solo cuenta observables que pasaron de No cumple a Cumple, y OBS-10 sigue con hallazgos por DEV_USER."
+        }
+      ],
+      "deshacer": "El REVOKE del paso 6 ya deja la base como estaba."
+    },
+    {
+      "id": "E2",
+      "titulo": "Cerrar un grant a PUBLIC",
+      "nivel": "básico",
+      "objetivo": "Corregir un hallazgo y ver cómo sube la madurez de un control, sin llegar todavía a Cumple.",
+      "observables": [
+        "OBS-02",
+        "OBS-03"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "En la tabla de observables pulsa OBS-02: hay un hallazgo, SELECT sobre CLINICA.PACIENTES otorgado a PUBLIC. Anota que A5.15 está en No cumple."
+        },
+        {
+          "tipo": "sql",
+          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "codigo": "REVOKE SELECT ON clinica.pacientes FROM PUBLIC;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «sin-public»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-02 pasa a Cumple. A5.15 sube de No cumple a Parcial: 1 de sus 2 observables está en Cumple, porque OBS-03 (grants directos a usuarios) sigue fallando."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "En la Matriz compara «base» con «sin-public»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "«Correctivo aplicado» de A5.15 dice «Sí: OBS-02». Para llegar a Cumple habría que pasar los grants directos de OBS-03 a roles funcionales."
+        }
+      ],
+      "deshacer": "GRANT SELECT ON clinica.pacientes TO PUBLIC;"
+    },
+    {
+      "id": "E3",
+      "titulo": "Quitar el rol DBA a la cuenta de la aplicación",
+      "nivel": "básico",
+      "objetivo": "Entender por qué un control con varios observables mejora de forma escalonada.",
+      "observables": [
+        "OBS-09",
+        "OBS-10",
+        "OBS-11",
+        "OBS-07"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "Anota el estado de A8.2 en la ejecución «base»: tiene 3 observables (OBS-09, OBS-10 y OBS-11) y solo OBS-11 cumple."
+        },
+        {
+          "tipo": "sql",
+          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "codigo": "REVOKE DBA FROM app_clinica;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «sin-dba»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-09 pasa a Cumple. A8.2 pasa de No cumple (1 de 3) a Parcial (2 de 3), porque OBS-10 sigue marcando a DEV_USER."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-07 baja de 2 a 1 hallazgo: APP_CLINICA ya no aparece porque el UNLIMITED TABLESPACE que traía el rol DBA se retira junto con él. Queda DEV_USER (SELECT ANY TABLE). Al deshacer con GRANT DBA, ese privilegio vuelve a concederse."
+        }
+      ],
+      "deshacer": "GRANT DBA TO app_clinica;"
+    },
+    {
+      "id": "E4",
+      "titulo": "Una cuenta con la contraseña por defecto de Oracle",
+      "nivel": "básico",
+      "objetivo": "Ver cómo un mismo observable alimenta dos controles (A5.16 y A5.17).",
+      "observables": [
+        "OBS-05"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "En el Dashboard, OBS-05 marca a SCOTT: conserva la contraseña por defecto TIGER."
+        },
+        {
+          "tipo": "sql",
+          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "codigo": "ALTER USER scott PASSWORD EXPIRE;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «sin-scott»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-05 pasa a Cumple: la cuenta ya no está OPEN (queda EXPIRED y deberá fijar una contraseña nueva al entrar). A5.16 queda en Cumple y A5.17 sube a Parcial, porque OBS-06 (el perfil) sigue fallando."
+        }
+      ],
+      "deshacer": "ALTER USER scott IDENTIFIED BY tiger ACCOUNT UNLOCK;"
+    },
+    {
+      "id": "E5",
+      "titulo": "Bloquear las cuentas inactivas",
+      "nivel": "intermedio",
+      "objetivo": "Corregir el hallazgo de identidades más típico: cuentas abiertas que nadie usa.",
+      "observables": [
+        "OBS-04"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "Requisito de tiempo: OBS-04 usa el umbral de 1 día de la empresa y EXEMPLEADO_01 y SCOTT se crearon el 20 de octubre. Hasta que pasen 24 horas desde su creación, OBS-04 no las marca. Ejecuta antes la actividad de usuarios de la preparación."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «inactivas»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-04 lista a EXEMPLEADO_01 y SCOTT con el último acceso «NUNCA». No aparecen los demás usuarios, porque iniciaron sesión hace poco."
+        },
+        {
+          "tipo": "sql",
+          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "codigo": "ALTER USER exempleado_01 ACCOUNT LOCK;\nALTER USER scott ACCOUNT LOCK;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «bloqueadas»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-04 pasa a Cumple: una cuenta bloqueada ya no está OPEN. Como SCOTT también deja de estar OPEN, OBS-05 pasa a Cumple y A5.16 sube a Cumple."
+        }
+      ],
+      "deshacer": "ALTER USER exempleado_01 ACCOUNT UNLOCK;\nALTER USER scott ACCOUNT UNLOCK;"
+    },
+    {
+      "id": "E6",
+      "titulo": "Endurecer el perfil de contraseñas",
+      "nivel": "intermedio",
+      "objetivo": "Ver el efecto de un parámetro de perfil y por qué conviene probarlo antes en producción.",
+      "observables": [
+        "OBS-06"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "Abre OBS-06: el perfil DEFAULT tiene 4 hallazgos (intentos fallidos, inactividad, vigencia y función de verificación)."
+        },
+        {
+          "tipo": "sql",
+          "conexion": "USUARIO1 en localhost:1521/pdb_clinica",
+          "codigo": "ALTER PROFILE default LIMIT failed_login_attempts 5 idle_time 30;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «perfil»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-06 baja de 4 a 2 hallazgos: quedan PASSWORD_LIFE_TIME y PASSWORD_VERIFY_FUNCTION. Cuidado: el perfil DEFAULT lo usan todos los usuarios de la PDB, y con 5 intentos las cuentas se bloquean antes."
+        }
+      ],
+      "deshacer": "ALTER PROFILE default LIMIT failed_login_attempts 10 idle_time unlimited;"
+    },
+    {
+      "id": "E7",
+      "titulo": "La política es de la empresa, no del instrumento",
+      "nivel": "intermedio",
+      "objetivo": "Comprobar que cambiar un umbral cambia el resultado sin tocar la base.",
+      "observables": [
+        "OBS-06"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "Ve al Pre-vuelo, a «Perfil de política de la empresa», y añade «max_intentos_fallidos»: 10 al JSON. Guarda."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «umbral-10»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "El hallazgo de FAILED_LOGIN_ATTEMPTS desaparece de OBS-06: el perfil DEFAULT tiene 10 intentos y la empresa acepta hasta 10. La base no cambió; cambió la política."
+        }
+      ],
+      "deshacer": "Quita «max_intentos_fallidos» del perfil de política y guarda."
+    },
+    {
+      "id": "E8",
+      "titulo": "Un control «No evaluable» no es un incumplimiento",
+      "nivel": "intermedio",
+      "objetivo": "Entender cómo reacciona el instrumento cuando el auditor no puede ver algo.",
+      "observables": [
+        "OBS-05"
+      ],
+      "pasos": [
+        {
+          "tipo": "sql",
+          "conexion": "SYS (SQL*Plus: sqlplus / as sysdba)",
+          "codigo": "ALTER SESSION SET CONTAINER = pdb_clinica;\nREVOKE SELECT ON sys.dba_users_with_defpwd FROM auditor_iso;"
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Ve al Pre-vuelo y pulsa «Ejecutar pre-vuelo»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-05 aparece en «Controles que quedarían No evaluable» con el motivo «El auditor no puede consultar: DBA_USERS_WITH_DEFPWD»."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «sin-vista»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-05 queda «No evaluable» con el motivo «El usuario auditor no tiene visibilidad suficiente para observar este control (ORA-00942)» y no cuenta ni a favor ni en contra: A5.16 se calcula con OBS-04 solamente."
+        }
+      ],
+      "deshacer": "ALTER SESSION SET CONTAINER = pdb_clinica;\nGRANT SELECT ON sys.dba_users_with_defpwd TO auditor_iso;"
+    },
+    {
+      "id": "E9",
+      "titulo": "Respaldos: la conexión de instancia",
+      "nivel": "intermedio",
+      "objetivo": "Ver por qué un control de instancia necesita observarse desde CDB$ROOT.",
+      "observables": [
+        "OBS-17",
+        "OBS-11",
+        "OBS-20",
+        "OBS-24"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "En el Pre-vuelo, sección «Conexión de instancia»: si está configurada, pulsa «Quitar». Observa con la etiqueta «sin-instancia»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-17 queda «No evaluable» (origen PDB): desde la PDB no se ve el catálogo de RMAN. A8.13 queda No evaluable."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Vuelve a guardar la conexión: conexión localhost:1521/XE, usuario C##AUDITOR_ISO y la clave_auditor_instancia del archivo de credenciales. Observa con la etiqueta «con-instancia»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-17 pasa a No cumple con origen «Instancia»: lista las piezas de respaldo recientes sin cifrar. OBS-11, OBS-20 y OBS-24 también se observan con origen «Instancia»."
+        }
+      ],
+      "deshacer": "Deja la conexión de instancia configurada: no modifica la base."
+    },
+    {
+      "id": "E10",
+      "titulo": "Descartar una columna que no es sensible",
+      "nivel": "básico",
+      "objetivo": "Ver cómo el descubrimiento y tu decisión como auditor alimentan varios controles.",
+      "observables": [
+        "OBS-01",
+        "OBS-15",
+        "OBS-22",
+        "OBS-23"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "Anota cuántos hallazgos tienen OBS-01, OBS-15 y OBS-22 en la ejecución «base» (15 cada uno) y OBS-23 (5)."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Ve a Descubrimiento, marca TELEFONO como «Descartada» en las dos tablas PACIENTES y pulsa «Guardar decisiones»."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Observa con la etiqueta «sin-telefono»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "OBS-01, OBS-15 y OBS-22 bajan de 15 a 13 hallazgos y OBS-23 de 5 a 4: la columna descartada ya no se evalúa."
+        }
+      ],
+      "deshacer": "En Descubrimiento cambia TELEFONO a «Confirmada» (cuenta igual que pendiente) y guarda."
+    },
+    {
+      "id": "E11",
+      "titulo": "Aceptación de riesgo documentada",
+      "nivel": "intermedio",
+      "objetivo": "Entender cuándo un control queda «Parcial justificado» y por qué nunca llega a Cumple por esa vía.",
+      "observables": [
+        "OBS-24"
+      ],
+      "pasos": [
+        {
+          "tipo": "instrumento",
+          "texto": "En el Dashboard, A8.8 está en Parcial con la nota «Parcial justificado»: el perfil acepta el riesgo de OBS-24 porque Oracle XE no recibe Release Updates."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "En el Pre-vuelo, quita «aceptaciones_riesgo» del perfil de política y guarda. Observa con la etiqueta «sin-aceptacion»."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "A8.8 pasa de Parcial a No cumple: sin la aceptación documentada, el hallazgo de OBS-24 cuenta completo."
+        },
+        {
+          "tipo": "instrumento",
+          "texto": "Restaura la aceptación en el perfil y observa otra vez."
+        },
+        {
+          "tipo": "esperado",
+          "texto": "A8.8 vuelve a Parcial, no a Cumple: aceptar un riesgo no lo elimina, solo lo documenta."
+        }
+      ],
+      "deshacer": "Restaura «aceptaciones_riesgo» en el perfil de política (el texto original está en laboratorio/clinica/perfil_clinica.json)."
+    }
+  ]
+}

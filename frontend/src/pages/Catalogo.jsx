@@ -1,15 +1,19 @@
+import { FlaskConical, Grid3x3, ListChecks, Search, SlidersHorizontal, TriangleAlert, Users } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import Aviso, { Cargando } from "../components/Aviso";
-import { cabecera, codigo, contenedorTabla, cuerpo, tabla, td, tarjeta, th } from "../components/estilos";
+import { cabecera, campo, codigo, codigoEnLinea, contenedorTabla, cuerpo, tabla, td, th } from "../components/estilos";
+import { BotonCopiar, Desplegable, Encabezado } from "../components/ui";
 import { useCarga } from "../hooks/useCarga";
 
 const PESTANAS = [
-  { id: "matriz", etiqueta: "Matriz-instrumento" },
-  { id: "riesgos", etiqueta: "Riesgos R-CONF" },
-  { id: "tareas", etiqueta: "Tareas del DBA" },
-  { id: "controles", etiqueta: "Controles ISO" },
-  { id: "perfil", etiqueta: "Perfil por defecto" },
+  { id: "matriz", etiqueta: "Matriz-instrumento", icono: ListChecks },
+  { id: "mapeo", etiqueta: "Mapeo de controles", icono: Grid3x3 },
+  { id: "bateria", etiqueta: "Batería de pruebas", icono: FlaskConical },
+  { id: "riesgos", etiqueta: "Riesgos R-CONF", icono: TriangleAlert },
+  { id: "tareas", etiqueta: "Tareas del DBA", icono: Users },
+  { id: "perfil", etiqueta: "Perfil por defecto", icono: SlidersHorizontal },
 ];
 
 function Tabla({ columnas, filas }) {
@@ -31,56 +35,126 @@ function Tabla({ columnas, filas }) {
   );
 }
 
-function MatrizInstrumento({ entradas }) {
+function Nota({ children }) {
+  return <p className="max-w-[80ch] text-sm text-texto-2">{children}</p>;
+}
+
+function Etiqueta({ children, mono = false }) {
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-slate-500 dark:text-slate-400">
-        Cada fila es un control evaluable. Agregar un control es agregar una entrada al catálogo y su archivo <code>.sql</code>, sin
-        tocar el código del sistema.
+    <span className={`rounded bg-superficie-2 px-1.5 py-0.5 text-xs text-texto-2 shadow-[inset_0_0_0_1px_var(--linea)] ${mono ? "font-mono" : ""}`}>
+      {children}
+    </span>
+  );
+}
+
+function BloqueCodigo({ titulo, texto }) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold">{titulo}</p>
+        <BotonCopiar texto={texto} />
+      </div>
+      <pre className={codigo}>{texto}</pre>
+    </div>
+  );
+}
+
+function MatrizInstrumento({ entradas }) {
+  const [busqueda, setBusqueda] = useState("");
+  const termino = busqueda.trim().toLowerCase();
+  const visibles = entradas.filter(
+    (e) => !termino || [e.id, e.control_iso, e.nombre, e.riesgo, e.tarea].some((v) => String(v).toLowerCase().includes(termino)),
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <Nota>
+          Cada entrada es un control evaluable. Agregar un control es agregar una entrada al catálogo y su archivo{" "}
+          <code className={codigoEnLinea}>.sql</code>, sin tocar el código del sistema.
+        </Nota>
+        <label className="relative w-full sm:w-72">
+          <span className="sr-only">Buscar en el catálogo</span>
+          <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-texto-3" />
+          <input
+            type="search"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="OBS-09, A8.2, R-CONF-01…"
+            className={`${campo} pl-9`}
+          />
+        </label>
+      </div>
+      <p className="text-sm text-texto-3 tabular" aria-live="polite">
+        {visibles.length} de {entradas.length} observables
       </p>
-      {entradas.map((e) => (
-        <details key={e.id} className={tarjeta}>
-          <summary className="cursor-pointer text-sm font-medium">
-            <span className="font-mono">{e.id}</span> · {e.control_iso} · {e.nombre}{" "}
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              ({e.riesgo} · {e.tarea} · {e.alcance} · severidad {e.severidad})
-            </span>
-          </summary>
-          <div className="mt-3 space-y-3 text-sm">
-            <p>
-              <span className="font-medium">Versión mínima:</span> Oracle {e.version_min} · <span className="font-medium">Regla:</span> cada
-              fila devuelta es un hallazgo · <span className="font-medium">Requiere:</span> {e.requiere.join(", ")}
-            </p>
-            <div>
-              <p className="mb-1 font-medium">Control observable (detectivo)</p>
-              <pre className={codigo}>{e.sql}</pre>
+      <div className="space-y-2">
+        {visibles.map((e) => (
+          <Desplegable
+            key={e.id}
+            resumen={
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+                <span className="font-mono text-sm font-semibold">{e.id}</span>
+                <span className="font-mono text-[0.8125rem] text-texto-2">{e.control_iso}</span>
+                <span className="min-w-0 basis-full font-medium sm:basis-auto sm:flex-1">{e.nombre}</span>
+                <span className="flex flex-wrap gap-1.5">
+                  <Etiqueta mono>{e.riesgo}</Etiqueta>
+                  <Etiqueta mono>{e.tarea}</Etiqueta>
+                  <Etiqueta>{e.alcance}</Etiqueta>
+                  <Etiqueta>Severidad {String(e.severidad).toLowerCase()}</Etiqueta>
+                </span>
+              </div>
+            }
+          >
+            <div className="space-y-5 text-sm">
+              <dl className="flex flex-wrap gap-x-8 gap-y-2">
+                <div>
+                  <dt className="text-xs text-texto-3">Versión mínima</dt>
+                  <dd className="font-medium">Oracle {e.version_min}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-texto-3">Regla</dt>
+                  <dd className="font-medium">Cada fila devuelta es un hallazgo</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-texto-3">Requiere</dt>
+                  <dd className="font-mono text-[0.8125rem]">{e.requiere.join(", ")}</dd>
+                </div>
+              </dl>
+              <BloqueCodigo titulo="Observable (control detectivo)" texto={e.sql} />
+              <div>
+                <BloqueCodigo
+                  titulo="Plantilla del correctivo"
+                  texto={
+                    e.correctivo.plantilla ??
+                    Object.entries(e.correctivo.plantillas)
+                      .map(([tipo, plantilla]) => `[${tipo}]\n${plantilla}`)
+                      .join("\n\n")
+                  }
+                />
+                {e.correctivo.nota && <p className="mt-2 text-texto-2">{e.correctivo.nota}</p>}
+              </div>
+              <div className="rounded-lg bg-cumple-suave px-4 py-3">
+                <p className="text-xs font-semibold text-cumple">Control preventivo</p>
+                <p className="mt-0.5 text-texto">{e.preventivo}</p>
+              </div>
+              {e.limitaciones && (
+                <p className="text-texto-2">
+                  <span className="font-semibold text-texto">Limitaciones:</span> {e.limitaciones}
+                </p>
+              )}
             </div>
-            <div>
-              <p className="mb-1 font-medium">Control correctivo (plantilla)</p>
-              <pre className={codigo}>
-                {e.correctivo.plantilla ?? Object.entries(e.correctivo.plantillas).map(([tipo, plantilla]) => `[${tipo}]\n${plantilla}`).join("\n\n")}
-              </pre>
-              {e.correctivo.nota && <p className="mt-1 text-slate-600 dark:text-slate-300">{e.correctivo.nota}</p>}
-            </div>
-            <p>
-              <span className="font-medium">Control preventivo:</span> {e.preventivo}
-            </p>
-            {e.limitaciones && (
-              <p className="text-slate-500 dark:text-slate-400">
-                <span className="font-medium">Limitaciones:</span> {e.limitaciones}
-              </p>
-            )}
-          </div>
-        </details>
-      ))}
+          </Desplegable>
+        ))}
+      </div>
     </div>
   );
 }
 
 const NIVELES = {
-  Bajo: "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200",
-  Medio: "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200",
-  Alto: "bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-200",
+  Bajo: "bg-cumple-suave text-cumple",
+  Medio: "bg-parcial-suave text-parcial",
+  Alto: "bg-nocumple-suave text-nocumple",
 };
 
 // Escala del plan: probabilidad 1-5 × impacto 1-5. 1-6 Bajo, 8-12 Medio, 15-25 Alto.
@@ -94,156 +168,250 @@ function MapaDeCalor({ riesgos }) {
   const probabilidades = [5, 4, 3, 2, 1];
   const impactos = [1, 2, 3, 4, 5];
   return (
-    <div role="img" aria-label="Mapa de calor de riesgos: probabilidad por impacto" className="inline-block">
-      <div className="grid grid-cols-[auto_repeat(5,4.5rem)] gap-1 text-xs">
-        {probabilidades.map((p) => (
-          <div key={p} className="contents">
-            <div className="flex items-center justify-end pr-2 text-slate-500 dark:text-slate-400">P {p}</div>
-            {impactos.map((i) => {
-              const aqui = riesgos.filter((r) => r.probabilidad === p && r.impacto === i);
-              return (
-                <div
-                  key={i}
-                  className={`flex h-14 flex-col items-center justify-center rounded ${NIVELES[clasificarNivel(p * i)]}`}
-                  title={`Probabilidad ${p} × impacto ${i} = ${p * i}`}
-                >
-                  {aqui.map((r) => (
-                    <span key={r.id} className="font-mono font-semibold">
-                      {r.id.replace("R-CONF-", "R")}
-                    </span>
-                  ))}
-                </div>
-              );
-            })}
+    <figure className="rounded-xl bg-superficie p-5 shadow-tarjeta">
+      <div role="img" aria-label="Mapa de calor de riesgos: probabilidad por impacto" className="overflow-x-auto">
+        <div className="inline-grid grid-cols-[1.5rem_auto_repeat(5,minmax(3.5rem,4.5rem))] gap-1 text-xs">
+          <div className="row-span-5 flex items-center justify-center">
+            <span className="-rotate-90 font-medium whitespace-nowrap text-texto-3">Probabilidad</span>
           </div>
-        ))}
-        <div />
-        {impactos.map((i) => (
-          <div key={i} className="text-center text-slate-500 dark:text-slate-400">
-            I {i}
-          </div>
-        ))}
+          {probabilidades.map((p) => (
+            <div key={p} className="contents">
+              <div className="flex items-center justify-end pr-1.5 font-medium text-texto-3 tabular">{p}</div>
+              {impactos.map((i) => {
+                const aqui = riesgos.filter((r) => r.probabilidad === p && r.impacto === i);
+                return (
+                  <div
+                    key={i}
+                    className={`flex h-14 flex-col items-center justify-center gap-0.5 rounded-md ${NIVELES[clasificarNivel(p * i)]}`}
+                    title={`Probabilidad ${p} × impacto ${i} = ${p * i}`}
+                  >
+                    {aqui.map((r) => (
+                      <span key={r.id} className="rounded bg-superficie px-1 font-mono text-[0.6875rem] font-bold text-texto shadow-tarjeta">
+                        {r.id.replace("R-CONF-", "R")}
+                      </span>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+          <div />
+          <div />
+          {impactos.map((i) => (
+            <div key={i} className="pt-1 text-center font-medium text-texto-3 tabular">
+              {i}
+            </div>
+          ))}
+          <div />
+          <div />
+          <div className="col-span-5 text-center font-medium text-texto-3">Impacto</div>
+        </div>
       </div>
-    </div>
+      <figcaption className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-texto-2">
+        {Object.entries(NIVELES).map(([nivel, clase]) => (
+          <span key={nivel} className="inline-flex items-center gap-1.5">
+            <span className={`size-3 rounded-sm ${clase}`} />
+            {nivel} ({nivel === "Bajo" ? "1-6" : nivel === "Medio" ? "8-12" : "15-25"})
+          </span>
+        ))}
+      </figcaption>
+    </figure>
   );
 }
 
 function Riesgos({ riesgos }) {
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-slate-500 dark:text-slate-400">
-        Escala: probabilidad 1-5 × impacto 1-5. Nivel: 1-6 Bajo · 8-12 Medio · 15-25 Alto.
-      </p>
+    <div className="space-y-5">
+      <Nota>Nivel = probabilidad (1-5) × impacto (1-5). De 1 a 6 es Bajo, de 8 a 12 es Medio y de 15 a 25 es Alto.</Nota>
       <MapaDeCalor riesgos={riesgos} />
-      {riesgos.map((r) => {
-        const clasificacion = r.nivel ? clasificarNivel(r.nivel) : null;
-        return (
-          <details key={r.id} className={tarjeta}>
-            <summary className="cursor-pointer text-sm font-medium">
-              <span className="font-mono">{r.id}</span> · {r.resumen}{" "}
-              {clasificacion && (
-                <span className={`ml-1 rounded-full px-2 py-0.5 text-xs ${NIVELES[clasificacion]}`}>
-                  {clasificacion} ({r.probabilidad} × {r.impacto} = {r.nivel})
-                </span>
-              )}
-            </summary>
-            <dl className="mt-3 space-y-2 text-sm">
-              {[
-                ["Descripción", r.descripcion],
-                ["Causa", r.causa],
-                ["Consecuencia", r.consecuencia],
-                ["Justificación de la escala", r.justificacion],
-                ["Relación con la Ley 8968", r.base_legal],
-              ].map(([titulo, texto]) => (
-                <div key={titulo}>
-                  <dt className="font-medium">{titulo}</dt>
-                  <dd className="text-slate-600 dark:text-slate-300">{texto ?? "—"}</dd>
+      <div className="space-y-2">
+        {riesgos.map((r) => {
+          const clasificacion = r.nivel ? clasificarNivel(r.nivel) : null;
+          return (
+            <Desplegable
+              key={r.id}
+              resumen={
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="font-mono text-sm font-semibold">{r.id}</span>
+                  <span className="min-w-0 flex-1 font-medium">{r.resumen}</span>
+                  {clasificacion && (
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold tabular ${NIVELES[clasificacion]}`}>
+                      {clasificacion}: {r.probabilidad} × {r.impacto} = {r.nivel}
+                    </span>
+                  )}
                 </div>
-              ))}
-            </dl>
-          </details>
-        );
-      })}
+              }
+            >
+              <dl className="grid gap-x-8 gap-y-4 text-sm md:grid-cols-2">
+                {[
+                  ["Descripción", r.descripcion],
+                  ["Causa", r.causa],
+                  ["Consecuencia", r.consecuencia],
+                  ["Justificación de la escala", r.justificacion],
+                  ["Relación con la Ley 8968", r.base_legal],
+                ].map(([titulo, texto]) => (
+                  <div key={titulo}>
+                    <dt className="font-semibold">{titulo}</dt>
+                    <dd className="mt-0.5 text-texto-2">{texto ?? "—"}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Desplegable>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export default function Catalogo() {
-  const [pestana, setPestana] = useState("matriz");
+  const [parametros, setParametros] = useSearchParams();
+  const pestana = PESTANAS.some((p) => p.id === parametros.get("vista")) ? parametros.get("vista") : "matriz";
   const catalogo = useCarga(api.catalogo, []);
   const riesgos = useCarga(api.riesgos, []);
   const tareas = useCarga(api.tareas, []);
-  const controles = useCarga(api.controlesIso, []);
+  const mapeo = useCarga(api.mapeo, []);
+  const bateria = useCarga(api.bateria, []);
   const perfil = useCarga(api.perfilDefault, []);
 
-  const error = catalogo.error || riesgos.error || tareas.error || controles.error || perfil.error;
+  const error = catalogo.error || mapeo.error || bateria.error || riesgos.error || tareas.error || perfil.error;
+  const cuentas = {
+    matriz: catalogo.datos?.length,
+    mapeo: mapeo.datos?.length,
+    bateria: bateria.datos?.length,
+    riesgos: riesgos.datos?.length,
+    tareas: tareas.datos?.length,
+  };
+  const actual = PESTANAS.find((p) => p.id === pestana);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold">Catálogo del instrumento</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          La matriz genérica: no conoce a ninguna empresa. Se aplica igual a cualquier base Oracle que se registre.
-        </p>
+    <div className="space-y-6">
+      <Encabezado
+        titulo="Catálogo del instrumento"
+        ayuda={`catalogo-${pestana}`}
+        descripcion="La parte genérica del instrumento: no conoce a ninguna empresa y se aplica igual a cualquier base Oracle que se registre."
+      />
+      <Aviso tono="error" titulo="No se pudo contactar con el backend">
+        {error}
+      </Aviso>
+
+      <div role="tablist" aria-label="Secciones del catálogo" className="-mx-1 flex gap-1 overflow-x-auto border-b border-linea px-1">
+        {PESTANAS.map(({ id, etiqueta, icono: Icono }) => {
+          const activa = pestana === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={`pestana-${id}`}
+              aria-selected={activa}
+              aria-controls="panel-catalogo"
+              onClick={() => setParametros({ vista: id }, { replace: true })}
+              className={`-mb-px inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 ${
+                activa ? "border-acento text-texto" : "border-transparent text-texto-3 hover:border-linea-fuerte hover:text-texto"
+              }`}
+            >
+              <Icono aria-hidden="true" className="size-4" />
+              {etiqueta}
+              {cuentas[id] !== undefined && <span className="text-xs text-texto-3 tabular">{cuentas[id]}</span>}
+            </button>
+          );
+        })}
       </div>
-      <Aviso tono="error">{error && `No se pudo contactar con el backend: ${error}`}</Aviso>
 
-      <div role="tablist" aria-label="Secciones del catálogo" className="flex flex-wrap gap-1 border-b border-slate-200 pb-2 dark:border-slate-800">
-        {PESTANAS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            role="tab"
-            aria-selected={pestana === p.id}
-            onClick={() => setPestana(p.id)}
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              pestana === p.id ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" : "hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            {p.etiqueta}
-          </button>
-        ))}
+      <div id="panel-catalogo" role="tabpanel" aria-labelledby={`pestana-${actual.id}`} className="space-y-4">
+        {pestana === "matriz" && (catalogo.datos ? <MatrizInstrumento entradas={catalogo.datos} /> : <Cargando />)}
+
+        {pestana === "riesgos" && (riesgos.datos ? <Riesgos riesgos={riesgos.datos} /> : <Cargando />)}
+
+        {pestana === "tareas" &&
+          (tareas.datos ? (
+            <>
+              <Nota>Las tareas críticas del DBA que ejecutan los controles, con su frecuencia y los riesgos que cubren.</Nota>
+              <Tabla
+                columnas={["ID", "Tarea", "Descripción", "Frecuencia", "Riesgos"]}
+                filas={tareas.datos.map((t) => (
+                  <tr key={t.id}>
+                    <td className={`${td} font-mono font-semibold`}>{t.id}</td>
+                    <td className={`${td} font-semibold whitespace-nowrap`}>{t.nombre}</td>
+                    <td className={`${td} min-w-72 text-[0.8125rem] text-texto-2`}>{t.descripcion ?? "—"}</td>
+                    <td className={`${td} min-w-32 text-[0.8125rem] text-texto-2`}>{t.frecuencia ?? "—"}</td>
+                    <td className={`${td} font-mono text-xs whitespace-nowrap text-texto-2`}>{t.riesgos_asociados.join(", ")}</td>
+                  </tr>
+                ))}
+              />
+            </>
+          ) : (
+            <Cargando />
+          ))}
+
+        {pestana === "mapeo" &&
+          (mapeo.datos ? (
+            <>
+              <Nota>
+                Para cada control: qué riesgo mitiga, qué tarea del DBA lo ejecuta, por qué su mecanismo funciona en Oracle, cómo se implementa y con
+                qué se comprueba.
+              </Nota>
+              <Tabla
+                columnas={["Control", "Riesgos", "Tareas", "Justificación del mecanismo", "Implementación en Oracle", "Evidencia observable", "Observables"]}
+                filas={mapeo.datos.map((m) => (
+                  <tr key={m.control_id}>
+                    <th scope="row" className={`${td} min-w-44 text-left font-semibold`}>
+                      <span className="font-mono">{m.control_id}</span> {m.nombre}
+                      {!m.nucleo && <span className="mt-1 block text-xs font-normal text-texto-3">Extra justificado</span>}
+                    </th>
+                    <td className={`${td} font-mono text-xs whitespace-nowrap text-texto-2`}>{m.riesgos.join(", ")}</td>
+                    <td className={`${td} min-w-36 text-xs text-texto-2`}>{m.tareas.join("; ")}</td>
+                    <td className={`${td} min-w-80 text-[0.8125rem]`}>{m.justificacion}</td>
+                    <td className={`${td} min-w-60 text-[0.8125rem] text-texto-2`}>{m.implementacion}</td>
+                    <td className={`${td} min-w-48 font-mono text-xs`}>{m.evidencia}</td>
+                    <td className={`${td} font-mono text-xs text-texto-2`}>{m.observables.join(", ")}</td>
+                  </tr>
+                ))}
+              />
+            </>
+          ) : (
+            <Cargando />
+          ))}
+
+        {pestana === "bateria" &&
+          (bateria.datos ? (
+            <>
+              <Nota>
+                Cada observable es una prueba de solo lectura. Las pruebas negativas que dependen de los usuarios de una empresa (por ejemplo, que
+                recepción no pueda leer expedientes) son opcionales y viven en el laboratorio de esa empresa.
+              </Nota>
+              <Tabla
+                columnas={["ID", "Control", "Tipo", "Procedimiento", "Resultado esperado", "Herramienta"]}
+                filas={bateria.datos.map((b) => (
+                  <tr key={b.id}>
+                    <td className={`${td} font-mono font-semibold`}>{b.id}</td>
+                    <td className={`${td} font-mono text-[0.8125rem]`}>{b.control_iso}</td>
+                    <td className={`${td} text-xs whitespace-nowrap text-texto-2`}>{b.tipo}</td>
+                    <td className={`${td} min-w-72 text-[0.8125rem]`}>{b.procedimiento}</td>
+                    <td className={`${td} min-w-64 text-[0.8125rem]`}>{b.resultado_esperado}</td>
+                    <td className={`${td} min-w-48 text-xs text-texto-2`}>{b.herramienta}</td>
+                  </tr>
+                ))}
+              />
+            </>
+          ) : (
+            <Cargando />
+          ))}
+
+        {pestana === "perfil" &&
+          (perfil.datos ? (
+            <>
+              <Nota>{perfil.datos.descripcion}</Nota>
+              <BloqueCodigo
+                titulo="Parámetros y patrones sensibles"
+                texto={JSON.stringify({ parametros: perfil.datos.parametros, patrones_sensibles: perfil.datos.patrones_sensibles }, null, 2)}
+              />
+            </>
+          ) : (
+            <Cargando />
+          ))}
       </div>
-
-      {pestana === "matriz" && (catalogo.datos ? <MatrizInstrumento entradas={catalogo.datos} /> : <Cargando />)}
-
-      {pestana === "riesgos" && riesgos.datos && <Riesgos riesgos={riesgos.datos} />}
-
-      {pestana === "tareas" && tareas.datos && (
-        <Tabla
-          columnas={["ID", "Tarea", "Descripción", "Frecuencia", "Riesgos asociados"]}
-          filas={tareas.datos.map((t) => (
-            <tr key={t.id}>
-              <td className={`${td} font-mono`}>{t.id}</td>
-              <td className={`${td} font-medium`}>{t.nombre}</td>
-              <td className={`${td} max-w-md text-xs`}>{t.descripcion ?? "—"}</td>
-              <td className={`${td} text-xs`}>{t.frecuencia ?? "—"}</td>
-              <td className={`${td} font-mono text-xs`}>{t.riesgos_asociados.join(", ")}</td>
-            </tr>
-          ))}
-        />
-      )}
-
-      {pestana === "controles" && controles.datos && (
-        <Tabla
-          columnas={["Control", "Nombre", "Tema", "Tipo"]}
-          filas={controles.datos.map((c) => (
-            <tr key={c.id}>
-              <td className={`${td} font-mono`}>{c.id}</td>
-              <td className={td}>{c.nombre}</td>
-              <td className={td}>{c.tema}</td>
-              <td className={td}>{c.nucleo ? "Núcleo (asignación)" : "Extra justificado"}</td>
-            </tr>
-          ))}
-        />
-      )}
-
-      {pestana === "perfil" && perfil.datos && (
-        <div className="space-y-2">
-          <p className="text-sm text-slate-500 dark:text-slate-400">{perfil.datos.descripcion}</p>
-          <pre className={codigo}>{JSON.stringify({ parametros: perfil.datos.parametros, patrones_sensibles: perfil.datos.patrones_sensibles }, null, 2)}</pre>
-        </div>
-      )}
     </div>
   );
 }

@@ -46,6 +46,19 @@ GRANT SELECT, UPDATE ON clinica.empleados TO rrhh_01;
 --                logra con no crearlas.
 -- OBS-22 | A8.24 TS_SENSIBLE sin cifrar (por defecto).
 
+-- OBS-05 | A5.16 y A5.17  Cuenta de ejemplo olvidada con la contrasena por defecto de Oracle.
+-- (Se mantiene ABIERTA y sin uso: tambien la veran OBS-04 y OBS-13.)
+CREATE USER scott IDENTIFIED BY tiger;
+GRANT CREATE SESSION TO scott;
+
+-- OBS-23 | A8.33 y A8.31  Clon de desarrollo con datos reales sin enmascarar (R-CONF-04).
+-- Vive en TS_SENSIBLE: un clon de datos reales tiene la misma sensibilidad que el original.
+CREATE USER clinica_dev NO AUTHENTICATION
+  DEFAULT TABLESPACE ts_sensible
+  QUOTA UNLIMITED ON ts_sensible;
+CREATE TABLE clinica_dev.pacientes TABLESPACE ts_sensible
+  AS SELECT * FROM clinica.pacientes;
+
 -- OBS-14 | A8.10 Tabla eliminada sin PURGE: queda en la papelera de reciclaje.
 -- Requiere que el parametro RECYCLEBIN este en ON (valor por defecto).
 CREATE TABLE clinica.tmp_exportacion TABLESPACE ts_sensible

@@ -43,16 +43,17 @@ Estados: **Cumple · Parcial · No cumple · No evaluable** (cuando el usuario a
 
 ```
 instrumento/                   GENÉRICO: sirve para cualquier empresa
-├── onboarding_auditor.sql     crea AUDITOR_ISO con privilegio mínimo
+├── onboarding_auditor.sql     crea AUDITOR_ISO con privilegio mínimo (en la PDB)
+├── onboarding_auditor_instancia.sql   opcional: C##AUDITOR_ISO para controles de instancia (CDB$ROOT)
 ├── catalogo_controles.json    la matriz-instrumento (24 observables)
 ├── controles_iso.json         los 15 controles núcleo + 4 extras justificados
 ├── riesgos.json, tareas.json  riesgos R-CONF y tareas del DBA que el catálogo referencia
 ├── perfil_politica_default.json   umbrales ISO y patrones de datos sensibles
 └── sql/observables/           un .sql por observable (OBS-01 … OBS-24)
-laboratorio/clinica/           SOLO para la demo en clase (ver su README)
+laboratorio/clinica/           SOLO para la demo en clase (ver su README); incluye guia_practica.json
 backend/                       FastAPI + python-oracledb (thin) + SQLite propio
-├── app/                       empresas, conexiones, prevuelo, descubrimiento, motor,
-│                              evaluacion, correctivos, reportes, catalogo, almacen, config, main
+├── app/                       empresas, conexiones, prevuelo, descubrimiento, motor, evaluacion,
+│                              correctivos, reportes, catalogo, laboratorios, almacen, config, main
 └── tests/                     pruebas automáticas (no requieren Oracle)
 frontend/                      React + Vite + Tailwind + Recharts
 docs/                          informe, marco teórico, tabla de uso de IA, referencias APA 7, evidencias
@@ -86,22 +87,31 @@ npm run dev                            # http://localhost:5173
 
 Pruebas del backend: `cd backend && python -m pytest`.
 
-## Ejecutable (todo en un clic)
+## Levantar todo con doble clic: `iniciar.cmd`
 
-`AuditorISO.exe` empaqueta backend, frontend y catálogo: levanta un solo servidor en `http://127.0.0.1:8000` (o el siguiente puerto libre), abre el navegador y no necesita Python ni Node en la máquina donde se usa.
+Desde la raíz del repositorio, doble clic en **`iniciar.cmd`** (o `iniciar.cmd` en una consola). Compila el frontend con el código actual, prepara el backend y abre el navegador en `http://127.0.0.1:8000` (o el siguiente puerto libre). Es un solo servidor: el backend sirve también el frontend.
 
-```powershell
-# Construir (desde la raíz del repositorio; requiere Python y Node)
-powershell -ExecutionPolicy Bypass -File scripts\construir_exe.ps1
-
-# Usar
-dist\AuditorISO\AuditorISO.exe
+```bat
+iniciar.cmd                   :: normal
+iniciar.cmd --puerto 9000     :: otro puerto
+iniciar.cmd --sin-navegador   :: sin abrir el navegador
 ```
 
-- Se distribuye la carpeta `dist\AuditorISO\` completa, no solo el `.exe`. Está en `.gitignore`.
-- Los datos (base SQLite de empresas y ejecuciones, y la llave de cifrado) viven en `%LOCALAPPDATA%\AuditorISO`, no en `dist\`: reconstruir el `.exe` no los borra. La primera vez se genera la llave; **respalde** `%LOCALAPPDATA%\AuditorISO\.env`, porque sin ella no se pueden descifrar las contraseñas guardadas.
-- Escucha solo en `127.0.0.1`. Opciones: `--puerto 9000` y `--sin-navegador`. Para detenerlo se cierra la ventana de consola.
-- En desarrollo, el mismo lanzador sirve sin empaquetar: compile el frontend (`npm run build`) y ejecute `python lanzador.py` dentro de `backend`.
+- Requiere Python 3.11+ y Node.js 20+ en el PATH. La primera vez tarda unos minutos porque instala dependencias; después arranca en segundos, y solo reinstala si cambian `frontend/package-lock.json` o `backend/requirements.txt`.
+- Los datos (base SQLite de empresas y ejecuciones, y la llave de cifrado) viven en `%LOCALAPPDATA%\AuditorISO`, los mismos que usa el `.exe`. El entorno virtual de Python también vive ahí, fuera del repositorio y de OneDrive. Para usar otra carpeta, defina `AUDITORIA_DATOS_DIR` antes de ejecutarlo.
+- La primera vez se genera la llave; **respalde** `%LOCALAPPDATA%\AuditorISO\.env`, porque sin ella no se pueden descifrar las contraseñas guardadas.
+- Escucha solo en `127.0.0.1`. Para detenerlo se cierra la ventana de consola (o Ctrl+C).
+
+### Ejecutable para una máquina sin Python ni Node (opcional)
+
+`AuditorISO.exe` empaqueta lo mismo en una carpeta que no necesita Python ni Node donde se usa. Solo hace falta para llevar el instrumento a otro equipo:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\construir_exe.ps1   # construir (requiere Python y Node)
+dist\AuditorISO\AuditorISO.exe                                       # usar
+```
+
+Se distribuye la carpeta `dist\AuditorISO\` completa, no solo el `.exe`. Comparte datos y llave con `iniciar.cmd`.
 
 ## Auditar una empresa nueva en 4 pasos
 
@@ -111,6 +121,14 @@ dist\AuditorISO\AuditorISO.exe
 4. **Re-observar** con otra ejecución y comparar en la *Matriz* (antes/después, exportable a CSV).
 
 La demostración con la clínica ficticia sigue el mismo flujo: ver [`laboratorio/clinica/README.md`](laboratorio/clinica/README.md).
+
+### Conexión de instancia (opcional)
+
+Cuatro controles son de alcance *Instancia* (respaldos, `AUDIT_SYS_OPERATIONS` y password file, sesiones sin cifrar, parches) y no se ven desde una PDB. Si la empresa registra una segunda conexión a `CDB$ROOT` con un usuario común creado con `instrumento/onboarding_auditor_instancia.sql`, esos observables se ejecutan ahí y su resultado indica el origen («PDB» o «Instancia»). Sin ella, el instrumento no inventa nada: los reporta «No evaluable» con el motivo.
+
+### Guías y práctica
+
+Cada pantalla trae el panel plegable «¿Qué es esto y cómo lo pruebo?» y la pantalla *Práctica* lista escenarios con resultado esperado para la empresa de demostración. En el Catálogo, las pestañas *Mapeo de controles* y *Batería de pruebas* muestran la justificación de cada control y cómo se prueba.
 
 ## Coherencia: el instrumento aplica lo que audita
 

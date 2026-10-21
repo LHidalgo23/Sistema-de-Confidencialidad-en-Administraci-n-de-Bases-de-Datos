@@ -13,6 +13,9 @@ from app.motor import ResultadoObservable
 class _ConexionFalsa:
     version = "21.3.0.0.0"
 
+    def __init__(self, instancia=False):
+        self.instancia = instancia
+
     def close(self):
         pass
 
@@ -21,7 +24,7 @@ class _ConexionFalsa:
 def oracle_falso(monkeypatch, catalogo):
     import app.main as principal
 
-    monkeypatch.setattr(principal, "abrir_conexion", lambda fila, password=None: _ConexionFalsa())
+    monkeypatch.setattr(principal, "abrir_conexion", lambda fila, password=None, *, instancia=False: _ConexionFalsa(instancia))
     monkeypatch.setattr(prevuelo, "leer_contexto", lambda con: {"contenedor": "PDB_DEMO", "con_id": 3, "tipo_contenedor": "PDB", "usuario": "AUDITOR_ISO"})
     monkeypatch.setattr(descubrimiento, "esquemas_de_negocio", lambda con: [{"esquema": "APP", "tablas": 2}])
     monkeypatch.setattr(
@@ -32,9 +35,10 @@ def oracle_falso(monkeypatch, catalogo):
         ],
     )
 
-    estado = {"fallan": {"OBS-09": [{"grantee": "APP_X", "con_admin_option": "NO"}], "OBS-24": [{"version": "XE", "ultimo_parche": "SIN REGISTRO", "dias": "N/D"}]}, "no_evaluables": {"OBS-21"}}
+    estado = {"instancia_usada": None, "fallan": {"OBS-09": [{"grantee": "APP_X", "con_admin_option": "NO"}], "OBS-24": [{"version": "XE", "ultimo_parche": "SIN REGISTRO", "dias": "N/D"}]}, "no_evaluables": {"OBS-21"}}
 
-    def auditar_falso(conexion, cat, parametros, *, version_servidor, max_filas=None):
+    def auditar_falso(conexion, cat, parametros, *, version_servidor, conexion_instancia=None, max_filas=None):
+        estado["instancia_usada"] = conexion_instancia is not None
         resultados = []
         for entrada in cat.entradas:
             if entrada.id in estado["fallan"]:
@@ -204,3 +208,60 @@ def test_descubrimiento_confirmacion_y_persistencia(cliente, oracle_falso):
 def test_el_csv_neutraliza_formulas():
     csv = reportes.matriz_csv([{k: "=HYPERLINK(\"x\")" if k == "hallazgo" else "v" for k, _ in reportes.COLUMNAS_CSV}])
     assert "'=HYPERLINK" in csv
+
+
+def test_endpoints_de_mapeo_y_bateria(cliente):
+    mapeo = cliente.get("/api/mapeo").json()
+    assert len(mapeo) == 19 and all(m["justificacion"] for m in mapeo)
+    bateria = cliente.get("/api/bateria").json()
+    assert len(bateria) == 24 and bateria[0]["tipo"]
+
+
+# ---------------------------------------------------------------- conexión de instancia (CDB$ROOT)
+def test_la_conexion_de_instancia_se_guarda_cifrada_y_no_se_expone(cliente):
+    empresa = _registrar(cliente).json()
+    assert empresa["instancia_configurada"] is False
+
+    respuesta = cliente.put(
+        f"/api/empresas/{empresa['id']}/instancia",
+        json={"dsn": "localhost:1521/XE", "usuario": "C##AUDITOR_ISO", "password": "secreto-inst-9"},
+    )
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+    assert cuerpo["instancia_configurada"] is True and cuerpo["credenciales_instancia_guardadas"] is True
+    assert cuerpo["usuario_instancia"] == "C##AUDITOR_ISO" and cuerpo["dsn_instancia"] == "localhost:1521/XE"
+    assert "secreto-inst-9" not in respuesta.text
+    assert b"secreto-inst-9" not in get_config().db_path.read_bytes()
+
+    quitada = cliente.delete(f"/api/empresas/{empresa['id']}/instancia").json()
+    assert quitada["instancia_configurada"] is False and quitada["dsn_instancia"] is None
+
+
+def test_la_conexion_de_instancia_valida_el_dsn_y_conserva_la_clave_guardada(cliente):
+    empresa = _registrar(cliente).json()
+    ruta = f"/api/empresas/{empresa['id']}/instancia"
+    assert cliente.put(ruta, json={"dsn": "no-es-un-dsn", "usuario": "C##X"}).status_code == 422
+    cliente.put(ruta, json={"dsn": "localhost:1521/XE", "usuario": "C##X", "password": "uno-uno-1"})
+    cambiada = cliente.put(ruta, json={"dsn": "localhost:1521/XE2", "usuario": "C##X"}).json()
+    assert cambiada["dsn_instancia"] == "localhost:1521/XE2" and cambiada["credenciales_instancia_guardadas"] is True
+
+
+def test_se_puede_registrar_la_empresa_con_conexion_de_instancia(cliente):
+    respuesta = _registrar(cliente, instancia={"dsn": "localhost:1521/XE", "usuario": "C##AUDITOR_ISO", "password": "otra-clave-2"})
+    assert respuesta.status_code == 201 and respuesta.json()["instancia_configurada"] is True
+
+
+def test_la_auditoria_usa_la_conexion_de_instancia_solo_si_esta_configurada(cliente, oracle_falso):
+    empresa = _registrar(cliente).json()
+    cliente.post(f"/api/empresas/{empresa['id']}/auditar", json={})
+    assert oracle_falso["instancia_usada"] is False
+
+    cliente.put(f"/api/empresas/{empresa['id']}/instancia", json={"dsn": "localhost:1521/XE", "usuario": "C##AUDITOR_ISO", "password": "clave-inst-3"})
+    cliente.post(f"/api/empresas/{empresa['id']}/auditar", json={})
+    assert oracle_falso["instancia_usada"] is True
+
+
+def test_el_origen_de_cada_observable_se_guarda_y_se_devuelve(cliente, oracle_falso):
+    empresa = _registrar(cliente).json()
+    resumen = cliente.post(f"/api/empresas/{empresa['id']}/auditar", json={}).json()
+    assert {o["origen"] for o in resumen["observables"]} == {"PDB"}

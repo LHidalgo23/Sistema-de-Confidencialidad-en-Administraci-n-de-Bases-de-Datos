@@ -67,7 +67,7 @@
 | `RECEPCION_01` | Recepción | `ROL_RECEPCION` (sin acceso a `EXPEDIENTES`) |
 | `RRHH_01` | Recursos humanos | `ROL_RRHH` (salarios) |
 | `DEV_USER` | Desarrollador | `ROL_DESARROLLO` (datos redactados) |
-| `DBA_JSANCHEZ` | DBA nominal | DBA sin usar `SYSTEM` para el día a día |
+| `USUARIO1` | DBA nominal | DBA sin usar `SYSTEM` para el día a día |
 | `BACKUP_OP` | Operador de respaldos | `SYSBACKUP` (separación de funciones) |
 | `AUDITOR_APP` | Sistema de auditoría | Solo lectura de catálogo y auditoría |
 

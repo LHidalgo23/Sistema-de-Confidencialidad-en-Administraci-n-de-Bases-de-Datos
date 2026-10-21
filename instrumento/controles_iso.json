@@ -1,21 +1,173 @@
 [
-  { "id": "A5.12", "nombre": "Clasificación de la información", "tema": "Organizacional", "nucleo": true },
-  { "id": "A5.15", "nombre": "Control de acceso", "tema": "Organizacional", "nucleo": true },
-  { "id": "A5.16", "nombre": "Gestión de identidades", "tema": "Organizacional", "nucleo": true },
-  { "id": "A5.17", "nombre": "Información de autenticación", "tema": "Organizacional", "nucleo": true },
-  { "id": "A5.18", "nombre": "Derechos de acceso", "tema": "Organizacional", "nucleo": true },
-  { "id": "A5.33", "nombre": "Protección de registros", "tema": "Organizacional", "nucleo": true },
-  { "id": "A8.2", "nombre": "Derechos de acceso privilegiado", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.3", "nombre": "Restricción del acceso a la información", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.5", "nombre": "Autenticación segura", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.10", "nombre": "Eliminación de la información", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.11", "nombre": "Enmascaramiento de datos", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.12", "nombre": "Prevención de la fuga de datos", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.13", "nombre": "Respaldo de la información", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.15", "nombre": "Registro", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.20", "nombre": "Seguridad de redes", "tema": "Tecnológico", "nucleo": true },
-  { "id": "A8.24", "nombre": "Uso de criptografía", "tema": "Tecnológico", "nucleo": false },
-  { "id": "A8.8", "nombre": "Gestión de vulnerabilidades técnicas", "tema": "Tecnológico", "nucleo": false },
-  { "id": "A8.31", "nombre": "Separación de los entornos de desarrollo, prueba y producción", "tema": "Tecnológico", "nucleo": false },
-  { "id": "A8.33", "nombre": "Información de prueba", "tema": "Tecnológico", "nucleo": false }
+  {
+    "id": "A5.12",
+    "nombre": "Clasificación de la información",
+    "tema": "Organizacional",
+    "nucleo": true,
+    "justificacion": "Sin saber qué columnas son sensibles no se puede decidir cuáles proteger con VPD, redaction, cifrado o auditoría, y el riesgo R-CONF-01 queda sin delimitar. El instrumento descubre las columnas por metadatos y exige que cada una quede clasificada en un comentario de columna, una evidencia que cualquier auditor consulta sin leer datos.",
+    "implementacion": "Comentario de columna con el marcador y el nivel de clasificación (COMMENT ON COLUMN ... IS 'CLASIFICACION: ...'), mantenido por el dueño del dato.",
+    "evidencia": "DBA_COL_COMMENTS (OBS-01)"
+  },
+  {
+    "id": "A5.15",
+    "nombre": "Control de acceso",
+    "tema": "Organizacional",
+    "nucleo": true,
+    "justificacion": "R-CONF-01 nace de privilegios otorgados por conveniencia. Revocar los grants a PUBLIC y pasar los directos a roles funcionales hace que el acceso dependa de la función del puesto y no de la persona, y que se pueda revisar en un solo lugar.",
+    "implementacion": "Roles funcionales (CREATE ROLE, GRANT sobre el rol) y REVOKE de los privilegios otorgados a PUBLIC y a usuarios concretos.",
+    "evidencia": "DBA_TAB_PRIVS (OBS-02, OBS-03)"
+  },
+  {
+    "id": "A5.16",
+    "nombre": "Gestión de identidades",
+    "tema": "Organizacional",
+    "nucleo": true,
+    "justificacion": "Una cuenta olvidada o con la contraseña por defecto es una puerta con identidad legítima (R-CONF-02). Bloquear las inactivas y detectar las contraseñas por defecto la cierra y mantiene una cuenta nominal por persona.",
+    "implementacion": "ALTER USER ... ACCOUNT LOCK para las inactivas, ALTER USER ... PASSWORD EXPIRE para las que conservan la contraseña por defecto y cuentas nominales.",
+    "evidencia": "DBA_USERS (ACCOUNT_STATUS, LAST_LOGIN) y DBA_USERS_WITH_DEFPWD (OBS-04, OBS-05)"
+  },
+  {
+    "id": "A5.17",
+    "nombre": "Información de autenticación",
+    "tema": "Organizacional",
+    "nucleo": true,
+    "justificacion": "Un perfil con función de verificación, límite de intentos, vigencia e IDLE_TIME hace que sea el motor, y no la buena voluntad del usuario, quien imponga contraseñas robustas y sesiones que expiran (R-CONF-02). IDLE_TIME corta las sesiones olvidadas que se usan como puerta de acceso.",
+    "implementacion": "CREATE o ALTER PROFILE con FAILED_LOGIN_ATTEMPTS, PASSWORD_LIFE_TIME, IDLE_TIME y PASSWORD_VERIFY_FUNCTION, asignado a las cuentas.",
+    "evidencia": "DBA_PROFILES y DBA_USERS_WITH_DEFPWD (OBS-05, OBS-06)"
+  },
+  {
+    "id": "A5.18",
+    "nombre": "Derechos de acceso",
+    "tema": "Organizacional",
+    "nucleo": true,
+    "justificacion": "Los privilegios de sistema otorgados directamente se acumulan sin revisión y rompen el mínimo privilegio (R-CONF-01). Llevarlos a roles revisables permite la revisión periódica de derechos que exige el control.",
+    "implementacion": "Revisión trimestral de DBA_SYS_PRIVS y DBA_ROLE_PRIVS; los privilegios de sistema se otorgan solo mediante roles.",
+    "evidencia": "DBA_SYS_PRIVS (OBS-07)"
+  },
+  {
+    "id": "A5.33",
+    "nombre": "Protección de registros",
+    "tema": "Organizacional",
+    "nucleo": true,
+    "justificacion": "La pista de auditoría solo sirve si no puede alterarse ni perderse (R-CONF-05). Restringir AUDIT_ADMIN a un DBA nominal separa a quien audita de quien administra los datos, y el trabajo de purga programado controla cuánto tiempo se conserva.",
+    "implementacion": "AUDIT_ADMIN solo para cuentas autorizadas y DBMS_AUDIT_MGMT (marca de tiempo de archivo y trabajo de purga) para la retención.",
+    "evidencia": "DBA_ROLE_PRIVS y DBA_AUDIT_MGMT_CLEANUP_JOBS (OBS-08)"
+  },
+  {
+    "id": "A8.2",
+    "nombre": "Derechos de acceso privilegiado",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "El rol DBA y los privilegios ANY dan acceso a todos los datos de todos los esquemas (R-CONF-01). Limitarlos a cuentas nominales autorizadas, y auditar las operaciones de SYS, deja trazabilidad del acceso más peligroso (R-CONF-05).",
+    "implementacion": "REVOKE del rol DBA y de los privilegios ANY, AUDIT_SYS_OPERATIONS = TRUE y roles SYSBACKUP, SYSDG o SYSKM para separar funciones.",
+    "evidencia": "DBA_ROLE_PRIVS, DBA_SYS_PRIVS, V$PARAMETER y V$PWFILE_USERS (OBS-09, OBS-10, OBS-11)"
+  },
+  {
+    "id": "A8.3",
+    "nombre": "Restricción del acceso a la información",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "Aunque un usuario tenga SELECT sobre una tabla, VPD agrega a cada sentencia un predicado automático que filtra las filas según quién consulta; así un médico solo ve a sus pacientes y no los de otro médico (R-CONF-01).",
+    "implementacion": "DBMS_RLS.ADD_POLICY con una función de predicado que define el negocio.",
+    "evidencia": "DBA_POLICIES (OBS-12)"
+  },
+  {
+    "id": "A8.5",
+    "nombre": "Autenticación segura",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "Los hashes de contraseña 10G y 11G son débiles frente a la fuerza bruta (R-CONF-02): quien obtenga una copia de la tabla de usuarios los descifra con facilidad. Exigir hashes 12C reduce el valor de esa copia.",
+    "implementacion": "SQLNET.ALLOWED_LOGON_VERSION_SERVER en 12 o superior y renovación de las contraseñas para regenerar los hashes.",
+    "evidencia": "DBA_USERS.PASSWORD_VERSIONS (OBS-13)"
+  },
+  {
+    "id": "A8.10",
+    "nombre": "Eliminación de la información",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "Un DROP TABLE sin PURGE no elimina nada: los datos siguen en la papelera y en los datafiles (R-CONF-03). PURGE, y DELETE OBSOLETE para los respaldos, cierran esa copia residual.",
+    "implementacion": "DROP ... PURGE, PURGE de la papelera o del tablespace y RMAN DELETE OBSOLETE.",
+    "evidencia": "DBA_RECYCLEBIN (OBS-14)"
+  },
+  {
+    "id": "A8.11",
+    "nombre": "Enmascaramiento de datos",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "Con Data Redaction, quien consulta recibe la cédula, el salario o el IBAN ya redactados aunque tenga SELECT: desarrolladores y soporte trabajan sin ver el dato real (R-CONF-04).",
+    "implementacion": "DBMS_REDACT.ADD_POLICY (FULL, PARTIAL o REGEXP) con una expresión que decide a quién se redacta.",
+    "evidencia": "REDACTION_COLUMNS y REDACTION_POLICIES (OBS-15)"
+  },
+  {
+    "id": "A8.12",
+    "nombre": "Prevención de la fuga de datos",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "UTL_FILE, UTL_HTTP y los directorios abiertos a PUBLIC permiten a cualquier cuenta sacar datos del servidor (R-CONF-03). Revocarlos y restringir Data Pump cierra los canales de salida.",
+    "implementacion": "REVOKE EXECUTE ON UTL_* FROM PUBLIC, privilegios de DIRECTORY por cuenta y roles de Data Pump restringidos.",
+    "evidencia": "DBA_TAB_PRIVS, DBA_DIRECTORIES y DBA_ROLE_PRIVS (OBS-16)"
+  },
+  {
+    "id": "A8.13",
+    "nombre": "Respaldo de la información",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "Un respaldo es una copia completa de la base fuera de sus controles de acceso (R-CONF-03). Cifrarlo con AES256 hace que robar el archivo no entregue los datos; el cifrado transparente de RMAN usa la llave maestra del keystore de TDE.",
+    "implementacion": "RMAN: CONFIGURE ENCRYPTION FOR DATABASE ON y CONFIGURE ENCRYPTION ALGORITHM 'AES256', con el keystore abierto durante el respaldo.",
+    "evidencia": "V$BACKUP_PIECE.ENCRYPTED (OBS-17)"
+  },
+  {
+    "id": "A8.15",
+    "nombre": "Registro",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "Sin auditoría unificada no hay forma de saber quién leyó un expediente ni quién otorgó un privilegio (R-CONF-05). Las políticas sobre tablas sensibles, logons fallidos y GRANT/REVOKE dejan ese rastro.",
+    "implementacion": "CREATE AUDIT POLICY y AUDIT POLICY sobre las tablas sensibles y las acciones privilegiadas.",
+    "evidencia": "AUDIT_UNIFIED_POLICIES y AUDIT_UNIFIED_ENABLED_POLICIES (OBS-18, OBS-19)"
+  },
+  {
+    "id": "A8.20",
+    "nombre": "Seguridad de redes",
+    "tema": "Tecnológico",
+    "nucleo": true,
+    "justificacion": "Sin cifrado de Oracle Net, las credenciales y los resultados de las consultas viajan en claro (R-CONF-06). SQLNET.ENCRYPTION_SERVER cifra el tráfico y la validación de nodos limita quién puede conectarse al listener.",
+    "implementacion": "sqlnet.ora: SQLNET.ENCRYPTION_SERVER, SQLNET.CRYPTO_CHECKSUM_SERVER y TCP.VALIDNODE_CHECKING con TCP.INVITED_NODES.",
+    "evidencia": "V$SESSION_CONNECT_INFO (OBS-20)"
+  },
+  {
+    "id": "A8.24",
+    "nombre": "Uso de criptografía",
+    "tema": "Tecnológico",
+    "nucleo": false,
+    "justificacion": "TDE cifra los archivos de datos: quien copie TS_SENSIBLE obtiene bytes ilegibles (R-CONF-03). Exige un keystore abierto con llave maestra y la custodia de esa llave; sin ella, los datos cifrados se pierden.",
+    "implementacion": "WALLET_ROOT, keystore, llave maestra y ALTER TABLESPACE ... ENCRYPTION con AES256.",
+    "evidencia": "V$ENCRYPTION_WALLET y DBA_TABLESPACES.ENCRYPTED (OBS-21, OBS-22)"
+  },
+  {
+    "id": "A8.8",
+    "nombre": "Gestión de vulnerabilidades técnicas",
+    "tema": "Tecnológico",
+    "nucleo": false,
+    "justificacion": "Un motor sin parches acumula vulnerabilidades conocidas que anulan los demás controles (R-CONF-03). Inventariar la versión y la fecha del último parche vuelve visible esa deuda; en Oracle XE, que no recibe Release Updates, el riesgo se acepta de forma documentada.",
+    "implementacion": "Release Updates con OPatch y datapatch; en XE, aceptación de riesgo con plan de migración a una edición con soporte de parches.",
+    "evidencia": "V$VERSION y DBA_REGISTRY_SQLPATCH (OBS-24)"
+  },
+  {
+    "id": "A8.31",
+    "nombre": "Separación de los entornos de desarrollo, prueba y producción",
+    "tema": "Tecnológico",
+    "nucleo": false,
+    "justificacion": "Mezclar desarrollo, prueba y producción con las mismas credenciales expone datos reales a más personas (R-CONF-04). La convención de esquemas no productivos permite detectar cuándo hay datos sensibles fuera de producción.",
+    "implementacion": "Esquemas o bases separados por ambiente, con sus propios usuarios y sin acceso cruzado.",
+    "evidencia": "DBA_USERS, DBA_TABLES y la convención de nombre de esquema (OBS-23)"
+  },
+  {
+    "id": "A8.33",
+    "nombre": "Información de prueba",
+    "tema": "Tecnológico",
+    "nucleo": false,
+    "justificacion": "Los datos de prueba deben ser ficticios o estar enmascarados (R-CONF-04). Un clon de desarrollo enmascarado, o protegido con redaction, evita que un desarrollador vea cédulas reales.",
+    "implementacion": "Enmascarar en el refresco del clon (DBMS_RANDOM o UPDATE con valores ficticios) o aplicar Data Redaction, y registrar el marcador de enmascarado.",
+    "evidencia": "REDACTION_COLUMNS y DBA_COL_COMMENTS (OBS-23)"
+  }
 ]

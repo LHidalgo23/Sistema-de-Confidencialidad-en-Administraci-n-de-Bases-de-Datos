@@ -28,6 +28,7 @@ from .conexiones import (
 )
 from .correctivos import ErrorRender, generar_script, renderizar
 from .evaluacion import ResultadoControl
+from .laboratorios import cargar_guias
 from .frontend import montar_frontend
 from .modelos import (
     AuditarPeticion,
@@ -36,6 +37,7 @@ from .modelos import (
     EmpresaCrear,
     EmpresaPublica,
     Estado,
+    InstanciaCrear,
     RevisionPeticion,
 )
 
@@ -78,9 +80,9 @@ async def _duplicado(_: Request, exc: Exception) -> JSONResponse:
 
 
 @contextmanager
-def _conexion_empresa(fila, password: str | None) -> Iterator[oracledb.Connection]:
+def _conexion_empresa(fila, password: str | None, *, instancia: bool = False) -> Iterator[oracledb.Connection]:
     try:
-        conexion = abrir_conexion(fila, password)
+        conexion = abrir_conexion(fila, password, instancia=instancia)
     except CredencialesFaltantes as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
     except ConexionFallida as exc:
@@ -89,6 +91,17 @@ def _conexion_empresa(fila, password: str | None) -> Iterator[oracledb.Connectio
         yield conexion
     finally:
         conexion.close()
+
+
+@contextmanager
+def _conexiones(fila, credencial: Credencial) -> Iterator[tuple[oracledb.Connection, oracledb.Connection | None]]:
+    """Conexión a la PDB y, si la empresa la configuró, conexión de instancia a CDB$ROOT."""
+    with _conexion_empresa(fila, credencial.password) as pdb:
+        if fila["dsn_instancia"] and fila["usuario_instancia"]:
+            with _conexion_empresa(fila, credencial.password_instancia, instancia=True) as instancia:
+                yield pdb, instancia
+        else:
+            yield pdb, None
 
 
 def _oracle_a_http(exc: oracledb.Error, accion: str) -> HTTPException:
@@ -114,6 +127,22 @@ def obtener_catalogo(catalogo: Catalogo = Depends(get_catalogo)) -> list[dict[st
 @app.get("/api/controles-iso")
 def obtener_controles_iso(catalogo: Catalogo = Depends(get_catalogo)):
     return catalogo.controles_iso
+
+
+@app.get("/api/mapeo")
+def obtener_mapeo(catalogo: Catalogo = Depends(get_catalogo)) -> list[dict[str, Any]]:
+    return catalogo.mapeo()
+
+
+@app.get("/api/bateria")
+def obtener_bateria(catalogo: Catalogo = Depends(get_catalogo)) -> list[dict[str, Any]]:
+    return catalogo.bateria()
+
+
+@app.get("/api/laboratorios")
+def obtener_laboratorios() -> list[dict[str, Any]]:
+    """Guías de práctica de las empresas de demostración (laboratorio/<empresa>/guia_practica.json)."""
+    return cargar_guias(get_config().laboratorio_dir)
 
 
 @app.get("/api/riesgos")
@@ -154,12 +183,25 @@ def actualizar_perfil(empresa_id: int, perfil: dict, catalogo: Catalogo = Depend
     return empresas.actualizar_perfil(empresa_id, perfil, catalogo.perfil_default)
 
 
+@app.put("/api/empresas/{empresa_id}/instancia", response_model=EmpresaPublica)
+def configurar_instancia(empresa_id: int, datos: InstanciaCrear):
+    return empresas.configurar_instancia(empresa_id, datos)
+
+
+@app.delete("/api/empresas/{empresa_id}/instancia", response_model=EmpresaPublica)
+def quitar_instancia(empresa_id: int):
+    return empresas.quitar_instancia(empresa_id)
+
+
 @app.post("/api/empresas/{empresa_id}/probar")
 def probar_conexion(empresa_id: int, credencial: Credencial):
     fila = empresas.obtener_empresa(empresa_id)
-    with _conexion_empresa(fila, credencial.password) as conexion:
+    with _conexiones(fila, credencial) as (conexion, instancia):
         try:
-            return {"conectado": True, "version": conexion.version, **prevuelo.leer_contexto(conexion)}
+            respuesta = {"conectado": True, "version": conexion.version, **prevuelo.leer_contexto(conexion)}
+            if instancia is not None:
+                respuesta["instancia"] = prevuelo.leer_contexto(instancia)
+            return respuesta
         except oracledb.Error as exc:
             raise _oracle_a_http(exc, "probar la conexión") from None
 
@@ -167,9 +209,9 @@ def probar_conexion(empresa_id: int, credencial: Credencial):
 @app.post("/api/empresas/{empresa_id}/prevuelo")
 def ejecutar_prevuelo(empresa_id: int, credencial: Credencial, catalogo: Catalogo = Depends(get_catalogo)):
     fila = empresas.obtener_empresa(empresa_id)
-    with _conexion_empresa(fila, credencial.password) as conexion:
+    with _conexiones(fila, credencial) as (conexion, instancia):
         try:
-            return prevuelo.ejecutar_prevuelo(conexion, catalogo)
+            return prevuelo.ejecutar_prevuelo(conexion, catalogo, instancia)
         except oracledb.Error as exc:
             raise _oracle_a_http(exc, "ejecutar el pre-vuelo") from None
 
@@ -237,6 +279,7 @@ def _resumen_ejecucion(ejecucion: dict[str, Any], catalogo: Catalogo) -> dict[st
                 "motivo": r["motivo"],
                 "hallazgos": len(r["hallazgos"]),
                 "truncado": r["truncado"],
+                "origen": r["origen"],
             }
         )
     meta = {k: v for k, v in ejecucion.items() if k not in ("resultados", "perfil")}
@@ -253,7 +296,7 @@ def _resumen_ejecucion(ejecucion: dict[str, Any], catalogo: Catalogo) -> dict[st
 def auditar(empresa_id: int, peticion: AuditarPeticion, catalogo: Catalogo = Depends(get_catalogo)):
     fila = empresas.obtener_empresa(empresa_id)
     perfil = empresas.perfil_de_empresa(fila, catalogo.perfil_default)
-    with _conexion_empresa(fila, peticion.password) as conexion:
+    with _conexiones(fila, peticion) as (conexion, instancia):
         try:
             version = conexion.version
             contexto = prevuelo.leer_contexto(conexion)
@@ -268,7 +311,9 @@ def auditar(empresa_id: int, peticion: AuditarPeticion, catalogo: Catalogo = Dep
             "columnas_sensibles": descubrimiento.columnas_para_auditar(empresa_id),
         }
         ejecucion_id = reportes.registrar_ejecucion(empresa_id, peticion.etiqueta, version, contexto["contenedor"], perfil)
-        resultados = motor.auditar(conexion, catalogo, parametros, version_servidor=version)
+        resultados = motor.auditar(
+            conexion, catalogo, parametros, version_servidor=version, conexion_instancia=instancia
+        )
     reportes.guardar_resultados(ejecucion_id, resultados)
     return _resumen_ejecucion(reportes.obtener_ejecucion(ejecucion_id), catalogo)
 

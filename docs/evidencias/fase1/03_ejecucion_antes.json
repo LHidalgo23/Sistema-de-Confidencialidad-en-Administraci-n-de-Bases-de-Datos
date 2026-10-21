@@ -2,19 +2,19 @@
     "id":  1,
     "empresa_id":  1,
     "etiqueta":  "antes",
-    "iniciada_en":  "2026-10-20T23:13:12+00:00",
-    "finalizada_en":  "2026-10-20T23:13:20+00:00",
+    "iniciada_en":  "2026-10-20T23:57:01+00:00",
+    "finalizada_en":  "2026-10-20T23:57:06+00:00",
     "version_oracle":  "21.3.0.0.0",
     "contenedor":  "PDB_CLINICA",
     "revisada_por":  null,
     "revisada_en":  null,
     "notas_revision":  null,
-    "madurez_promedio":  0.78,
+    "madurez_promedio":  0.26,
     "conteo_controles":  {
-                             "Cumple":  3,
-                             "No cumple":  13,
+                             "Cumple":  0,
+                             "No cumple":  17,
                              "Parcial":  2,
-                             "No evaluable":  1
+                             "No evaluable":  0
                          },
     "controles":  [
                       {
@@ -60,25 +60,6 @@
                           "control_id":  "A5.16",
                           "nombre":  "Gestión de identidades",
                           "nucleo":  true,
-                          "madurez":  3,
-                          "estado":  "Cumple",
-                          "observables_total":  2,
-                          "observables_evaluados":  2,
-                          "observables_ok":  2,
-                          "no_evaluables":  [
-
-                                            ],
-                          "con_hallazgos":  [
-
-                                            ],
-                          "aceptado":  false,
-                          "justificacion":  null,
-                          "cobertura":  1.0
-                      },
-                      {
-                          "control_id":  "A5.17",
-                          "nombre":  "Información de autenticación",
-                          "nucleo":  true,
                           "madurez":  2,
                           "estado":  "Parcial",
                           "observables_total":  2,
@@ -88,6 +69,26 @@
 
                                             ],
                           "con_hallazgos":  [
+                                                "OBS-05"
+                                            ],
+                          "aceptado":  false,
+                          "justificacion":  null,
+                          "cobertura":  1.0
+                      },
+                      {
+                          "control_id":  "A5.17",
+                          "nombre":  "Información de autenticación",
+                          "nucleo":  true,
+                          "madurez":  0,
+                          "estado":  "No cumple",
+                          "observables_total":  2,
+                          "observables_evaluados":  2,
+                          "observables_ok":  0,
+                          "no_evaluables":  [
+
+                                            ],
+                          "con_hallazgos":  [
+                                                "OBS-05",
                                                 "OBS-06"
                                             ],
                           "aceptado":  false,
@@ -251,20 +252,20 @@
                           "control_id":  "A8.13",
                           "nombre":  "Respaldo de la información",
                           "nucleo":  true,
-                          "madurez":  null,
-                          "estado":  "No evaluable",
+                          "madurez":  0,
+                          "estado":  "No cumple",
                           "observables_total":  1,
-                          "observables_evaluados":  0,
+                          "observables_evaluados":  1,
                           "observables_ok":  0,
                           "no_evaluables":  [
-                                                "OBS-17"
+
                                             ],
                           "con_hallazgos":  [
-
+                                                "OBS-17"
                                             ],
                           "aceptado":  false,
                           "justificacion":  null,
-                          "cobertura":  0.0
+                          "cobertura":  1.0
                       },
                       {
                           "control_id":  "A8.15",
@@ -348,16 +349,16 @@
                           "control_id":  "A8.31",
                           "nombre":  "Separación de los entornos de desarrollo, prueba y producción",
                           "nucleo":  false,
-                          "madurez":  3,
-                          "estado":  "Cumple",
+                          "madurez":  0,
+                          "estado":  "No cumple",
                           "observables_total":  1,
                           "observables_evaluados":  1,
-                          "observables_ok":  1,
+                          "observables_ok":  0,
                           "no_evaluables":  [
 
                                             ],
                           "con_hallazgos":  [
-
+                                                "OBS-23"
                                             ],
                           "aceptado":  false,
                           "justificacion":  null,
@@ -367,16 +368,16 @@
                           "control_id":  "A8.33",
                           "nombre":  "Información de prueba",
                           "nucleo":  false,
-                          "madurez":  3,
-                          "estado":  "Cumple",
+                          "madurez":  0,
+                          "estado":  "No cumple",
                           "observables_total":  1,
                           "observables_evaluados":  1,
-                          "observables_ok":  1,
+                          "observables_ok":  0,
                           "no_evaluables":  [
 
                                             ],
                           "con_hallazgos":  [
-
+                                                "OBS-23"
                                             ],
                           "aceptado":  false,
                           "justificacion":  null,
@@ -391,8 +392,9 @@
                             "severidad":  "media",
                             "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  10,
-                            "truncado":  false
+                            "hallazgos":  15,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-02",
@@ -402,7 +404,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  1,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-03",
@@ -412,7 +415,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  21,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-04",
@@ -422,17 +426,19 @@
                             "estado":  "Cumple",
                             "motivo":  null,
                             "hallazgos":  0,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-05",
                             "nombre":  "Cuentas abiertas con contraseña por defecto",
                             "control_iso":  "A5.17",
                             "severidad":  "alta",
-                            "estado":  "Cumple",
+                            "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  0,
-                            "truncado":  false
+                            "hallazgos":  1,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-06",
@@ -442,7 +448,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  4,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-07",
@@ -452,7 +459,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  2,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-08",
@@ -462,7 +470,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  1,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-09",
@@ -472,7 +481,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  1,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-10",
@@ -482,7 +492,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  1,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-11",
@@ -492,7 +503,8 @@
                             "estado":  "Cumple",
                             "motivo":  null,
                             "hallazgos":  0,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "Instancia"
                         },
                         {
                             "obs_id":  "OBS-12",
@@ -501,8 +513,9 @@
                             "severidad":  "alta",
                             "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  3,
-                            "truncado":  false
+                            "hallazgos":  4,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-13",
@@ -511,8 +524,9 @@
                             "severidad":  "media",
                             "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  10,
-                            "truncado":  false
+                            "hallazgos":  12,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-14",
@@ -521,8 +535,9 @@
                             "severidad":  "media",
                             "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  1,
-                            "truncado":  false
+                            "hallazgos":  2,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-15",
@@ -531,8 +546,9 @@
                             "severidad":  "alta",
                             "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  10,
-                            "truncado":  false
+                            "hallazgos":  15,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-16",
@@ -542,17 +558,19 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  4,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-17",
                             "nombre":  "Respaldos recientes sin cifrar",
                             "control_iso":  "A8.13",
                             "severidad":  "alta",
-                            "estado":  "No evaluable",
-                            "motivo":  "No se observaron respaldos recientes (o no son visibles desde este contenedor)",
-                            "hallazgos":  0,
-                            "truncado":  false
+                            "estado":  "No cumple",
+                            "motivo":  null,
+                            "hallazgos":  4,
+                            "truncado":  false,
+                            "origen":  "Instancia"
                         },
                         {
                             "obs_id":  "OBS-18",
@@ -561,8 +579,9 @@
                             "severidad":  "alta",
                             "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  3,
-                            "truncado":  false
+                            "hallazgos":  4,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-19",
@@ -572,7 +591,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  2,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-20",
@@ -582,7 +602,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  1,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "Instancia"
                         },
                         {
                             "obs_id":  "OBS-21",
@@ -592,7 +613,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  1,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-22",
@@ -601,18 +623,20 @@
                             "severidad":  "alta",
                             "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  10,
-                            "truncado":  false
+                            "hallazgos":  15,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-23",
                             "nombre":  "Esquemas de desarrollo o prueba con datos sensibles sin enmascarar",
                             "control_iso":  "A8.33",
                             "severidad":  "alta",
-                            "estado":  "Cumple",
+                            "estado":  "No cumple",
                             "motivo":  null,
-                            "hallazgos":  0,
-                            "truncado":  false
+                            "hallazgos":  5,
+                            "truncado":  false,
+                            "origen":  "PDB"
                         },
                         {
                             "obs_id":  "OBS-24",
@@ -622,7 +646,8 @@
                             "estado":  "No cumple",
                             "motivo":  null,
                             "hallazgos":  1,
-                            "truncado":  false
+                            "truncado":  false,
+                            "origen":  "Instancia"
                         }
                     ]
 }

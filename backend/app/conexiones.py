@@ -71,21 +71,27 @@ def codigo_ora(exc: oracledb.Error) -> int | None:
     return getattr(error, "code", None)
 
 
-def abrir_conexion(empresa: Mapping[str, Any], password: str | None = None) -> oracledb.Connection:
-    """Conecta con el usuario auditor de la empresa. La contraseña enviada tiene
-    prioridad sobre la guardada."""
+def abrir_conexion(empresa: Mapping[str, Any], password: str | None = None, *, instancia: bool = False) -> oracledb.Connection:
+    """Conecta con el usuario auditor de la empresa (o, con `instancia=True`, con su usuario de
+    instancia en CDB$ROOT). La contraseña enviada tiene prioridad sobre la guardada."""
+    sufijo = "_instancia" if instancia else ""
+    usuario, dsn = empresa.get(f"usuario{sufijo}"), empresa.get(f"dsn{sufijo}")
+    cifrada = empresa.get(f"password{sufijo}_cifrada")
+    nombre = "de instancia " if instancia else ""
+    if not (usuario and dsn):
+        raise CredencialesFaltantes("La empresa no tiene una conexión de instancia configurada.")
     clave = password
-    if not clave and empresa.get("password_cifrada"):
-        clave = descifrar(empresa["password_cifrada"])
+    if not clave and cifrada:
+        clave = descifrar(cifrada)
     if not clave:
-        raise CredencialesFaltantes("La empresa no tiene contraseña guardada: envíela para esta operación.")
+        raise CredencialesFaltantes(f"La empresa no tiene contraseña {nombre}guardada: envíela para esta operación.")
 
     config = get_config()
     try:
         conexion = oracledb.connect(
-            user=empresa["usuario"],
+            user=usuario,
             password=clave,
-            dsn=empresa["dsn"],
+            dsn=dsn,
             tcp_connect_timeout=config.connect_timeout_s,
         )
     except oracledb.Error as exc:

@@ -85,6 +85,46 @@
                               "nivel":  "Confidencial - dato personal",
                               "marcador":  "CLASIFICACION",
                               "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CEDULA",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CORREO",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "DIRECCION",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "FECHA_NACIMIENTO",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "TELEFONO",
+                              "nivel":  "Confidencial - dato personal",
+                              "marcador":  "CLASIFICACION",
+                              "comentario_actual":  null
                           }
                       ]
     },
@@ -238,6 +278,19 @@
                       ]
     },
     {
+        "obs_id":  "OBS-05",
+        "control_iso":  "A5.17",
+        "nombre":  "Cuentas abiertas con contraseña por defecto",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "usuario":  "SCOTT",
+                              "estado":  "OPEN"
+                          }
+                      ]
+    },
+    {
         "obs_id":  "OBS-06",
         "control_iso":  "A5.17",
         "nombre":  "Perfiles sin función de verificación o con límites débiles",
@@ -347,6 +400,10 @@
                           {
                               "esquema":  "CLINICA",
                               "tabla":  "PACIENTES"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES"
                           }
                       ]
     },
@@ -363,6 +420,10 @@
                           },
                           {
                               "usuario":  "AUDITOR_ISO",
+                              "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "C##AUDITOR_ISO",
                               "versiones":  "11G 12C"
                           },
                           {
@@ -396,6 +457,10 @@
                           {
                               "usuario":  "RRHH_01",
                               "versiones":  "11G 12C"
+                          },
+                          {
+                              "usuario":  "SCOTT",
+                              "versiones":  "11G 12C"
                           }
                       ]
     },
@@ -406,6 +471,13 @@
         "estado":  "No cumple",
         "motivo":  null,
         "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA",
+                              "objeto":  "TMP_EXPORTACION",
+                              "tipo":  "TABLE",
+                              "tablespace":  "TS_SENSIBLE",
+                              "eliminado":  "2026-10-20:17:33:04"
+                          },
                           {
                               "esquema":  "CLINICA",
                               "objeto":  "TMP_EXPORTACION",
@@ -471,6 +543,31 @@
                               "esquema":  "CLINICA",
                               "tabla":  "PACIENTES",
                               "columna":  "TELEFONO"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CEDULA"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CORREO"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "DIRECCION"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "FECHA_NACIMIENTO"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "TELEFONO"
                           }
                       ]
     },
@@ -511,10 +608,29 @@
         "obs_id":  "OBS-17",
         "control_iso":  "A8.13",
         "nombre":  "Respaldos recientes sin cifrar",
-        "estado":  "No evaluable",
-        "motivo":  "No se observaron respaldos recientes (o no son visibles desde este contenedor)",
+        "estado":  "No cumple",
+        "motivo":  null,
         "hallazgos":  [
-
+                          {
+                              "pieza":  "2",
+                              "manejador":  "C:\\APP\\CALVO\\PRODUCT\\21C\\DBHOMEXE\\DATABASE\\C-3124756861-20261020-00",
+                              "finalizado":  "2026-10-20 16:21"
+                          },
+                          {
+                              "pieza":  "3",
+                              "manejador":  "C:\\APP\\CALVO\\PRODUCT\\21C\\DBHOMEXE\\DATABASE\\0555C68I_5_1_1",
+                              "finalizado":  "2026-10-20 16:21"
+                          },
+                          {
+                              "pieza":  "4",
+                              "manejador":  "C:\\APP\\CALVO\\PRODUCT\\21C\\DBHOMEXE\\DATABASE\\C-3124756861-20261020-01",
+                              "finalizado":  "2026-10-20 16:21"
+                          },
+                          {
+                              "pieza":  "5",
+                              "manejador":  "C:\\APP\\CALVO\\PRODUCT\\21C\\DBHOMEXE\\DATABASE\\C-3124756861-20261020-02",
+                              "finalizado":  "2026-10-20 17:05"
+                          }
                       ]
     },
     {
@@ -534,6 +650,10 @@
                           },
                           {
                               "esquema":  "CLINICA",
+                              "tabla":  "PACIENTES"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
                               "tabla":  "PACIENTES"
                           }
                       ]
@@ -563,9 +683,9 @@
         "motivo":  null,
         "hallazgos":  [
                           {
-                              "usuario":  "AUDITOR_ISO",
-                              "sid":  863,
-                              "serial":  39758,
+                              "usuario":  "C##AUDITOR_ISO",
+                              "sid":  495,
+                              "serial":  51551,
                               "programa":  "C:\\Users\\calvo\\OneDrive\\Documentos\\II?Ciclo?2026\\Administracion?",
                               "maquina":  "DESKTOP-E064O9O"
                           }
@@ -651,6 +771,75 @@
                               "tabla":  "PACIENTES",
                               "columna":  "TELEFONO",
                               "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CEDULA",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CORREO",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "DIRECCION",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "FECHA_NACIMIENTO",
+                              "tablespace":  "TS_SENSIBLE"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "TELEFONO",
+                              "tablespace":  "TS_SENSIBLE"
+                          }
+                      ]
+    },
+    {
+        "obs_id":  "OBS-23",
+        "control_iso":  "A8.33",
+        "nombre":  "Esquemas de desarrollo o prueba con datos sensibles sin enmascarar",
+        "estado":  "No cumple",
+        "motivo":  null,
+        "hallazgos":  [
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CEDULA",
+                              "marcador":  "ENMASCARADO"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "CORREO",
+                              "marcador":  "ENMASCARADO"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "DIRECCION",
+                              "marcador":  "ENMASCARADO"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "FECHA_NACIMIENTO",
+                              "marcador":  "ENMASCARADO"
+                          },
+                          {
+                              "esquema":  "CLINICA_DEV",
+                              "tabla":  "PACIENTES",
+                              "columna":  "TELEFONO",
+                              "marcador":  "ENMASCARADO"
                           }
                       ]
     },

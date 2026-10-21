@@ -37,6 +37,7 @@ class ResultadoObservable:
     motivo: str | None = None
     duracion_ms: int = 0
     truncado: bool = False
+    origen: str = "PDB"  # conexión con la que se observó: "PDB" o "Instancia"
 
 
 def version_mayor(version: str) -> int:
@@ -92,6 +93,7 @@ def ejecutar_observable(
     *,
     version_servidor: str,
     max_filas: int | None = None,
+    origen: str = "PDB",
 ) -> ResultadoObservable:
     inicio = perf_counter()
 
@@ -99,6 +101,7 @@ def ejecutar_observable(
         return ResultadoObservable(
             obs_id=entrada.id,
             estado=estado,
+            origen=origen,
             duracion_ms=int((perf_counter() - inicio) * 1000),
             **kwargs,
         )
@@ -144,17 +147,27 @@ def auditar(
     parametros: Mapping[str, Any],
     *,
     version_servidor: str,
+    conexion_instancia: oracledb.Connection | None = None,
     max_filas: int | None = None,
 ) -> list[ResultadoObservable]:
-    """Ejecuta todos los observables del catálogo."""
-    return [
-        ejecutar_observable(
-            conexion,
-            entrada,
-            catalogo.sql_por_obs[entrada.id],
-            parametros,
-            version_servidor=version_servidor,
-            max_filas=max_filas,
+    """Ejecuta todos los observables del catálogo.
+
+    Los de alcance "Instancia" (respaldos, parámetros, sesiones, parches) solo son visibles desde
+    CDB$ROOT: si la empresa tiene conexión de instancia se observan con ella; si no, se observan
+    desde la PDB y pueden salir "No evaluable".
+    """
+    resultados = []
+    for entrada in catalogo.entradas:
+        de_instancia = entrada.alcance == "Instancia" and conexion_instancia is not None
+        resultados.append(
+            ejecutar_observable(
+                conexion_instancia if de_instancia else conexion,
+                entrada,
+                catalogo.sql_por_obs[entrada.id],
+                parametros,
+                version_servidor=version_servidor,
+                max_filas=max_filas,
+                origen="Instancia" if de_instancia else "PDB",
+            )
         )
-        for entrada in catalogo.entradas
-    ]
+    return resultados

@@ -35,8 +35,8 @@ def registrar_ejecucion(empresa_id: int, etiqueta: str, version: str, contenedor
 def guardar_resultados(ejecucion_id: int, resultados: Sequence[ResultadoObservable]) -> None:
     with almacen.conexion() as con:
         con.executemany(
-            "INSERT INTO resultados (ejecucion_id, obs_id, estado, motivo, hallazgos_json, duracion_ms, truncado) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO resultados (ejecucion_id, obs_id, estado, motivo, hallazgos_json, duracion_ms, truncado, origen) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 (
                     ejecucion_id,
@@ -46,6 +46,7 @@ def guardar_resultados(ejecucion_id: int, resultados: Sequence[ResultadoObservab
                     json.dumps(r.hallazgos, ensure_ascii=False),
                     r.duracion_ms,
                     int(r.truncado),
+                    r.origen,
                 )
                 for r in resultados
             ],
@@ -59,7 +60,7 @@ def obtener_ejecucion(ejecucion_id: int) -> dict[str, Any]:
         if fila is None:
             raise EjecucionNoEncontrada(f"No existe la ejecución {ejecucion_id}")
         resultados = con.execute(
-            "SELECT obs_id, estado, motivo, hallazgos_json, duracion_ms, truncado FROM resultados "
+            "SELECT obs_id, estado, motivo, hallazgos_json, duracion_ms, truncado, origen FROM resultados "
             "WHERE ejecucion_id = ? ORDER BY obs_id",
             (ejecucion_id,),
         ).fetchall()
@@ -73,6 +74,7 @@ def obtener_ejecucion(ejecucion_id: int) -> dict[str, Any]:
             "hallazgos": json.loads(r["hallazgos_json"]),
             "duracion_ms": r["duracion_ms"],
             "truncado": bool(r["truncado"]),
+            "origen": r["origen"],
         }
         for r in resultados
     ]

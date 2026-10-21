@@ -41,6 +41,7 @@ Invocar "Instalar dependencias del backend y PyInstaller" {
 $backend = Join-Path $repo "backend"
 $instrumento = Join-Path $repo "instrumento"
 $frontendDist = Join-Path $repo "frontend\dist"
+$laboratorio = Join-Path $repo "laboratorio"
 
 Invocar "Empaquetar con PyInstaller" {
     & $python -m PyInstaller --noconfirm --clean --onedir --console --name AuditorISO `
@@ -49,6 +50,7 @@ Invocar "Empaquetar con PyInstaller" {
         --workpath (Join-Path $trabajo "work") `
         --specpath $trabajo `
         --add-data "$instrumento;instrumento" `
+        --add-data "$laboratorio;laboratorio" `
         --add-data "$frontendDist;frontend\dist" `
         --collect-submodules uvicorn `
         --collect-submodules anyio `

@@ -21,8 +21,9 @@ DROP USER recepcion_01  CASCADE;
 DROP USER rrhh_01       CASCADE;
 DROP USER dev_user      CASCADE;
 DROP USER exempleado_01 CASCADE;
-DROP USER dba_jsanchez  CASCADE;
+DROP USER usuario1      CASCADE;
 DROP USER clinica_dev   CASCADE;
+DROP USER scott         CASCADE;
 DROP USER clinica       CASCADE;
 
 PURGE DBA_RECYCLEBIN;
@@ -32,5 +33,5 @@ DROP TABLESPACE ts_sensible  INCLUDING CONTENTS AND DATAFILES;
 
 PROMPT Usuarios y tablespaces restantes de la clinica (debe salir vacio):
 SELECT username FROM dba_users
- WHERE username IN ('APP_CLINICA','MEDICO_01','MEDICO_02','RECEPCION_01','RRHH_01','DEV_USER','EXEMPLEADO_01','DBA_JSANCHEZ','CLINICA_DEV','CLINICA');
+ WHERE username IN ('APP_CLINICA','MEDICO_01','MEDICO_02','RECEPCION_01','RRHH_01','DEV_USER','EXEMPLEADO_01','USUARIO1','SCOTT','CLINICA_DEV','CLINICA');
 SELECT tablespace_name FROM dba_tablespaces WHERE tablespace_name IN ('TS_CLINICA','TS_SENSIBLE');

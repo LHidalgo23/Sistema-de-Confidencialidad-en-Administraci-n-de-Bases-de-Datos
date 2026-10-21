@@ -1,5 +1,8 @@
 """Pre-vuelo: verifica versión, contenedor y privilegios del usuario auditor
 y predice qué controles quedarán "No evaluable" y por qué.
+
+Los controles de alcance "Instancia" se comprueban con la conexión de instancia (CDB$ROOT)
+si la empresa la configuró; si no, con la conexión de la PDB.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ from .descubrimiento import VISTAS_REQUERIDAS as VISTAS_DESCUBRIMIENTO
 from .motor import CODIGOS_SIN_VISIBILIDAD, motivo_por_version
 
 ROLES_PERMITIDOS_AUDITOR = frozenset({"SELECT_CATALOG_ROLE", "HS_ADMIN_SELECT_ROLE", "AUDIT_VIEWER"})
+ROLES_PERMITIDOS_INSTANCIA = frozenset({"SELECT_CATALOG_ROLE", "HS_ADMIN_SELECT_ROLE"})
 PRIVILEGIOS_PERMITIDOS_AUDITOR = frozenset({"CREATE SESSION"})
 _RE_OBJETO = re.compile(r"^[A-Z][A-Z0-9_$]*$")
 
@@ -59,16 +63,38 @@ def objetos_visibles(conexion: oracledb.Connection, objetos: set[str]) -> dict[s
     return resultado
 
 
-def ejecutar_prevuelo(conexion: oracledb.Connection, catalogo: Catalogo) -> dict[str, Any]:
-    contexto = leer_contexto(conexion)
-    version = conexion.version
+def _privilegios_del_usuario(conexion: oracledb.Connection, roles_permitidos: frozenset[str]) -> tuple[list[str], list[str], list[str]]:
     _, roles, _ = consultar(conexion, "SELECT role FROM session_roles ORDER BY 1")
     _, privilegios, _ = consultar(conexion, "SELECT privilege FROM session_privs ORDER BY 1")
     roles = [r[0] for r in roles]
     privilegios = [p[0] for p in privilegios]
+    excedentes = sorted(set(roles) - roles_permitidos) + sorted(set(privilegios) - PRIVILEGIOS_PERMITIDOS_AUDITOR)
+    return roles, privilegios, excedentes
 
-    requeridos = {obj for entrada in catalogo.entradas for obj in entrada.requiere}
-    visibles = objetos_visibles(conexion, requeridos | VISTAS_DESCUBRIMIENTO)
+
+def _aviso_privilegios(excedentes: list[str], minimo: str, quien: str) -> str:
+    return (
+        f"{quien} tiene privilegios que exceden el mínimo ({minimo}): {', '.join(excedentes)}. "
+        "El instrumento debe aplicar el privilegio mínimo que audita."
+    )
+
+
+def ejecutar_prevuelo(
+    conexion: oracledb.Connection,
+    catalogo: Catalogo,
+    conexion_instancia: oracledb.Connection | None = None,
+) -> dict[str, Any]:
+    contexto = leer_contexto(conexion)
+    version = conexion.version
+    roles, privilegios, excedentes = _privilegios_del_usuario(conexion, ROLES_PERMITIDOS_AUDITOR)
+
+    entradas_instancia = [e for e in catalogo.entradas if e.alcance == "Instancia"]
+    requeridos_pdb = {obj for e in catalogo.entradas if e.alcance != "Instancia" for obj in e.requiere} | VISTAS_DESCUBRIMIENTO
+    requeridos_instancia = {obj for e in entradas_instancia for obj in e.requiere}
+
+    visibles_pdb = objetos_visibles(conexion, requeridos_pdb)
+    desde_instancia = conexion_instancia if conexion_instancia is not None else conexion
+    visibles_instancia = objetos_visibles(desde_instancia, requeridos_instancia)
 
     advertencias: list[str] = []
     if contexto["tipo_contenedor"] == "CDB$ROOT":
@@ -76,21 +102,41 @@ def ejecutar_prevuelo(conexion: oracledb.Connection, catalogo: Catalogo) -> dict
             "La conexión apunta a CDB$ROOT: los controles de alcance PDB solo observarían el contenedor raíz. "
             "Use el servicio de la PDB que se va a auditar."
         )
-    sin_descubrimiento = sorted(v for v in VISTAS_DESCUBRIMIENTO if not visibles.get(v, False))
+    sin_descubrimiento = sorted(v for v in VISTAS_DESCUBRIMIENTO if not visibles_pdb.get(v, False))
     if sin_descubrimiento:
         advertencias.append(
             "El descubrimiento de datos sensibles no podrá ejecutarse: el auditor no puede consultar "
             + ", ".join(sin_descubrimiento) + "."
         )
-    excedentes = sorted(set(roles) - ROLES_PERMITIDOS_AUDITOR) + sorted(set(privilegios) - PRIVILEGIOS_PERMITIDOS_AUDITOR)
     if excedentes:
         advertencias.append(
-            "El usuario auditor tiene privilegios que exceden el mínimo (CREATE SESSION, SELECT_CATALOG_ROLE, "
-            f"AUDIT_VIEWER): {', '.join(excedentes)}. El instrumento debe aplicar el privilegio mínimo que audita."
+            _aviso_privilegios(excedentes, "CREATE SESSION, SELECT_CATALOG_ROLE, AUDIT_VIEWER", "El usuario auditor")
+        )
+
+    instancia: dict[str, Any] = {"configurada": conexion_instancia is not None}
+    if conexion_instancia is not None:
+        contexto_instancia = leer_contexto(conexion_instancia)
+        roles_i, privilegios_i, excedentes_i = _privilegios_del_usuario(conexion_instancia, ROLES_PERMITIDOS_INSTANCIA)
+        instancia.update(contexto_instancia, roles=roles_i, privilegios=privilegios_i)
+        if contexto_instancia["tipo_contenedor"] != "CDB$ROOT":
+            advertencias.append(
+                "La conexión de instancia no apunta a CDB$ROOT: los controles de instancia no verían los respaldos, "
+                "los parámetros ni las sesiones de toda la instancia."
+            )
+        if excedentes_i:
+            advertencias.append(
+                _aviso_privilegios(excedentes_i, "CREATE SESSION y SELECT_CATALOG_ROLE", "El usuario de instancia")
+            )
+    elif entradas_instancia:
+        ids = ", ".join(e.id for e in entradas_instancia)
+        advertencias.append(
+            f"Sin conexión de instancia, los controles de instancia ({ids}) se observan desde la PDB y pueden "
+            "salir «No evaluable». Configure una conexión a CDB$ROOT para evaluarlos."
         )
 
     no_evaluables = []
     for entrada in catalogo.entradas:
+        visibles = visibles_instancia if entrada.alcance == "Instancia" else visibles_pdb
         motivos = []
         por_version = motivo_por_version(entrada, version)
         if por_version:
@@ -106,7 +152,8 @@ def ejecutar_prevuelo(conexion: oracledb.Connection, catalogo: Catalogo) -> dict
         **contexto,
         "roles": roles,
         "privilegios": privilegios,
-        "objetos_visibles": visibles,
+        "instancia": instancia,
+        "objetos_visibles": {**visibles_instancia, **visibles_pdb},
         "advertencias": advertencias,
         "no_evaluables": no_evaluables,
         "observables_total": len(catalogo.entradas),

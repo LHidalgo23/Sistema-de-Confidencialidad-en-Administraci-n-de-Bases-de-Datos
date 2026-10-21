@@ -1,14 +1,14 @@
-const ESTILOS = {
-  Cumple: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
-  Parcial: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
-  "No cumple": "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300",
-  "No evaluable": "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300",
-};
+import { CircleDashed } from "lucide-react";
+import { ESTADOS } from "./estados";
 
 export default function EstadoBadge({ estado }) {
-  const clase = ESTILOS[estado] ?? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+  const config = ESTADOS[estado];
+  const Icono = config?.icono ?? CircleDashed;
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${clase}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full py-0.5 pr-2.5 pl-1.5 text-xs font-semibold whitespace-nowrap ${config?.clase ?? "bg-superficie-2 text-texto-2"}`}
+    >
+      <Icono aria-hidden="true" className="size-3.5" strokeWidth={2.25} />
       {estado ?? "Sin datos"}
     </span>
   );

@@ -174,13 +174,13 @@ CREATE USER medico_02     IDENTIFIED BY "&clave_lab";
 CREATE USER recepcion_01  IDENTIFIED BY "&clave_lab";
 CREATE USER rrhh_01       IDENTIFIED BY "&clave_lab";
 CREATE USER dev_user      IDENTIFIED BY "&clave_lab";
--- EXEMPLEADO_01: cuenta inactiva (hallazgo intencional). DBA_JSANCHEZ: DBA nominal.
+-- EXEMPLEADO_01: cuenta inactiva (hallazgo intencional). USUARIO1: DBA nominal.
 -- (En SQL*Plus no puede haber un comentario despues del ";" en la misma linea.)
 CREATE USER exempleado_01 IDENTIFIED BY "&clave_lab";
-CREATE USER dba_jsanchez  IDENTIFIED BY "&clave_lab";
+CREATE USER usuario1      IDENTIFIED BY "&clave_lab";
 
-GRANT CREATE SESSION TO app_clinica, medico_01, medico_02, recepcion_01, rrhh_01, dev_user, exempleado_01, dba_jsanchez;
-GRANT DBA TO dba_jsanchez;
+GRANT CREATE SESSION TO app_clinica, medico_01, medico_02, recepcion_01, rrhh_01, dev_user, exempleado_01, usuario1;
+GRANT DBA TO usuario1;
 
 -- ---------------------------------------------------------------------------
 -- 6. Actividad reciente: ejecutar clinica_00_actividad_usuarios.sql (hace que todos

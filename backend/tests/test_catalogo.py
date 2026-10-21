@@ -144,3 +144,36 @@ def test_la_etiqueta_de_un_hallazgo_es_legible(catalogo):
     ) == "CLINICA.EMPLEADOS.CEDULA"
     assert etiqueta_hallazgo(catalogo.entrada("OBS-08"), {"tipo": "RETENCION", "grantee": None}) == "RETENCION"
     assert etiqueta_hallazgo(catalogo.entrada("OBS-09"), {}) == "(sin identificar)"
+
+
+# ---------------------------------------------------------------- mapeo y bateria de pruebas
+def test_cada_control_justifica_su_mecanismo(catalogo):
+    for c in catalogo.controles_iso:
+        assert len(c.justificacion) > 80, f"{c.id}: justificación demasiado corta para explicar el mecanismo"
+        assert c.implementacion and c.evidencia, c.id
+
+
+def test_las_justificaciones_citan_un_riesgo_real(catalogo):
+    riesgos = {r.id for r in catalogo.riesgos}
+    for c in catalogo.controles_iso:
+        citados = set(re.findall(r"R-CONF-0\d", c.justificacion))
+        assert citados and citados <= riesgos, f"{c.id}: debe citar un riesgo R-CONF existente"
+
+
+def test_el_mapeo_cubre_los_19_controles_con_sus_riesgos_y_tareas(catalogo):
+    mapeo = catalogo.mapeo()
+    assert len(mapeo) == 19
+    for fila in mapeo:
+        assert fila["riesgos"] and fila["tareas"] and fila["observables"], fila["control_id"]
+        assert fila["justificacion"] and fila["implementacion"] and fila["evidencia"]
+
+
+def test_la_bateria_tiene_las_columnas_que_pide_la_asignacion(catalogo):
+    bateria = catalogo.bateria()
+    assert len(bateria) == 24
+    for fila in bateria:
+        assert {"id", "tipo", "procedimiento", "resultado_esperado", "herramienta"} <= fila.keys()
+        assert fila["tipo"] in {"Consulta de catálogo", "Revisión de configuración", "Revisión de auditoría"}
+        assert fila["procedimiento"].startswith("Ejecutar instrumento/sql/observables/OBS-")
+    obs09 = next(f for f in bateria if f["id"] == "OBS-09")
+    assert ":cuentas_dba_autorizadas" in obs09["procedimiento"]

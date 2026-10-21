@@ -1,7 +1,7 @@
 -- ======================================================================
 -- Script correctivo generado por el instrumento de auditoría ISO/IEC 27001
 -- Empresa: Clínica Los Robles S.A. (laboratorio) | Ejecución #1 (antes)
--- Generado: 2026-10-20T23:13:12+00:00
+-- Generado: 2026-10-20T23:57:01+00:00
 --
 -- IMPORTANTE: el instrumento NO ejecuta este script. Debe revisarlo y aplicarlo
 -- el DBA de la empresa bajo su gestión de cambios: primero en un ambiente de
@@ -18,6 +18,15 @@ SET SQLBLANKLINES ON
 REVOKE SELECT ON CLINICA.PACIENTES FROM PUBLIC;
 
 -- Preventivo: Política de cambios que prohíba GRANT a PUBLIC sobre esquemas de negocio y auditoría unificada de las sentencias GRANT (A8.15).
+
+-- ----------------------------------------------------------------------
+-- OBS-05 | A5.17 | Cuentas abiertas con contraseña por defecto
+-- Severidad: alta | Hallazgos: 1
+-- Nota: PASSWORD EXPIRE obliga a definir una contraseña nueva en el siguiente inicio de sesión, de modo que el script nunca contiene secretos. Si la cuenta no se usa, bloquearla (ACCOUNT LOCK).
+
+ALTER USER SCOTT PASSWORD EXPIRE;
+
+-- Preventivo: Verificación de contraseñas por defecto en el procedimiento de entrega de cualquier base nueva y función de verificación de contraseñas en el perfil (A5.17).
 
 -- ----------------------------------------------------------------------
 -- OBS-08 | A5.33 | AUDIT_ADMIN indebido o sin purga de la pista de auditoría
@@ -61,7 +70,7 @@ REVOKE SELECT ANY TABLE FROM DEV_USER;
 
 -- ----------------------------------------------------------------------
 -- OBS-12 | A8.3 | Tablas sensibles sin política VPD
--- Severidad: alta | Hallazgos: 3
+-- Severidad: alta | Hallazgos: 4
 -- Nota: El esquema de seguridad que aloja la función de predicado debe ser distinto del dueño de la tabla. Los usuarios con EXEMPT ACCESS POLICY (incluido SYS) no están sujetos a VPD.
 
 -- La regla de acceso depende del negocio: el instrumento no puede inventarla. Completar y descomentar.
@@ -97,11 +106,22 @@ REVOKE SELECT ANY TABLE FROM DEV_USER;
 --    END;
 --    /
 
+-- La regla de acceso depende del negocio: el instrumento no puede inventarla. Completar y descomentar.
+-- 1) CREATE OR REPLACE FUNCTION <ESQUEMA_SEGURIDAD>.FN_VPD_PACIENTES(p_esquema VARCHAR2, p_objeto VARCHAR2) RETURN VARCHAR2 AS
+--    BEGIN RETURN '<predicado: por ejemplo, columna_responsable = SYS_CONTEXT(''USERENV'',''SESSION_USER'')>'; END;
+--    /
+-- 2) BEGIN
+--      DBMS_RLS.ADD_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+--        policy_name => 'POL_PACIENTES', function_schema => '<ESQUEMA_SEGURIDAD>',
+--        policy_function => 'FN_VPD_PACIENTES', statement_types => 'SELECT,INSERT,UPDATE,DELETE', update_check => TRUE);
+--    END;
+--    /
+
 -- Preventivo: Definir en el diseño de cada tabla sensible quién puede ver qué filas (A8.3) y probar la política con usuarios reales de cada rol.
 
 -- ----------------------------------------------------------------------
 -- OBS-15 | A8.11 | Columnas sensibles sin política de Data Redaction
--- Severidad: alta | Hallazgos: 10
+-- Severidad: alta | Hallazgos: 15
 -- Nota: Una tabla admite una sola política de redaction: la primera columna crea la política y las siguientes la amplían. La expresión 1=1 redacta para todos los usuarios salvo los que tengan EXEMPT REDACTION POLICY; ajustarla (por rol o usuario) y elegir PARTIAL/REGEXP donde convenga conservar parte del dato.
 
 DECLARE
@@ -274,6 +294,91 @@ BEGIN
 END;
 /
 
+DECLARE
+  v_politica redaction_policies.policy_name%TYPE;
+BEGIN
+  BEGIN
+    SELECT policy_name INTO v_politica FROM redaction_policies
+     WHERE object_owner = 'CLINICA_DEV' AND object_name = 'PACIENTES';
+    DBMS_REDACT.ALTER_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => v_politica, action => DBMS_REDACT.ADD_COLUMN,
+      column_name => 'CEDULA', function_type => DBMS_REDACT.FULL);
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    DBMS_REDACT.ADD_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => 'POL_REDACT_PACIENTES', column_name => 'CEDULA',
+      function_type => DBMS_REDACT.FULL, expression => '1=1');
+  END;
+END;
+/
+
+DECLARE
+  v_politica redaction_policies.policy_name%TYPE;
+BEGIN
+  BEGIN
+    SELECT policy_name INTO v_politica FROM redaction_policies
+     WHERE object_owner = 'CLINICA_DEV' AND object_name = 'PACIENTES';
+    DBMS_REDACT.ALTER_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => v_politica, action => DBMS_REDACT.ADD_COLUMN,
+      column_name => 'CORREO', function_type => DBMS_REDACT.FULL);
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    DBMS_REDACT.ADD_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => 'POL_REDACT_PACIENTES', column_name => 'CORREO',
+      function_type => DBMS_REDACT.FULL, expression => '1=1');
+  END;
+END;
+/
+
+DECLARE
+  v_politica redaction_policies.policy_name%TYPE;
+BEGIN
+  BEGIN
+    SELECT policy_name INTO v_politica FROM redaction_policies
+     WHERE object_owner = 'CLINICA_DEV' AND object_name = 'PACIENTES';
+    DBMS_REDACT.ALTER_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => v_politica, action => DBMS_REDACT.ADD_COLUMN,
+      column_name => 'DIRECCION', function_type => DBMS_REDACT.FULL);
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    DBMS_REDACT.ADD_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => 'POL_REDACT_PACIENTES', column_name => 'DIRECCION',
+      function_type => DBMS_REDACT.FULL, expression => '1=1');
+  END;
+END;
+/
+
+DECLARE
+  v_politica redaction_policies.policy_name%TYPE;
+BEGIN
+  BEGIN
+    SELECT policy_name INTO v_politica FROM redaction_policies
+     WHERE object_owner = 'CLINICA_DEV' AND object_name = 'PACIENTES';
+    DBMS_REDACT.ALTER_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => v_politica, action => DBMS_REDACT.ADD_COLUMN,
+      column_name => 'FECHA_NACIMIENTO', function_type => DBMS_REDACT.FULL);
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    DBMS_REDACT.ADD_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => 'POL_REDACT_PACIENTES', column_name => 'FECHA_NACIMIENTO',
+      function_type => DBMS_REDACT.FULL, expression => '1=1');
+  END;
+END;
+/
+
+DECLARE
+  v_politica redaction_policies.policy_name%TYPE;
+BEGIN
+  BEGIN
+    SELECT policy_name INTO v_politica FROM redaction_policies
+     WHERE object_owner = 'CLINICA_DEV' AND object_name = 'PACIENTES';
+    DBMS_REDACT.ALTER_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => v_politica, action => DBMS_REDACT.ADD_COLUMN,
+      column_name => 'TELEFONO', function_type => DBMS_REDACT.FULL);
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    DBMS_REDACT.ADD_POLICY(object_schema => 'CLINICA_DEV', object_name => 'PACIENTES',
+      policy_name => 'POL_REDACT_PACIENTES', column_name => 'TELEFONO',
+      function_type => DBMS_REDACT.FULL, expression => '1=1');
+  END;
+END;
+/
+
 -- Preventivo: Incluir la redacción de datos sensibles en el diseño de las vistas y consultas de soporte y desarrollo (A8.11) y revisar quién tiene EXEMPT REDACTION POLICY.
 
 -- ----------------------------------------------------------------------
@@ -292,8 +397,43 @@ REVOKE EXECUTE ON SYS.UTL_TCP FROM PUBLIC;
 -- Preventivo: Listas de control de acceso de red (ACL) para UTL_HTTP/UTL_TCP, directorios con acceso por cuenta y auditoría de las exportaciones Data Pump (A8.12, A8.15).
 
 -- ----------------------------------------------------------------------
+-- OBS-17 | A8.13 | Respaldos recientes sin cifrar
+-- Severidad: alta | Hallazgos: 4
+-- Nota: El cifrado transparente de RMAN usa la llave maestra de TDE: el keystore debe estar abierto durante el respaldo. Conservar el keystore y su contraseña fuera del servidor, o los respaldos serán irrecuperables.
+
+-- Ejecutar en RMAN (rman target /). El respaldo 2 se reemplaza por uno cifrado:
+-- CONFIGURE ENCRYPTION FOR DATABASE ON;
+-- CONFIGURE ENCRYPTION ALGORITHM 'AES256';
+-- BACKUP DATABASE PLUS ARCHIVELOG;
+-- DELETE OBSOLETE;
+-- Los respaldos anteriores sin cifrar que ya no se necesiten deben eliminarse (DELETE BACKUP): siguen siendo una copia legible de la base.
+
+-- Ejecutar en RMAN (rman target /). El respaldo 3 se reemplaza por uno cifrado:
+-- CONFIGURE ENCRYPTION FOR DATABASE ON;
+-- CONFIGURE ENCRYPTION ALGORITHM 'AES256';
+-- BACKUP DATABASE PLUS ARCHIVELOG;
+-- DELETE OBSOLETE;
+-- Los respaldos anteriores sin cifrar que ya no se necesiten deben eliminarse (DELETE BACKUP): siguen siendo una copia legible de la base.
+
+-- Ejecutar en RMAN (rman target /). El respaldo 4 se reemplaza por uno cifrado:
+-- CONFIGURE ENCRYPTION FOR DATABASE ON;
+-- CONFIGURE ENCRYPTION ALGORITHM 'AES256';
+-- BACKUP DATABASE PLUS ARCHIVELOG;
+-- DELETE OBSOLETE;
+-- Los respaldos anteriores sin cifrar que ya no se necesiten deben eliminarse (DELETE BACKUP): siguen siendo una copia legible de la base.
+
+-- Ejecutar en RMAN (rman target /). El respaldo 5 se reemplaza por uno cifrado:
+-- CONFIGURE ENCRYPTION FOR DATABASE ON;
+-- CONFIGURE ENCRYPTION ALGORITHM 'AES256';
+-- BACKUP DATABASE PLUS ARCHIVELOG;
+-- DELETE OBSOLETE;
+-- Los respaldos anteriores sin cifrar que ya no se necesiten deben eliminarse (DELETE BACKUP): siguen siendo una copia legible de la base.
+
+-- Preventivo: Cifrado AES de todos los respaldos como configuración permanente de RMAN y prueba periódica de restauración (A8.13).
+
+-- ----------------------------------------------------------------------
 -- OBS-18 | A8.15 | Tablas sensibles sin política de auditoría unificada
--- Severidad: alta | Hallazgos: 3
+-- Severidad: alta | Hallazgos: 4
 -- Nota: Auditar SELECT en tablas muy consultadas genera volumen: acotar con WHEN/EVALUATE PER o auditar solo a los roles de riesgo, y dimensionar el espacio de la pista de auditoría.
 
 CREATE AUDIT POLICY POL_ISO_CLINICA_EMPLEADOS
@@ -317,6 +457,13 @@ CREATE AUDIT POLICY POL_ISO_CLINICA_PACIENTES
           DELETE ON CLINICA.PACIENTES;
 AUDIT POLICY POL_ISO_CLINICA_PACIENTES;
 
+CREATE AUDIT POLICY POL_ISO_CLINICA_DEV_PACIENTES
+  ACTIONS SELECT ON CLINICA_DEV.PACIENTES,
+          INSERT ON CLINICA_DEV.PACIENTES,
+          UPDATE ON CLINICA_DEV.PACIENTES,
+          DELETE ON CLINICA_DEV.PACIENTES;
+AUDIT POLICY POL_ISO_CLINICA_DEV_PACIENTES;
+
 -- Preventivo: Estándar de auditoría para tablas sensibles definido en el diseño y revisión periódica de las alertas generadas (A8.15).
 
 -- ----------------------------------------------------------------------
@@ -335,7 +482,7 @@ AUDIT POLICY POL_ISO_ACCIONES_PRIVILEGIADAS;
 -- Severidad: alta | Hallazgos: 1
 -- Nota: Con ENCRYPTION_SERVER=REQUIRED los clientes que no soporten cifrado dejan de conectar: empezar en REQUESTED durante la transición y pasar a REQUIRED cuando todos los clientes estén listos.
 
--- La sesión de AUDITOR_ISO (SID 863) viaja sin cifrado nativo. El cambio se aplica en sqlnet.ora del servidor (no es SQL):
+-- La sesión de C##AUDITOR_ISO (SID 495) viaja sin cifrado nativo. El cambio se aplica en sqlnet.ora del servidor (no es SQL):
 -- SQLNET.ENCRYPTION_SERVER = REQUIRED
 -- SQLNET.ENCRYPTION_TYPES_SERVER = (AES256)
 -- SQLNET.CRYPTO_CHECKSUM_SERVER = REQUIRED
@@ -359,7 +506,7 @@ AUDIT POLICY POL_ISO_ACCIONES_PRIVILEGIADAS;
 
 -- ----------------------------------------------------------------------
 -- OBS-22 | A8.24 | Columnas sensibles en tablespaces sin cifrar
--- Severidad: alta | Hallazgos: 10
+-- Severidad: alta | Hallazgos: 15
 -- Nota: No se pueden cifrar in situ SYSTEM, SYSAUX, UNDO ni TEMP; para esas estructuras el control es el cifrado de respaldos y del almacenamiento. Alternativa: crear un tablespace nuevo con ENCRYPTION y mover las tablas con ALTER TABLE ... MOVE.
 
 -- Cifrar el tablespace TS_SENSIBLE (requiere keystore abierto con llave maestra, ver OBS-21).
@@ -373,8 +520,35 @@ AUDIT POLICY POL_ISO_ACCIONES_PRIVILEGIADAS;
 -- Preventivo: Crear los tablespaces de datos sensibles con cifrado desde el diseño (A8.24) y verificar V$ENCRYPTED_TABLESPACES tras cada alta.
 
 -- ----------------------------------------------------------------------
+-- OBS-23 | A8.33 | Esquemas de desarrollo o prueba con datos sensibles sin enmascarar
+-- Severidad: alta | Hallazgos: 5
+-- Nota: El marcador es una convención: solo debe registrarse cuando el enmascarado ya se aplicó. Los ambientes de prueba no deberían recibir copias de producción sin enmascarar (A8.33).
+
+-- Enmascarar los datos de CLINICA_DEV.PACIENTES.CEDULA (por ejemplo con DBMS_RANDOM o un UPDATE con valores ficticios) y, una vez enmascarados, registrar el marcador:
+-- UPDATE CLINICA_DEV.PACIENTES SET CEDULA = <expresion_de_enmascarado>;
+-- COMMENT ON COLUMN CLINICA_DEV.PACIENTES.CEDULA IS 'ENMASCARADO';
+
+-- Enmascarar los datos de CLINICA_DEV.PACIENTES.CORREO (por ejemplo con DBMS_RANDOM o un UPDATE con valores ficticios) y, una vez enmascarados, registrar el marcador:
+-- UPDATE CLINICA_DEV.PACIENTES SET CORREO = <expresion_de_enmascarado>;
+-- COMMENT ON COLUMN CLINICA_DEV.PACIENTES.CORREO IS 'ENMASCARADO';
+
+-- Enmascarar los datos de CLINICA_DEV.PACIENTES.DIRECCION (por ejemplo con DBMS_RANDOM o un UPDATE con valores ficticios) y, una vez enmascarados, registrar el marcador:
+-- UPDATE CLINICA_DEV.PACIENTES SET DIRECCION = <expresion_de_enmascarado>;
+-- COMMENT ON COLUMN CLINICA_DEV.PACIENTES.DIRECCION IS 'ENMASCARADO';
+
+-- Enmascarar los datos de CLINICA_DEV.PACIENTES.FECHA_NACIMIENTO (por ejemplo con DBMS_RANDOM o un UPDATE con valores ficticios) y, una vez enmascarados, registrar el marcador:
+-- UPDATE CLINICA_DEV.PACIENTES SET FECHA_NACIMIENTO = <expresion_de_enmascarado>;
+-- COMMENT ON COLUMN CLINICA_DEV.PACIENTES.FECHA_NACIMIENTO IS 'ENMASCARADO';
+
+-- Enmascarar los datos de CLINICA_DEV.PACIENTES.TELEFONO (por ejemplo con DBMS_RANDOM o un UPDATE con valores ficticios) y, una vez enmascarados, registrar el marcador:
+-- UPDATE CLINICA_DEV.PACIENTES SET TELEFONO = <expresion_de_enmascarado>;
+-- COMMENT ON COLUMN CLINICA_DEV.PACIENTES.TELEFONO IS 'ENMASCARADO';
+
+-- Preventivo: Procedimiento de refresco de ambientes que enmascare los datos en el mismo flujo de la copia, y separación de ambientes de desarrollo, prueba y producción (A8.31, A8.33).
+
+-- ----------------------------------------------------------------------
 -- OBS-01 | A5.12 | Columnas sensibles sin clasificación registrada
--- Severidad: media | Hallazgos: 10
+-- Severidad: media | Hallazgos: 15
 -- Nota: Confirmar el nivel de clasificación con el dueño del dato antes de registrarlo. El comentario actual de la columna se conserva al final.
 
 COMMENT ON COLUMN CLINICA.EMPLEADOS.CEDULA IS 'CLASIFICACION: Confidencial - dato personal. ';
@@ -396,6 +570,16 @@ COMMENT ON COLUMN CLINICA.PACIENTES.DIRECCION IS 'CLASIFICACION: Confidencial - 
 COMMENT ON COLUMN CLINICA.PACIENTES.FECHA_NACIMIENTO IS 'CLASIFICACION: Confidencial - dato personal. ';
 
 COMMENT ON COLUMN CLINICA.PACIENTES.TELEFONO IS 'CLASIFICACION: Confidencial - dato personal. ';
+
+COMMENT ON COLUMN CLINICA_DEV.PACIENTES.CEDULA IS 'CLASIFICACION: Confidencial - dato personal. ';
+
+COMMENT ON COLUMN CLINICA_DEV.PACIENTES.CORREO IS 'CLASIFICACION: Confidencial - dato personal. ';
+
+COMMENT ON COLUMN CLINICA_DEV.PACIENTES.DIRECCION IS 'CLASIFICACION: Confidencial - dato personal. ';
+
+COMMENT ON COLUMN CLINICA_DEV.PACIENTES.FECHA_NACIMIENTO IS 'CLASIFICACION: Confidencial - dato personal. ';
+
+COMMENT ON COLUMN CLINICA_DEV.PACIENTES.TELEFONO IS 'CLASIFICACION: Confidencial - dato personal. ';
 
 -- Preventivo: Procedimiento de alta de columnas que exija clasificar el dato antes de pasar a producción (A5.12) y revisión anual del inventario de datos sensibles.
 
@@ -539,12 +723,14 @@ REVOKE SELECT ANY TABLE FROM DEV_USER;
 
 -- ----------------------------------------------------------------------
 -- OBS-13 | A8.5 | Cuentas con hashes de contraseña antiguos
--- Severidad: media | Hallazgos: 10
+-- Severidad: media | Hallazgos: 12
 -- Nota: Primero configurar SQLNET.ALLOWED_LOGON_VERSION_SERVER = 12 (o superior) en sqlnet.ora; así, al renovar la contraseña, solo se almacena el hash 12C. Verificar que los clientes antiguos soporten esa versión.
 
 ALTER USER APP_CLINICA PASSWORD EXPIRE;
 
 ALTER USER AUDITOR_ISO PASSWORD EXPIRE;
+
+ALTER USER C##AUDITOR_ISO PASSWORD EXPIRE;
 
 ALTER USER DBA_JSANCHEZ PASSWORD EXPIRE;
 
@@ -566,7 +752,7 @@ ALTER USER RRHH_01 PASSWORD EXPIRE;
 
 -- ----------------------------------------------------------------------
 -- OBS-14 | A8.10 | Objetos de negocio en la papelera de reciclaje
--- Severidad: media | Hallazgos: 1
+-- Severidad: media | Hallazgos: 2
 -- Nota: PURGE es irreversible: confirmar que los objetos eliminados no deben recuperarse con FLASHBACK TABLE ... TO BEFORE DROP.
 
 PURGE TABLESPACE TS_SENSIBLE USER CLINICA;

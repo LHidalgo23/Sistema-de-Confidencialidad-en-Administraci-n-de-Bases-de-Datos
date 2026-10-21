@@ -46,6 +46,49 @@ class Catalogo:
     def entradas_de_control(self, control_id: str) -> list[EntradaCatalogo]:
         return [e for e in self.entradas if control_id in e.controles]
 
+    def mapeo(self) -> list[dict]:
+        """Mapeo de controles: control, riesgos, tareas, justificación, implementación y evidencia."""
+        tareas = {t.id: t.nombre for t in self.tareas}
+        filas = []
+        for control in self.controles_iso:
+            entradas = self.entradas_de_control(control.id)
+            if not entradas:
+                continue
+            filas.append(
+                {
+                    "control_id": control.id,
+                    "nombre": control.nombre,
+                    "tema": control.tema,
+                    "nucleo": control.nucleo,
+                    "riesgos": sorted({e.riesgo for e in entradas}),
+                    "tareas": [f"{t} {tareas[t]}" for t in sorted({e.tarea for e in entradas})],
+                    "justificacion": control.justificacion,
+                    "implementacion": control.implementacion,
+                    "evidencia": control.evidencia,
+                    "observables": [e.id for e in entradas],
+                }
+            )
+        return filas
+
+    def bateria(self) -> list[dict]:
+        """Batería de pruebas: ID, tipo, procedimiento, resultado esperado y herramienta."""
+        filas = []
+        for e in self.entradas:
+            variables = sorted(extraer_binds(self.sql_por_obs[e.id]))
+            usa = f"con las variables {', '.join(':' + v for v in variables)}" if variables else "sin variables"
+            filas.append(
+                {
+                    "id": e.id,
+                    "control_iso": e.control_iso,
+                    "tipo": e.tipo_prueba,
+                    "procedimiento": f"Ejecutar instrumento/{e.observable.archivo} {usa}. Cada fila devuelta es un hallazgo.",
+                    "resultado_esperado": e.resultado_esperado,
+                    "herramienta": "Instrumento (motor de observables); SQL Developer o SQL*Plus con el mismo .sql",
+                    "alcance": e.alcance,
+                }
+            )
+        return filas
+
 
 def extraer_binds(sql: str) -> set[str]:
     """Nombres de variables bind de una sentencia, ignorando comentarios y literales."""
@@ -135,6 +178,8 @@ def validar_catalogo(catalogo: Catalogo) -> list[str]:
             problemas.append(f"{e.id}: el discriminador {e.correctivo.discriminador} no es una columna del observable")
 
     for control in catalogo.controles_iso:
+        if not (control.justificacion.strip() and control.implementacion.strip() and control.evidencia.strip()):
+            problemas.append(f"el control {control.id} necesita justificación, implementación y evidencia")
         if control.nucleo and not catalogo.entradas_de_control(control.id):
             problemas.append(f"el control núcleo {control.id} no tiene ningún observable")
     return problemas
