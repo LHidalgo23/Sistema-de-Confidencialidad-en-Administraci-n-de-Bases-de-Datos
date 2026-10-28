@@ -1,11 +1,3 @@
--- OBS-08 | A5.33 Proteccion de registros
--- (1) AUDIT_ADMIN otorgado fuera de las cuentas autorizadas.
--- (2) No existe un trabajo de purga habilitado para la pista de auditoria
---     unificada (la retencion se gestiona con DBMS_AUDIT_MGMT, no con un
---     parametro de "dias de retencion").
--- Alcance: PDB | Version minima: 19
--- Binds: :cuentas_audit_admin_autorizadas (JSON: ["DBA_X", ...])
--- Regla: cada fila es un hallazgo.
 SELECT 'AUDIT_ADMIN'      AS tipo,
        rp.grantee         AS grantee
 FROM   dba_role_privs rp

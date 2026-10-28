@@ -62,7 +62,7 @@ def _registrar(cliente, **extra):
 # ---------------------------------------------------------------- catálogo
 def test_endpoints_del_catalogo(cliente):
     catalogo = cliente.get("/api/catalogo").json()
-    assert len(catalogo) == 24 and all("sql" in e and e["sql"].lstrip().startswith("--") for e in catalogo)
+    assert len(catalogo) == 24 and all("sql" in e and not e["sql"].lstrip().startswith("--") for e in catalogo)
     assert len(cliente.get("/api/controles-iso").json()) == 19
     assert len(cliente.get("/api/riesgos").json()) == 6
     assert len(cliente.get("/api/tareas").json()) == 12
@@ -158,14 +158,63 @@ def test_ciclo_observar_corregir_reobservar(cliente, oracle_falso):
 
 
 def test_correctivos_hallazgo_y_plan_de_mejora(cliente, oracle_falso):
+    oracle_falso["fallan"]["OBS-21"] = [{"estado": "CLOSED", "ubicacion": "/ruta/keystore", "tipo_wallet": "FILE"}]
     empresa = _registrar(cliente).json()
     ejecucion = cliente.post(f"/api/empresas/{empresa['id']}/auditar", json={"etiqueta": "antes"}).json()
     ejecucion_id = ejecucion["id"]
 
-    script = cliente.get(f"/api/ejecuciones/{ejecucion_id}/correctivos")
+    script = cliente.post(f"/api/ejecuciones/{ejecucion_id}/correctivos")
     assert script.status_code == 200 and "REVOKE DBA FROM APP_X;" in script.text
-    descarga = cliente.get(f"/api/ejecuciones/{ejecucion_id}/correctivos?descargar=true")
-    assert "attachment" in descarga.headers["content-disposition"]
+
+    detalle = cliente.get(f"/api/ejecuciones/{ejecucion_id}/correctivos-detalle").json()
+    obs21 = next(o for o in detalle["observables"] if o["obs_id"] == "OBS-21")
+    assert obs21["requiere_manual"] is True  # declara clave_del_keystore y ruta_del_keystore
+    pendiente = obs21["items"][0]["pendientes"][0]
+    assert pendiente == {
+        "token": "clave_del_keystore",
+        "alcance": "global",
+        "guia": "La contraseña que se usó (o se va a usar) para crear el keystore de TDE. Pregúntale a quien configuró el cifrado, o revisa el gestor de secretos de la empresa — el instrumento nunca la guarda.",
+    }
+    assert "<CLAVE_DEL_KEYSTORE>" in obs21["items"][0]["script"]
+
+    script_lleno = cliente.post(
+        f"/api/ejecuciones/{ejecucion_id}/correctivos",
+        json={"globales": {"clave_del_keystore": "ClaveDePrueba1"}},
+    )
+    assert "ClaveDePrueba1" in script_lleno.text and "<CLAVE_DEL_KEYSTORE>" not in script_lleno.text
+
+    # Marcar OBS-21 como resuelto aparte: desaparece del script final pero sigue en el detalle.
+    marcar = cliente.post(
+        f"/api/ejecuciones/{ejecucion_id}/correctivos-resueltos/OBS-21",
+        json={"estado": "resuelto", "nota": "Se abrió el keystore a mano"},
+    )
+    assert marcar.status_code == 200
+    assert cliente.post(f"/api/ejecuciones/{ejecucion_id}/correctivos-resueltos/OBS-99", json={"estado": "resuelto"}).status_code == 404
+
+    script_sin_obs21 = cliente.post(f"/api/ejecuciones/{ejecucion_id}/correctivos")
+    assert "KEYSTORE OPEN" not in script_sin_obs21.text
+    assert "REVOKE DBA FROM APP_X;" in script_sin_obs21.text  # el resto sigue saliendo
+
+    detalle_tras_marcar = cliente.get(f"/api/ejecuciones/{ejecucion_id}/correctivos-detalle").json()
+    obs21_marcado = next(o for o in detalle_tras_marcar["observables"] if o["obs_id"] == "OBS-21")
+    assert obs21_marcado["resuelto"] is True and obs21_marcado["marcado_nota"] == "Se abrió el keystore a mano"
+
+    # Marcar OBS-09 como pendiente: también se excluye del script (igual que 'resuelto'),
+    # a diferencia de la validación de campos, que sí distingue entre ambos.
+    marcar_pendiente = cliente.post(f"/api/ejecuciones/{ejecucion_id}/correctivos-resueltos/OBS-09", json={"estado": "pendiente"})
+    assert marcar_pendiente.status_code == 200
+    script_con_pendiente = cliente.post(f"/api/ejecuciones/{ejecucion_id}/correctivos")
+    assert "REVOKE DBA FROM APP_X;" not in script_con_pendiente.text
+    detalle_pendiente = cliente.get(f"/api/ejecuciones/{ejecucion_id}/correctivos-detalle").json()
+    obs09_pendiente = next(o for o in detalle_pendiente["observables"] if o["obs_id"] == "OBS-09")
+    assert obs09_pendiente["pendiente_marcado"] is True and obs09_pendiente["resuelto"] is False
+    assert obs09_pendiente["requiere_manual"] is False  # OBS-09 no declara placeholders
+
+    cliente.delete(f"/api/ejecuciones/{ejecucion_id}/correctivos-resueltos/OBS-21")
+    cliente.delete(f"/api/ejecuciones/{ejecucion_id}/correctivos-resueltos/OBS-09")
+    script_tras_desmarcar = cliente.post(f"/api/ejecuciones/{ejecucion_id}/correctivos")
+    assert "KEYSTORE OPEN" in script_tras_desmarcar.text
+    assert "REVOKE DBA FROM APP_X;" in script_tras_desmarcar.text
 
     hallazgo = cliente.get(f"/api/ejecuciones/{ejecucion_id}/hallazgos/OBS-09").json()
     assert hallazgo["resultado"]["estado"] == "No cumple"
@@ -176,7 +225,7 @@ def test_correctivos_hallazgo_y_plan_de_mejora(cliente, oracle_falso):
     plan = cliente.get(f"/api/ejecuciones/{ejecucion_id}/plan-mejora").json()
     assert [p["obs_id"] for p in plan][:1] == ["OBS-09"], "alta prioridad primero"
     assert {p["obs_id"] for p in plan} == {"OBS-09", "OBS-24", "OBS-21"}
-    assert next(p for p in plan if p["obs_id"] == "OBS-21")["estado"] == "No evaluable"
+    assert next(p for p in plan if p["obs_id"] == "OBS-21")["estado"] == "No cumple"
 
 
 def test_revision_registrada_habilita_el_nivel_4(cliente, oracle_falso):

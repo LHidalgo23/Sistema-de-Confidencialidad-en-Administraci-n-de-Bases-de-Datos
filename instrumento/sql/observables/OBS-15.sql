@@ -1,8 +1,3 @@
--- OBS-15 | A8.11 Enmascaramiento de datos
--- Columnas sensibles descubiertas sin una politica de Data Redaction habilitada.
--- Alcance: PDB | Version minima: 19
--- Binds: :columnas_sensibles (JSON: [{esquema,tabla,columna,nivel}])
--- Regla: cada fila es un hallazgo.
 SELECT s.esquema,
        s.tabla,
        s.columna

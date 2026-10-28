@@ -17,7 +17,9 @@
     "dias_max_sin_parche": 120,
     "marcador_clasificacion": "CLASIFICACION",
     "marcador_enmascarado": "ENMASCARADO",
-    "sufijos_no_productivos": ["_DEV", "_TEST"]
+    "sufijos_no_productivos": ["_DEV", "_TEST"],
+    "dias_retencion_auditoria": 365,
+    "esquema_seguridad": "SEG_AUDITORIA"
   },
   "patrones_sensibles": [
     { "patron": "CEDULA",      "categoria": "Identificador personal",  "nivel": "Confidencial - dato personal" },

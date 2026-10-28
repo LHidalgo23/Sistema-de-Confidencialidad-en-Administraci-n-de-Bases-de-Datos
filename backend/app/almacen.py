@@ -64,6 +64,17 @@ CREATE TABLE IF NOT EXISTS resultados (
     PRIMARY KEY (ejecucion_id, obs_id)
 );
 
+-- Marca manual del DBA sobre un observable de una ejecución: 'resuelto' (se excluye
+-- del script final) o 'pendiente' (sigue en el script, pero no bloquea generarlo).
+CREATE TABLE IF NOT EXISTS correctivos_resueltos (
+    ejecucion_id INTEGER NOT NULL REFERENCES ejecuciones(id) ON DELETE CASCADE,
+    obs_id       TEXT NOT NULL,
+    estado       TEXT NOT NULL DEFAULT 'resuelto',
+    marcado_en   TEXT NOT NULL,
+    nota         TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (ejecucion_id, obs_id)
+);
+
 CREATE INDEX IF NOT EXISTS ix_ejecuciones_empresa ON ejecuciones (empresa_id, id);
 """
 
@@ -98,6 +109,7 @@ COLUMNAS_NUEVAS = {
         "password_instancia_cifrada": "TEXT",
     },
     "resultados": {"origen": "TEXT NOT NULL DEFAULT 'PDB'"},
+    "correctivos_resueltos": {"estado": "TEXT NOT NULL DEFAULT 'resuelto'"},
 }
 
 

@@ -1,4 +1,4 @@
-import { FlaskConical, Grid3x3, ListChecks, Search, SlidersHorizontal, TriangleAlert, Users } from "lucide-react";
+import { ChevronRight, FlaskConical, Grid3x3, ListChecks, Search, SlidersHorizontal, TriangleAlert, Users } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
@@ -44,6 +44,26 @@ function Etiqueta({ children, mono = false }) {
     <span className={`rounded bg-superficie-2 px-1.5 py-0.5 text-xs text-texto-2 shadow-[inset_0_0_0_1px_var(--linea)] ${mono ? "font-mono" : ""}`}>
       {children}
     </span>
+  );
+}
+
+const RE_PENDIENTE = /<[A-Z0-9_]+>/g;
+
+function placeholdersManuales(texto) {
+  return [...new Set(texto.match(RE_PENDIENTE) ?? [])];
+}
+
+function AdvertenciaManual({ texto }) {
+  const pendientes = placeholdersManuales(texto);
+  if (pendientes.length === 0) return null;
+  return (
+    <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-nocumple-suave px-3 py-2 text-xs text-nocumple">
+      <TriangleAlert aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+      <span>
+        Completar a mano antes de ejecutar: <span className="font-mono">{pendientes.join(", ")}</span>. El instrumento no puede generar este
+        valor (es un secreto o depende del negocio).
+      </span>
+    </p>
   );
 }
 
@@ -107,6 +127,29 @@ function MatrizInstrumento({ entradas }) {
             }
           >
             <div className="space-y-5 text-sm">
+              {e.descripcion && (
+                <div>
+                  <p className="text-sm font-semibold">Descripción</p>
+                  <p className="mt-1.5 text-texto">{e.descripcion}</p>
+                  {e.fuentes?.length > 0 && (
+                    <details className="group mt-2">
+                      <summary className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-texto-3 hover:text-texto">
+                        <ChevronRight aria-hidden="true" className="size-3.5 transition-transform duration-150 group-open:rotate-90" />
+                        Fuentes ({e.fuentes.length})
+                      </summary>
+                      <ul className="mt-1.5 ml-[1.125rem] space-y-1">
+                        {e.fuentes.map((f) => (
+                          <li key={f.url} className="text-xs">
+                            <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-acento hover:underline">
+                              {f.titulo}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </div>
+              )}
               <dl className="flex flex-wrap gap-x-8 gap-y-2">
                 <div>
                   <dt className="text-xs text-texto-3">Versión mínima</dt>
@@ -120,8 +163,29 @@ function MatrizInstrumento({ entradas }) {
                   <dt className="text-xs text-texto-3">Requiere</dt>
                   <dd className="font-mono text-[0.8125rem]">{e.requiere.join(", ")}</dd>
                 </div>
+                <div>
+                  <dt className="text-xs text-texto-3">Variables</dt>
+                  <dd className="font-mono text-[0.8125rem]">{e.binds?.length > 0 ? e.binds.map((b) => `:${b}`).join(", ") : "ninguna"}</dd>
+                </div>
               </dl>
-              <BloqueCodigo titulo="Observable (control detectivo)" texto={e.sql} />
+              <div>
+                <BloqueCodigo titulo="Observable (control detectivo)" texto={e.sql} />
+                {e.notas_implementacion && <p className="mt-2 text-texto-2">{e.notas_implementacion}</p>}
+              </div>
+              {e.correctivo.pasos?.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Pasos previos o condicionales</p>
+                  <ol className="space-y-2">
+                    {e.correctivo.pasos.map((paso, i) => (
+                      <li key={i} className="rounded-lg bg-superficie-2 px-4 py-3 shadow-[inset_0_0_0_1px_var(--linea)]">
+                        <p className="text-xs font-medium text-texto-2">{paso.condicion ? `Si ${paso.condicion}:` : `Paso ${i + 1}`}</p>
+                        <pre className={`${codigo} mt-1.5`}>{paso.sql}</pre>
+                        <AdvertenciaManual texto={paso.sql} />
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
               <div>
                 <BloqueCodigo
                   titulo="Plantilla del correctivo"
@@ -130,6 +194,12 @@ function MatrizInstrumento({ entradas }) {
                     Object.entries(e.correctivo.plantillas)
                       .map(([tipo, plantilla]) => `[${tipo}]\n${plantilla}`)
                       .join("\n\n")
+                  }
+                />
+                <AdvertenciaManual
+                  texto={
+                    e.correctivo.plantilla ??
+                    Object.values(e.correctivo.plantillas ?? {}).join("\n")
                   }
                 />
                 {e.correctivo.nota && <p className="mt-2 text-texto-2">{e.correctivo.nota}</p>}

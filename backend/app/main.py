@@ -12,12 +12,12 @@ from contextlib import asynccontextmanager, contextmanager
 from typing import Any
 
 import oracledb
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 
 from . import almacen, descubrimiento, empresas, motor, prevuelo, reportes
-from .catalogo import Catalogo, cargar_catalogo
+from .catalogo import Catalogo, cargar_catalogo, extraer_binds
 from .config import get_config
 from .conexiones import (
     ConexionFallida,
@@ -26,7 +26,7 @@ from .conexiones import (
     abrir_conexion,
     mensaje_oracle,
 )
-from .correctivos import ErrorRender, generar_script, renderizar
+from .correctivos import ErrorRender, aplicar_valores_manuales, detalle_correctivos, generar_script, renderizar
 from .evaluacion import ResultadoControl
 from .laboratorios import cargar_guias
 from .frontend import montar_frontend
@@ -38,7 +38,9 @@ from .modelos import (
     EmpresaPublica,
     Estado,
     InstanciaCrear,
+    MarcarCorrectivoPeticion,
     RevisionPeticion,
+    ValoresCorrectivo,
 )
 
 
@@ -53,7 +55,7 @@ app = FastAPI(title="Instrumento de auditoría de confidencialidad ISO 27001 par
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(get_config().cors_origins),
-    allow_methods=["GET", "POST", "PUT"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
@@ -119,7 +121,11 @@ def salud() -> dict[str, str]:
 @app.get("/api/catalogo")
 def obtener_catalogo(catalogo: Catalogo = Depends(get_catalogo)) -> list[dict[str, Any]]:
     return [
-        {**e.model_dump(mode="json"), "sql": catalogo.sql_por_obs[e.id]}
+        {
+            **e.model_dump(mode="json"),
+            "sql": catalogo.sql_por_obs[e.id],
+            "binds": sorted(extraer_binds(catalogo.sql_por_obs[e.id])),
+        }
         for e in catalogo.entradas
     ]
 
@@ -342,10 +348,12 @@ def obtener_hallazgo(ejecucion_id: int, obs_id: str, catalogo: Catalogo = Depend
     if resultado is None:
         raise HTTPException(status_code=404, detail=f"La ejecución {ejecucion_id} no tiene el observable {obs_id}")
     entrada = catalogo.entrada(obs_id)
+    empresa = empresas.obtener_empresa(ejecucion["empresa_id"])
+    parametros = empresas.perfil_de_empresa(empresa, catalogo.perfil_default)["parametros"]
     correctivos = []
     for hallazgo in resultado["hallazgos"]:
         try:
-            correctivos.append({"hallazgo": hallazgo, "script": renderizar(entrada, hallazgo), "error": None})
+            correctivos.append({"hallazgo": hallazgo, "script": renderizar(entrada, hallazgo, parametros), "error": None})
         except (ErrorRender, KeyError) as exc:
             correctivos.append({"hallazgo": hallazgo, "script": None, "error": str(exc)})
     return {
@@ -356,24 +364,69 @@ def obtener_hallazgo(ejecucion_id: int, obs_id: str, catalogo: Catalogo = Depend
     }
 
 
-@app.get("/api/ejecuciones/{ejecucion_id}/correctivos")
-def obtener_correctivos(
-    ejecucion_id: int,
-    descargar: bool = Query(default=False),
-    catalogo: Catalogo = Depends(get_catalogo),
-):
+@app.get("/api/ejecuciones/{ejecucion_id}/correctivos-detalle")
+def obtener_correctivos_detalle(ejecucion_id: int, catalogo: Catalogo = Depends(get_catalogo)):
+    """Lista por observable/hallazgo con lo que ya está listo y lo que falta llenar
+    a mano (con su alcance y guía), para la pantalla de revisión de correctivos."""
     ejecucion = reportes.obtener_ejecucion(ejecucion_id)
     empresa = empresas.obtener_empresa(ejecucion["empresa_id"])
+    parametros = empresas.perfil_de_empresa(empresa, catalogo.perfil_default)["parametros"]
+    marcas = reportes.obtener_marcas_correctivos(ejecucion_id)
+    observables = detalle_correctivos(ejecucion["resultados"], catalogo, parametros)
+    for obs in observables:
+        marca = marcas.get(obs["obs_id"])
+        obs["resuelto"] = marca is not None and marca["estado"] == "resuelto"
+        obs["pendiente_marcado"] = marca is not None and marca["estado"] == "pendiente"
+        obs["marcado_en"] = marca["marcado_en"] if marca else None
+        obs["marcado_nota"] = marca["nota"] if marca else None
+    return {"ejecucion_id": ejecucion_id, "observables": observables}
+
+
+@app.post("/api/ejecuciones/{ejecucion_id}/correctivos-resueltos/{obs_id}")
+def marcar_correctivo(ejecucion_id: int, obs_id: str, peticion: MarcarCorrectivoPeticion, catalogo: Catalogo = Depends(get_catalogo)):
+    """'resuelto': el DBA ya lo arregló por su cuenta, se excluye del script final.
+    'pendiente': lo deja para después; sigue en el script, pero no bloquea generarlo.
+    Queda registrado (no es solo de la sesión) hasta que se quite o se reemplace."""
+    try:
+        catalogo.entrada(obs_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"No existe el observable {obs_id}") from None
+    reportes.marcar_correctivo(ejecucion_id, obs_id, peticion.estado, peticion.nota)
+    return {"ok": True}
+
+
+@app.delete("/api/ejecuciones/{ejecucion_id}/correctivos-resueltos/{obs_id}")
+def quitar_marca_correctivo(ejecucion_id: int, obs_id: str):
+    reportes.quitar_marca_correctivo(ejecucion_id, obs_id)
+    return {"ok": True}
+
+
+@app.post("/api/ejecuciones/{ejecucion_id}/correctivos")
+def generar_correctivos(
+    ejecucion_id: int,
+    valores: ValoresCorrectivo = ValoresCorrectivo(),
+    catalogo: Catalogo = Depends(get_catalogo),
+):
+    """Arma el script final sustituyendo los placeholders por lo que la persona
+    llenó en la pantalla. No se guarda nada: los valores solo viven en esta petición.
+    Solo entran los observables sin marcar ('activos'): los 'resuelto' y los
+    'pendiente' quedan fuera del script hasta que se reactiven."""
+    ejecucion = reportes.obtener_ejecucion(ejecucion_id)
+    empresa = empresas.obtener_empresa(ejecucion["empresa_id"])
+    parametros = {**empresas.perfil_de_empresa(empresa, catalogo.perfil_default)["parametros"], **valores.globales}
+    marcas = reportes.obtener_marcas_correctivos(ejecucion_id)
+    resultados = [r for r in ejecucion["resultados"] if r["obs_id"] not in marcas]
+    resultados = aplicar_valores_manuales(resultados, catalogo, valores.por_hallazgo)
     script = generar_script(
         empresa=empresa["nombre"],
         ejecucion_id=ejecucion_id,
         etiqueta=ejecucion["etiqueta"],
         fecha=ejecucion["iniciada_en"],
-        resultados=ejecucion["resultados"],
+        resultados=resultados,
         catalogo=catalogo,
+        parametros=parametros,
     )
-    cabeceras = {"Content-Disposition": f'attachment; filename="correctivos_ejecucion_{ejecucion_id}.sql"'} if descargar else {}
-    return PlainTextResponse(script, headers=cabeceras)
+    return PlainTextResponse(script)
 
 
 @app.get("/api/ejecuciones/{ejecucion_id}/plan-mejora")

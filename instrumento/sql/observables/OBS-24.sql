@@ -1,13 +1,3 @@
--- OBS-24 | A8.8 Gestion de vulnerabilidades tecnicas
--- Version del motor y antiguedad del ultimo parche SQL aplicado con exito.
--- Es hallazgo si no hay parches registrados o el ultimo supera
--- :dias_max_sin_parche. La antiguedad se mide desde que se aplico, no desde que
--- Oracle publico el parche: es una aproximacion documentada.
--- En Oracle XE no se distribuyen Release Updates trimestrales: el hallazgo se
--- gestiona como aceptacion de riesgo documentada (estado Parcial justificado).
--- Alcance: Instancia | Version minima: 19
--- Binds: :dias_max_sin_parche (numero)
--- Regla: cada fila es un hallazgo.
 SELECT v.banner                                               AS version,
        NVL(TO_CHAR(MAX(r.action_time), 'YYYY-MM-DD'), 'SIN REGISTRO') AS ultimo_parche,
        NVL(TO_CHAR(TRUNC(SYSDATE - CAST(MAX(r.action_time) AS DATE))), 'N/D') AS dias

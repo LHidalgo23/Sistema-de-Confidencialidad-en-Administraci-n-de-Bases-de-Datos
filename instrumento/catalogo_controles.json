@@ -4,18 +4,40 @@
     "control_iso": "A5.12",
     "controles_adicionales": [],
     "nombre": "Columnas sensibles sin clasificación registrada",
+    "descripcion": "Verifica que cada columna que el descubrimiento marcó como sensible tenga su nivel de clasificación anotado en el comentario de la columna del diccionario de datos, usando el marcador que define el perfil de la empresa. Si falta el comentario o no contiene el marcador, el dato sensible queda sin evidencia de que alguien lo clasificó, lo que impide aplicar después controles proporcionales al riesgo (cifrado, redacción, auditoría). El mecanismo se apoya en COMMENT ON COLUMN, la única forma nativa de Oracle de adjuntar metadatos persistentes y consultables a una columna sin crear tablas auxiliares.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database SQL Language Reference 19c — sentencia COMMENT",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/COMMENT.html"
+      }
+    ],
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Toda columna sensible descubierta tiene su clasificación en el comentario de columna (0 filas).",
     "riesgo": "R-CONF-01",
     "tarea": "T-01",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_COL_COMMENTS"],
+    "requiere": [
+      "DBA_COL_COMMENTS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-01.sql",
-      "columnas": ["esquema", "tabla", "columna", "nivel", "marcador", "comentario_actual"],
-      "identificador": ["esquema", "tabla", "columna"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "tabla",
+        "columna",
+        "nivel",
+        "marcador",
+        "comentario_actual"
+      ],
+      "identificador": [
+        "esquema",
+        "tabla",
+        "columna"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "COMMENT ON COLUMN {esquema}.{tabla}.{columna} IS '{marcador!l}: {nivel!l}. {comentario_actual!l}';",
@@ -29,18 +51,41 @@
     "control_iso": "A5.15",
     "controles_adicionales": [],
     "nombre": "Objetos de negocio con privilegios para PUBLIC",
+    "descripcion": "Detecta objetos de un esquema de negocio con algún privilegio otorgado al rol implícito PUBLIC, al que pertenecen automáticamente todas las cuentas de la base, incluidas las que se crean en el futuro. Un GRANT a PUBLIC no se puede acotar por usuario ni revisar por separado: equivale a otorgar el privilegio a cualquiera que obtenga una cuenta, lo que es incompatible con el principio de mínimo privilegio. La documentación de Oracle advierte que un privilegio otorgado a PUBLIC se agrega de inmediato al dominio de privilegios de todo usuario de la base de datos.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database SQL Language Reference — sentencia GRANT",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/GRANT.html"
+      },
+      {
+        "titulo": "Oracle Database Security Guide — Configuring Privilege and Role Authorization",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/21/dbseg/configuring-privilege-and-role-authorization.html"
+      }
+    ],
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Ningún objeto de un esquema de negocio tiene privilegios otorgados a PUBLIC (0 filas).",
     "riesgo": "R-CONF-01",
     "tarea": "T-02",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_TAB_PRIVS"],
+    "requiere": [
+      "DBA_TAB_PRIVS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-02.sql",
-      "columnas": ["esquema", "objeto", "privilegio"],
-      "identificador": ["esquema", "objeto", "privilegio"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "objeto",
+        "privilegio"
+      ],
+      "identificador": [
+        "esquema",
+        "objeto",
+        "privilegio"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "REVOKE {privilegio!k} ON {esquema}.{objeto} FROM PUBLIC;",
@@ -54,22 +99,62 @@
     "control_iso": "A5.15",
     "controles_adicionales": [],
     "nombre": "Privilegios sobre objetos otorgados directo a usuarios",
+    "descripcion": "Comprueba que los privilegios sobre objetos de negocio lleguen a las cuentas a través de roles y no mediante GRANT directo a un usuario. Un grant directo no se puede revisar ni revocar de forma centralizada cuando cambia la función de la persona, y se vuelve invisible en una auditoría que solo lista roles. Oracle recomienda administrar el acceso por roles precisamente porque agrupan privilegios que se otorgan y revocan como una unidad, tal como documenta el capítulo de autorización por roles y privilegios de la Guía de seguridad.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide — Configuring Privilege and Role Authorization",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/21/dbseg/configuring-privilege-and-role-authorization.html"
+      },
+      {
+        "titulo": "Oracle Database Reference 19c — vista ALL_TAB_PRIVS (relacionada con DBA_TAB_PRIVS)",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/ALL_TAB_PRIVS.html"
+      }
+    ],
+    "notas_implementacion": "La consulta excluye los privilegios donde el beneficiario (grantee) es el propio dueño del objeto: un usuario siempre tiene acceso implícito a lo que le pertenece, así que no es un hallazgo de control de acceso.",
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Los privilegios sobre objetos de negocio llegan por roles: ningún usuario tiene grants directos (0 filas).",
     "riesgo": "R-CONF-01",
     "tarea": "T-02",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_TAB_PRIVS", "DBA_USERS"],
+    "requiere": [
+      "DBA_TAB_PRIVS",
+      "DBA_USERS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-03.sql",
-      "columnas": ["grantee", "esquema", "objeto", "privilegio"],
-      "identificador": ["grantee", "esquema", "objeto", "privilegio"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "grantee",
+        "esquema",
+        "objeto",
+        "privilegio"
+      ],
+      "identificador": [
+        "grantee",
+        "esquema",
+        "objeto",
+        "privilegio"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Crear (si no existe) un rol funcional y otorgar el privilegio al rol antes de revocar:\n-- GRANT {privilegio!k} ON {esquema}.{objeto} TO <ROL_FUNCIONAL>;\n-- GRANT <ROL_FUNCIONAL> TO {grantee};\nREVOKE {privilegio!k} ON {esquema}.{objeto} FROM {grantee};",
-      "nota": "El rol funcional debe definirse según la función del puesto, no según la persona. Descomentar los GRANT una vez definido el rol."
+      "plantilla": "REVOKE {privilegio!k} ON {esquema}.{objeto} FROM {grantee};",
+      "pasos": [
+        {
+          "condicion": "Aún no existe un rol funcional que agrupe este privilegio",
+          "sql": "GRANT {privilegio!k} ON {esquema}.{objeto} TO {rol_funcional};\nGRANT {rol_funcional} TO {grantee};"
+        }
+      ],
+      "placeholders": [
+        {
+          "token": "rol_funcional",
+          "alcance": "por_hallazgo",
+          "guia": "Nombre del rol que agrupará este privilegio sobre el objeto. Si la empresa ya tiene una convención de nombres de roles, úsala; si no, algo descriptivo como ROL_<OBJETO>_LECTURA funciona."
+        }
+      ],
+      "nota": "El rol funcional debe definirse según la función del puesto, no según la persona."
     },
     "preventivo": "Gestión de accesos basada en roles: toda solicitud de acceso se resuelve asignando un rol, nunca un grant directo (A5.15, A5.18).",
     "severidad": "media"
@@ -79,18 +164,37 @@
     "control_iso": "A5.16",
     "controles_adicionales": [],
     "nombre": "Cuentas abiertas sin uso reciente",
+    "descripcion": "Identifica cuentas en estado OPEN que no han iniciado sesión en más días de los que tolera la política de la empresa. Una cuenta abierta y sin uso es superficie de ataque pura: no aporta valor operativo y, si sus credenciales se filtran o quedan débiles, nadie nota el acceso porque no se espera actividad en ella. El criterio se basa en DBA_USERS, la vista de referencia de Oracle para el estado y la fecha de conexión de cada cuenta de la base.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide 19c — Configuring Authentication",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-authentication.html"
+      }
+    ],
+    "notas_implementacion": "Se excluyen las cuentas sin autenticación (NO AUTHENTICATION, dueños de esquema): no pueden iniciar sesión, así que la inactividad no es un riesgo en ellas. Tampoco se evalúan las cuentas comunes (prefijo C##): se administran desde CDB$ROOT y su falta de actividad en una PDB no es una señal de abandono.",
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Ninguna cuenta abierta lleva más de N días sin iniciar sesión (0 filas).",
     "riesgo": "R-CONF-02",
     "tarea": "T-01",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_USERS"],
+    "requiere": [
+      "DBA_USERS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-04.sql",
-      "columnas": ["usuario", "estado", "ultimo_acceso", "creado"],
-      "identificador": ["usuario"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "usuario",
+        "estado",
+        "ultimo_acceso",
+        "creado"
+      ],
+      "identificador": [
+        "usuario"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "ALTER USER {usuario} ACCOUNT LOCK;",
@@ -102,20 +206,43 @@
   {
     "id": "OBS-05",
     "control_iso": "A5.17",
-    "controles_adicionales": ["A5.16"],
+    "controles_adicionales": [
+      "A5.16"
+    ],
     "nombre": "Cuentas abiertas con contraseña por defecto",
+    "descripcion": "Cruza las cuentas abiertas contra la lista de contraseñas por defecto conocidas de Oracle (por ejemplo, las de esquemas de ejemplo o componentes instalados). Oracle documenta la vista DBA_USERS_WITH_DEFPWD exactamente para este propósito: localizar cuentas que todavía usan una contraseña por defecto y que, por ser pública y conocida, cualquiera puede probar sin necesidad de adivinarla. La propia guía de seguridad recomienda no reutilizar siquiera esa contraseña en versiones anteriores al cambiarla.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Reference 19c — vista DBA_USERS_WITH_DEFPWD",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_USERS_WITH_DEFPWD.html"
+      },
+      {
+        "titulo": "Oracle Database Security Guide 19c — Configuring Authentication",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-authentication.html"
+      }
+    ],
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Ninguna cuenta abierta conserva una contraseña por defecto de Oracle (0 filas).",
     "riesgo": "R-CONF-02",
     "tarea": "T-03",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_USERS_WITH_DEFPWD", "DBA_USERS"],
+    "requiere": [
+      "DBA_USERS_WITH_DEFPWD",
+      "DBA_USERS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-05.sql",
-      "columnas": ["usuario", "estado"],
-      "identificador": ["usuario"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "usuario",
+        "estado"
+      ],
+      "identificador": [
+        "usuario"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "ALTER USER {usuario} PASSWORD EXPIRE;",
@@ -130,18 +257,43 @@
     "control_iso": "A5.17",
     "controles_adicionales": [],
     "nombre": "Perfiles sin función de verificación o con límites débiles",
+    "descripcion": "Revisa que los perfiles realmente asignados a cuentas definan una función de verificación de complejidad de contraseña (PASSWORD_VERIFY_FUNCTION) y límites de intentos, vigencia e inactividad dentro de los umbrales de la empresa. PASSWORD_VERIFY_FUNCTION solo se aplica cuando la contraseña se cambia por SQL*Plus o un cliente equivalente, no a cuentas autenticadas por archivo de contraseñas, así que un perfil sin ella deja pasar contraseñas triviales sin que Oracle las rechace. Oracle entrega funciones de ejemplo (ORA12C_VERIFY_FUNCTION, ORA12C_STRONG_VERIFY_FUNCTION) listas para asignar a un perfil con ALTER PROFILE.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Reference 19c — vista DBA_PROFILES",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_PROFILES.html"
+      },
+      {
+        "titulo": "Oracle Database Security Guide 19c — Configuring Authentication",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-authentication.html"
+      }
+    ],
+    "notas_implementacion": "Un límite en estado DEFAULT se resuelve contra los valores del perfil DEFAULT (herencia de Oracle). UNLIMITED, NULL o un valor no numérico se tratan como límite débil. Requiere Oracle 12.2+ por el uso de TO_NUMBER(… DEFAULT ON CONVERSION ERROR).",
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "Los perfiles en uso tienen función de verificación, intentos, vigencia e inactividad dentro de los umbrales (0 filas).",
     "riesgo": "R-CONF-02",
     "tarea": "T-03",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_PROFILES", "DBA_USERS"],
+    "requiere": [
+      "DBA_PROFILES",
+      "DBA_USERS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-06.sql",
-      "columnas": ["perfil", "parametro", "actual", "recomendado"],
-      "identificador": ["perfil", "parametro"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "perfil",
+        "parametro",
+        "actual",
+        "recomendado"
+      ],
+      "identificador": [
+        "perfil",
+        "parametro"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "ALTER PROFILE {perfil} LIMIT {parametro!k} {recomendado!k};",
@@ -155,18 +307,41 @@
     "control_iso": "A5.18",
     "controles_adicionales": [],
     "nombre": "Privilegios de sistema directos no justificados",
+    "descripcion": "Busca cuentas de negocio con privilegios de sistema otorgados de forma directa (no vía rol) que no están en la lista permitida de la empresa. Un privilegio de sistema directo sobrevive a cambios de rol de la persona y no queda sujeto a la revisión periódica de accesos que sí cubre a los roles, por lo que tiende a acumularse silenciosamente con el tiempo. El capítulo de autorización de privilegios y roles de Oracle recomienda administrar los privilegios de sistema a través de roles para mantenerlos auditables y revocables como grupo.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide — Configuring Privilege and Role Authorization",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/21/dbseg/configuring-privilege-and-role-authorization.html"
+      },
+      {
+        "titulo": "Oracle Database Reference 19c — vista DBA_SYS_PRIVS",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_SYS_PRIVS.html"
+      }
+    ],
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Ninguna cuenta de negocio tiene privilegios de sistema directos fuera de la lista permitida (0 filas).",
     "riesgo": "R-CONF-01",
     "tarea": "T-02",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_SYS_PRIVS", "DBA_USERS"],
+    "requiere": [
+      "DBA_SYS_PRIVS",
+      "DBA_USERS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-07.sql",
-      "columnas": ["grantee", "privilegio", "con_admin_option"],
-      "identificador": ["grantee", "privilegio"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "grantee",
+        "privilegio",
+        "con_admin_option"
+      ],
+      "identificador": [
+        "grantee",
+        "privilegio"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "REVOKE {privilegio!k} FROM {grantee};",
@@ -181,26 +356,50 @@
     "control_iso": "A5.33",
     "controles_adicionales": [],
     "nombre": "AUDIT_ADMIN indebido o sin purga de la pista de auditoría",
+    "descripcion": "Verifica dos condiciones del rol AUDIT_ADMIN de la auditoría unificada: que solo lo tengan las cuentas autorizadas y que exista un trabajo de purga configurado para que la pista no crezca sin control. AUDIT_ADMIN puede crear, modificar y deshabilitar políticas de auditoría, así que en manos equivocadas permite apagar la evidencia de otras acciones indebidas; separar quién administra la auditoría de quién administra los datos es la base de la separación de funciones. La retención se gestiona con el paquete DBMS_AUDIT_MGMT, que documenta los procedimientos para fijar la marca de archivado y crear el trabajo de purga de la pista unificada.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database PL/SQL Packages and Types Reference 19c — DBMS_AUDIT_MGMT",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/arpls/DBMS_AUDIT_MGMT.html"
+      },
+      {
+        "titulo": "Oracle Database Security Guide 19c — Introduction to Auditing",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html"
+      }
+    ],
     "tipo_prueba": "Revisión de auditoría",
     "resultado_esperado": "AUDIT_ADMIN solo está en cuentas autorizadas y existe un trabajo de purga habilitado (0 filas).",
     "riesgo": "R-CONF-05",
     "tarea": "T-11",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_ROLE_PRIVS", "DBA_USERS", "DBA_ROLES", "DBA_AUDIT_MGMT_CLEANUP_JOBS"],
+    "requiere": [
+      "DBA_ROLE_PRIVS",
+      "DBA_USERS",
+      "DBA_ROLES",
+      "DBA_AUDIT_MGMT_CLEANUP_JOBS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-08.sql",
-      "columnas": ["tipo", "grantee"],
-      "identificador": ["tipo", "grantee"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "tipo",
+        "grantee"
+      ],
+      "identificador": [
+        "tipo",
+        "grantee"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "discriminador": "tipo",
       "plantillas": {
         "AUDIT_ADMIN": "REVOKE AUDIT_ADMIN FROM {grantee};",
-        "RETENCION": "-- Purga programada de la pista unificada (definir primero la política de retención de la empresa):\n-- BEGIN\n--   DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(\n--     audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n--     last_archive_time => SYSTIMESTAMP - INTERVAL '<DIAS_RETENCION>' DAY);\n--   DBMS_AUDIT_MGMT.CREATE_PURGE_JOB(\n--     audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n--     audit_trail_purge_interval => 24,\n--     audit_trail_purge_name => 'PURGA_AUDITORIA_UNIFICADA',\n--     use_last_arch_timestamp => TRUE);\n-- END;\n-- /"
+        "RETENCION": "BEGIN\n  DBMS_AUDIT_MGMT.SET_LAST_ARCHIVE_TIMESTAMP(\n    audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n    last_archive_time => SYSTIMESTAMP - INTERVAL '{dias_retencion_auditoria!n}' DAY);\n  DBMS_AUDIT_MGMT.CREATE_PURGE_JOB(\n    audit_trail_type => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,\n    audit_trail_purge_interval => 24,\n    audit_trail_purge_name => 'PURGA_AUDITORIA_UNIFICADA',\n    use_last_arch_timestamp => TRUE);\nEND;\n/"
       },
-      "nota": "La retención de la auditoría unificada se gestiona con DBMS_AUDIT_MGMT (marca de tiempo de archivo y trabajo de purga); no existe un parámetro de 'días de retención'. Respaldar o exportar la pista antes de purgar si la normativa lo exige."
+      "nota": "Los días de retención salen del parámetro dias_retencion_auditoria del perfil de la empresa (365 por defecto; ajustarlo en el perfil si la política de la empresa exige otro plazo). La retención de la auditoría unificada se gestiona con DBMS_AUDIT_MGMT (marca de tiempo de archivo y trabajo de purga); no existe un parámetro de 'días de retención' nativo de Oracle. Respaldar o exportar la pista antes de purgar si la normativa lo exige."
     },
     "preventivo": "Separación de funciones: quien administra la auditoría no administra los datos ni el sistema, y la pista se exporta a un repositorio inmutable o SIEM antes de purgarse (A5.33, A8.15).",
     "severidad": "alta"
@@ -210,22 +409,41 @@
     "control_iso": "A8.2",
     "controles_adicionales": [],
     "nombre": "Rol DBA fuera de las cuentas autorizadas",
+    "descripcion": "Comprueba que el rol predefinido DBA, que agrupa prácticamente todos los privilegios de sistema de la base, solo lo tengan las cuentas que la empresa autorizó explícitamente. Una cuenta de aplicación con rol DBA puede leer, modificar o eliminar cualquier dato de cualquier esquema, sin pasar por los controles pensados para cuentas de negocio, lo que convierte un fallo de la aplicación en un incidente de confidencialidad de toda la base. Es el caso extremo del principio de mínimo privilegio que cubre el capítulo de autorización de privilegios y roles de la Guía de seguridad de Oracle.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide — Configuring Privilege and Role Authorization",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/21/dbseg/configuring-privilege-and-role-authorization.html"
+      }
+    ],
+    "notas_implementacion": "Se excluyen las cuentas y roles que mantiene Oracle (SYS, SYSTEM, …). La consulta usa NOT EXISTS en vez de NOT IN: un solo NULL en la lista de autorizados haría que NOT IN no devolviera ninguna fila y ocultaría todos los hallazgos.",
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "El rol DBA solo lo tienen las cuentas autorizadas (0 filas).",
     "riesgo": "R-CONF-01",
     "tarea": "T-02",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_ROLE_PRIVS", "DBA_USERS", "DBA_ROLES"],
+    "requiere": [
+      "DBA_ROLE_PRIVS",
+      "DBA_USERS",
+      "DBA_ROLES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-09.sql",
-      "columnas": ["grantee", "con_admin_option"],
-      "identificador": ["grantee"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "grantee",
+        "con_admin_option"
+      ],
+      "identificador": [
+        "grantee"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Antes de revocar, identificar los privilegios realmente requeridos por la cuenta y otorgarlos mediante un rol funcional.\nREVOKE DBA FROM {grantee};",
-      "nota": "Una cuenta de aplicación nunca debería tener el rol DBA. Probar la aplicación en un ambiente no productivo tras la revocación."
+      "plantilla": "REVOKE DBA FROM {grantee};",
+      "nota": "Antes de revocar, identificar los privilegios realmente requeridos por la cuenta y otorgarlos mediante un rol funcional. Una cuenta de aplicación nunca debería tener el rol DBA. Probar la aplicación en un ambiente no productivo tras la revocación."
     },
     "preventivo": "Revisión trimestral de privilegios (A5.18) y política de auditoría unificada sobre GRANT/REVOKE (A8.15).",
     "severidad": "alta"
@@ -235,22 +453,46 @@
     "control_iso": "A8.2",
     "controles_adicionales": [],
     "nombre": "Privilegios ANY a cuentas no administrativas",
+    "descripcion": "Detecta cuentas no administrativas con algún privilegio ANY (por ejemplo SELECT ANY TABLE), que actúa sobre todos los esquemas de la base, incluidos los de otras aplicaciones que la cuenta no debería poder tocar. A diferencia de un privilegio otorgado sobre un objeto puntual, un privilegio ANY no se puede acotar por esquema: es una concesión de alcance total que casi siempre indica conveniencia en lugar de una necesidad real del puesto. La Guía de seguridad de Oracle documenta estos privilegios en el mismo capítulo de autorización y recomienda reemplazarlos por grants explícitos sobre los objetos necesarios.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide — Configuring Privilege and Role Authorization",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/21/dbseg/configuring-privilege-and-role-authorization.html"
+      },
+      {
+        "titulo": "Oracle Database Reference 19c — vista DBA_SYS_PRIVS",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_SYS_PRIVS.html"
+      }
+    ],
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Ninguna cuenta no administrativa tiene privilegios ANY (0 filas).",
     "riesgo": "R-CONF-01",
     "tarea": "T-02",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_SYS_PRIVS", "DBA_USERS", "DBA_ROLES"],
+    "requiere": [
+      "DBA_SYS_PRIVS",
+      "DBA_USERS",
+      "DBA_ROLES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-10.sql",
-      "columnas": ["grantee", "privilegio", "con_admin_option"],
-      "identificador": ["grantee", "privilegio"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "grantee",
+        "privilegio",
+        "con_admin_option"
+      ],
+      "identificador": [
+        "grantee",
+        "privilegio"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Reemplazar por grants explícitos sobre los objetos necesarios, mediante un rol funcional.\nREVOKE {privilegio!k} FROM {grantee};",
-      "nota": "Un privilegio ANY da acceso a todos los esquemas, incluidos los de otras aplicaciones. Identificar qué objetos usa realmente la cuenta antes de revocar."
+      "plantilla": "REVOKE {privilegio!k} FROM {grantee};",
+      "nota": "Reemplazar por grants explícitos sobre los objetos necesarios, mediante un rol funcional. Un privilegio ANY da acceso a todos los esquemas, incluidos los de otras aplicaciones. Identificar qué objetos usa realmente la cuenta antes de revocar."
     },
     "preventivo": "Principio de mínimo privilegio en el alta de cuentas y auditoría de las sentencias GRANT (A8.2, A8.15).",
     "severidad": "alta",
@@ -261,26 +503,50 @@
     "control_iso": "A8.2",
     "controles_adicionales": [],
     "nombre": "AUDIT_SYS_OPERATIONS desactivado o cuentas en el password file",
+    "descripcion": "Revisa dos controles sobre las cuentas con privilegios administrativos (SYSDBA, SYSOPER, SYSBACKUP, etc.): que el parámetro de instancia AUDIT_SYS_OPERATIONS esté en TRUE, para que las acciones de esas cuentas queden registradas incluso fuera de la base, y que el archivo de contraseñas (password file) solo contenga cuentas realmente autorizadas a conectarse con privilegios administrativos. Las conexiones SYSDBA eluden buena parte del control de acceso normal, así que auditarlas y limitar quién puede abrirlas es la defensa principal contra un abuso de ese nivel. El estado del password file se obtiene de V$PWFILE_USERS, la vista que Oracle documenta para listar cada cuenta del archivo y sus privilegios administrativos.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Reference 19c — vista V$PWFILE_USERS",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/V-PWFILE_USERS.html"
+      },
+      {
+        "titulo": "Oracle Database Security Guide 19c — Introduction to Auditing",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html"
+      }
+    ],
+    "notas_implementacion": "Si el parámetro de instancia no es visible desde la sesión de auditoría, la fila se marca como No evaluable en vez de reportarse como hallazgo o como conforme: evita un falso positivo cuando el dato simplemente no se pudo leer.",
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "AUDIT_SYS_OPERATIONS es TRUE y el password file solo contiene cuentas autorizadas (0 filas).",
     "riesgo": "R-CONF-05",
     "tarea": "T-07",
     "alcance": "Instancia",
     "version_min": 19,
-    "requiere": ["V$PARAMETER", "V$PWFILE_USERS"],
+    "requiere": [
+      "V$PARAMETER",
+      "V$PWFILE_USERS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-11.sql",
-      "columnas": ["tipo", "objeto", "actual"],
-      "identificador": ["tipo", "objeto"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "tipo",
+        "objeto",
+        "actual"
+      ],
+      "identificador": [
+        "tipo",
+        "objeto"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "discriminador": "tipo",
       "plantillas": {
-        "AUDIT_SYS_OPERATIONS": "-- Ejecutar en CDB$ROOT; requiere reinicio de la instancia.\nALTER SYSTEM SET audit_sys_operations = TRUE SCOPE = SPFILE;",
-        "PWFILE": "-- Revisar si {objeto} requiere privilegios administrativos ({actual!l}). Si no los requiere:\n-- REVOKE SYSDBA FROM {objeto};\n-- REVOKE SYSOPER FROM {objeto};\n-- REVOKE SYSBACKUP FROM {objeto};"
+        "AUDIT_SYS_OPERATIONS": "ALTER SYSTEM SET audit_sys_operations = TRUE SCOPE = SPFILE;",
+        "PWFILE": "REVOKE SYSDBA FROM {objeto};\nREVOKE SYSOPER FROM {objeto};\nREVOKE SYSBACKUP FROM {objeto};"
       },
-      "nota": "audit_sys_operations es un parámetro de instancia: no se puede cambiar desde una PDB. Las cuentas con SYSBACKUP legítimas (operador de respaldos) deben declararse en cuentas_pwfile_autorizadas."
+      "nota": "ALTER SYSTEM se ejecuta en CDB$ROOT y requiere reinicio de la instancia. Para PWFILE, ejecutar solo la línea REVOKE del privilegio que {objeto} no debería tener, según lo que reporte la columna 'actual'; las cuentas con SYSBACKUP legítimas (operador de respaldos) deben declararse en cuentas_pwfile_autorizadas."
     },
     "preventivo": "Separación de funciones con roles SYSBACKUP/SYSDG/SYSKM en lugar de SYSDBA compartido y revisión del password file en cada auditoría (A8.2).",
     "severidad": "alta",
@@ -291,22 +557,56 @@
     "control_iso": "A8.3",
     "controles_adicionales": [],
     "nombre": "Tablas sensibles sin política VPD",
+    "descripcion": "Verifica que toda tabla marcada como sensible tenga habilitada una política de Virtual Private Database (VPD), el mecanismo de Oracle para filtrar automáticamente qué filas puede ver cada usuario sin cambiar el texto de las consultas de la aplicación. Oracle reescribe la sentencia SQL en el momento del parseo y le añade el predicado que calcula la función de la política, de modo que el control queda adherido al objeto y no se puede eludir cambiando el cliente o la herramienta que consulta la base. Sin una política VPD, cualquier cuenta con SELECT sobre la tabla ve todas las filas, sin importar a qué área, paciente o cliente pertenezcan.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide 23c — Using Oracle Virtual Private Database to Control Data Access",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/23/dbseg/using-oracle-vpd-to-control-data-access.html"
+      },
+      {
+        "titulo": "Oracle Database PL/SQL Packages and Types Reference 19c — DBMS_RLS",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/arpls/DBMS_RLS.html"
+      }
+    ],
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "Toda tabla sensible tiene una política VPD habilitada (0 filas).",
     "riesgo": "R-CONF-01",
     "tarea": "T-02",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_POLICIES"],
+    "requiere": [
+      "DBA_POLICIES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-12.sql",
-      "columnas": ["esquema", "tabla"],
-      "identificador": ["esquema", "tabla"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "tabla"
+      ],
+      "identificador": [
+        "esquema",
+        "tabla"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- La regla de acceso depende del negocio: el instrumento no puede inventarla. Completar y descomentar.\n-- 1) CREATE OR REPLACE FUNCTION <ESQUEMA_SEGURIDAD>.FN_VPD_{tabla!b}(p_esquema VARCHAR2, p_objeto VARCHAR2) RETURN VARCHAR2 AS\n--    BEGIN RETURN '<predicado: por ejemplo, columna_responsable = SYS_CONTEXT(''USERENV'',''SESSION_USER'')>'; END;\n--    /\n-- 2) BEGIN\n--      DBMS_RLS.ADD_POLICY(object_schema => '{esquema!l}', object_name => '{tabla!l}',\n--        policy_name => 'POL_{tabla!l}', function_schema => '<ESQUEMA_SEGURIDAD>',\n--        policy_function => 'FN_VPD_{tabla!l}', statement_types => 'SELECT,INSERT,UPDATE,DELETE', update_check => TRUE);\n--    END;\n--    /",
-      "nota": "El esquema de seguridad que aloja la función de predicado debe ser distinto del dueño de la tabla. Los usuarios con EXEMPT ACCESS POLICY (incluido SYS) no están sujetos a VPD."
+      "plantilla": "BEGIN\n  DBMS_RLS.ADD_POLICY(object_schema => '{esquema!l}', object_name => '{tabla!l}',\n    policy_name => 'POL_{tabla!l}', function_schema => '{esquema_seguridad}',\n    policy_function => 'FN_VPD_{tabla!l}', statement_types => 'SELECT,INSERT,UPDATE,DELETE', update_check => TRUE);\nEND;\n/",
+      "pasos": [
+        {
+          "condicion": "Aún no existe la función de predicado de esta política",
+          "sql": "CREATE OR REPLACE FUNCTION {esquema_seguridad}.FN_VPD_{tabla!b}(p_esquema VARCHAR2, p_objeto VARCHAR2) RETURN VARCHAR2 AS\nBEGIN\n  RETURN '{predicado!l}';\nEND;\n/"
+        }
+      ],
+      "placeholders": [
+        {
+          "token": "predicado",
+          "alcance": "por_hallazgo",
+          "guia": "La condición que define qué filas puede ver cada usuario en esta tabla. Pregúntale al dueño del dato (por ejemplo, '¿un médico debe ver solo a sus pacientes, o a todos?'). Normalmente se basa en una columna que identifique al responsable, comparada con SYS_CONTEXT('USERENV','SESSION_USER')."
+        }
+      ],
+      "nota": "El esquema que aloja la función de predicado sale del parámetro esquema_seguridad del perfil de la empresa (SEG_AUDITORIA por defecto; debe existir y ser distinto del dueño de la tabla). La regla de acceso (el predicado) depende del negocio: el instrumento no puede inventarla, hay que definirla antes de aplicar esta plantilla (por ejemplo, columna_responsable = SYS_CONTEXT('USERENV','SESSION_USER')). Los usuarios con EXEMPT ACCESS POLICY (incluido SYS) no están sujetos a VPD."
     },
     "preventivo": "Definir en el diseño de cada tabla sensible quién puede ver qué filas (A8.3) y probar la política con usuarios reales de cada rol.",
     "severidad": "alta"
@@ -316,18 +616,35 @@
     "control_iso": "A8.5",
     "controles_adicionales": [],
     "nombre": "Cuentas con hashes de contraseña antiguos",
+    "descripcion": "Comprueba que las cuentas con contraseña solo conserven el hash de la versión 12C (SHA-512 con sal), sin los hashes heredados de versiones 10G u 11G que Oracle sigue generando por compatibilidad hacia atrás cuando el parámetro de red lo permite. Los hashes antiguos usan algoritmos más débiles y, al convivir con el hash moderno en la misma cuenta, dan a un atacante la opción de atacar el más fácil de romper. La forma soportada de depurarlos es fijar SQLNET.ALLOWED_LOGON_VERSION_SERVER en 12 o superior y forzar el cambio de contraseña, documentado en el capítulo de autenticación de la Guía de seguridad.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide 19c — Configuring Authentication",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-authentication.html"
+      }
+    ],
+    "notas_implementacion": "Las cuentas con autenticación externa o global (sin contraseña almacenada en la base) no tienen hash y quedan fuera de este observable.",
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Todas las cuentas con contraseña usan solo hashes 12C (0 filas).",
     "riesgo": "R-CONF-02",
     "tarea": "T-03",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_USERS"],
+    "requiere": [
+      "DBA_USERS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-13.sql",
-      "columnas": ["usuario", "versiones"],
-      "identificador": ["usuario"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "usuario",
+        "versiones"
+      ],
+      "identificador": [
+        "usuario"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "ALTER USER {usuario} PASSWORD EXPIRE;",
@@ -341,18 +658,38 @@
     "control_iso": "A8.10",
     "controles_adicionales": [],
     "nombre": "Objetos de negocio en la papelera de reciclaje",
+    "descripcion": "Detecta objetos de esquemas de negocio que quedaron en la papelera de reciclaje (recycle bin) tras un DROP sin PURGE. Mientras un objeto sigue en la papelera, sus datos permanecen físicamente en el tablespace y son recuperables con FLASHBACK TABLE ... TO BEFORE DROP, lo que significa que un DROP no es realmente una eliminación: cualquiera con privilegio suficiente puede restaurar una tabla que se creía borrada, incluidas las columnas sensibles que contenía. DBA_RECYCLEBIN es la vista que Oracle documenta para listar el contenido de la papelera de toda la base; la misma documentación aclara que solo los objetos borrados (no los truncados) son recuperables desde ahí.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Reference 19c — vista DBA_RECYCLEBIN",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_RECYCLEBIN.html"
+      }
+    ],
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "La papelera de reciclaje no contiene objetos de esquemas de negocio (0 filas).",
     "riesgo": "R-CONF-03",
     "tarea": "T-10",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_RECYCLEBIN"],
+    "requiere": [
+      "DBA_RECYCLEBIN"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-14.sql",
-      "columnas": ["esquema", "objeto", "tipo", "tablespace", "eliminado"],
-      "identificador": ["esquema", "objeto"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "objeto",
+        "tipo",
+        "tablespace",
+        "eliminado"
+      ],
+      "identificador": [
+        "esquema",
+        "objeto"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "PURGE TABLESPACE {tablespace} USER {esquema};",
@@ -366,18 +703,42 @@
     "control_iso": "A8.11",
     "controles_adicionales": [],
     "nombre": "Columnas sensibles sin política de Data Redaction",
+    "descripcion": "Verifica que toda columna sensible tenga una política de Oracle Data Redaction habilitada, que enmascara el valor en el resultado de la consulta sin alterar el dato almacenado. Es un control distinto y complementario a VPD: VPD decide qué filas se ven, Data Redaction decide qué partes de una columna se muestran a quién. Oracle documenta que la redacción no está pensada para detener a un usuario con privilegios administrativos o con EXEMPT REDACTION POLICY, que sigue viendo el valor real, así que el observable es un control sobre el acceso de negocio ordinario, no sobre cuentas con esos privilegios.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Advanced Security Guide 19c — Configuring Oracle Data Redaction Policies",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/asoag/configuring-oracle-data-redaction-policies.html"
+      },
+      {
+        "titulo": "Oracle Database Advanced Security Guide 19c — Part II, Using Oracle Data Redaction",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/asoag/asopart2.html"
+      }
+    ],
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "Toda columna sensible tiene una política de Data Redaction habilitada (0 filas).",
     "riesgo": "R-CONF-04",
     "tarea": "T-05",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["REDACTION_COLUMNS", "REDACTION_POLICIES"],
+    "requiere": [
+      "REDACTION_COLUMNS",
+      "REDACTION_POLICIES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-15.sql",
-      "columnas": ["esquema", "tabla", "columna"],
-      "identificador": ["esquema", "tabla", "columna"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "tabla",
+        "columna"
+      ],
+      "identificador": [
+        "esquema",
+        "tabla",
+        "columna"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "DECLARE\n  v_politica redaction_policies.policy_name%TYPE;\nBEGIN\n  BEGIN\n    SELECT policy_name INTO v_politica FROM redaction_policies\n     WHERE object_owner = '{esquema!l}' AND object_name = '{tabla!l}';\n    DBMS_REDACT.ALTER_POLICY(object_schema => '{esquema!l}', object_name => '{tabla!l}',\n      policy_name => v_politica, action => DBMS_REDACT.ADD_COLUMN,\n      column_name => '{columna!l}', function_type => DBMS_REDACT.FULL);\n  EXCEPTION WHEN NO_DATA_FOUND THEN\n    DBMS_REDACT.ADD_POLICY(object_schema => '{esquema!l}', object_name => '{tabla!l}',\n      policy_name => 'POL_REDACT_{tabla!l}', column_name => '{columna!l}',\n      function_type => DBMS_REDACT.FULL, expression => '1=1');\n  END;\nEND;\n/",
@@ -391,18 +752,41 @@
     "control_iso": "A8.12",
     "controles_adicionales": [],
     "nombre": "Canales de fuga: paquetes, directorios y Data Pump",
+    "descripcion": "Agrupa tres formas de sacar datos de la base sin pasar por los controles de las tablas: paquetes PL/SQL que acceden a red o al sistema de archivos (UTL_HTTP, UTL_TCP, UTL_FILE, entre otros) otorgados a PUBLIC, objetos DIRECTORY accesibles por cualquiera, y roles de Data Pump (EXP_FULL_DATABASE/IMP_FULL_DATABASE) fuera de las cuentas autorizadas. Con EXECUTE sobre UTL_HTTP o UTL_TCP otorgado a PUBLIC, cualquier cuenta puede abrir una conexión de red desde dentro de la base y enviar datos hacia afuera, sin dejar un rastro distinto al de una consulta SQL normal. La herramienta de evaluación de seguridad de Oracle (DBSAT) incluye exactamente estas comprobaciones como parte de reducir la superficie de ataque de una instalación por defecto.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Assessment Tool 3.1.0 — User Guide",
+        "url": "https://docs.oracle.com/en/database/oracle/security-assessment-tool/3.1.0/satrn/index.html"
+      }
+    ],
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "PUBLIC no tiene EXECUTE sobre UTL_* ni acceso a directorios, y Data Pump está restringido (0 filas).",
     "riesgo": "R-CONF-03",
     "tarea": "T-10",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_TAB_PRIVS", "DBA_DIRECTORIES", "DBA_ROLE_PRIVS", "DBA_USERS", "DBA_ROLES"],
+    "requiere": [
+      "DBA_TAB_PRIVS",
+      "DBA_DIRECTORIES",
+      "DBA_ROLE_PRIVS",
+      "DBA_USERS",
+      "DBA_ROLES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-16.sql",
-      "columnas": ["tipo", "grantee", "objeto", "privilegio"],
-      "identificador": ["tipo", "objeto"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "tipo",
+        "grantee",
+        "objeto",
+        "privilegio"
+      ],
+      "identificador": [
+        "tipo",
+        "objeto"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "discriminador": "tipo",
@@ -422,22 +806,39 @@
     "control_iso": "A8.13",
     "controles_adicionales": [],
     "nombre": "Respaldos recientes sin cifrar",
+    "descripcion": "Revisa que los respaldos de RMAN generados recientemente estén cifrados. Un respaldo sin cifrar es una copia completa y legible de la base: si el medio donde se guarda (disco, cinta, almacenamiento en la nube) se pierde o se filtra, todo el contenido sensible sale con él sin que haga falta comprometer la base en producción. RMAN soporta cifrado por contraseña, por la llave maestra de TDE (modo transparente) o combinando ambos; Oracle recomienda el modo basado en TDE sobre el de contraseña porque no depende de transportar una contraseña junto con el respaldo.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Backup and Recovery User's Guide 19c — tabla de contenidos, cap. 10.6 Encrypting RMAN Backups",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/bradv/toc.htm"
+      }
+    ],
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "Todos los respaldos recientes están cifrados (0 filas).",
     "riesgo": "R-CONF-03",
     "tarea": "T-06",
     "alcance": "Instancia",
     "version_min": 19,
-    "requiere": ["V$BACKUP_PIECE"],
+    "requiere": [
+      "V$BACKUP_PIECE"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-17.sql",
-      "columnas": ["pieza", "manejador", "finalizado"],
-      "identificador": ["pieza"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "pieza",
+        "manejador",
+        "finalizado"
+      ],
+      "identificador": [
+        "pieza"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Ejecutar en RMAN (rman target /). El respaldo {pieza!l} se reemplaza por uno cifrado:\n-- CONFIGURE ENCRYPTION FOR DATABASE ON;\n-- CONFIGURE ENCRYPTION ALGORITHM 'AES256';\n-- BACKUP DATABASE PLUS ARCHIVELOG;\n-- DELETE OBSOLETE;\n-- Los respaldos anteriores sin cifrar que ya no se necesiten deben eliminarse (DELETE BACKUP): siguen siendo una copia legible de la base.",
-      "nota": "El cifrado transparente de RMAN usa la llave maestra de TDE: el keystore debe estar abierto durante el respaldo. Conservar el keystore y su contraseña fuera del servidor, o los respaldos serán irrecuperables."
+      "plantilla": "-- RMAN (no SQL; ejecutar con \"rman target /\"). Reemplaza el respaldo {pieza!l}:\nCONFIGURE ENCRYPTION FOR DATABASE ON;\nCONFIGURE ENCRYPTION ALGORITHM 'AES256';\nBACKUP DATABASE PLUS ARCHIVELOG;\nDELETE OBSOLETE;",
+      "nota": "El cifrado transparente de RMAN usa la llave maestra de TDE: el keystore debe estar abierto durante el respaldo. Conservar el keystore y su contraseña fuera del servidor, o los respaldos serán irrecuperables. Los respaldos antiguos sin cifrar que ya no se necesiten deben eliminarse (DELETE BACKUP): siguen siendo una copia legible de la base."
     },
     "preventivo": "Cifrado AES de todos los respaldos como configuración permanente de RMAN y prueba periódica de restauración (A8.13).",
     "severidad": "alta",
@@ -448,18 +849,37 @@
     "control_iso": "A8.15",
     "controles_adicionales": [],
     "nombre": "Tablas sensibles sin política de auditoría unificada",
+    "descripcion": "Verifica que cada tabla sensible esté cubierta por al menos una política de auditoría unificada habilitada, de modo que SELECT, INSERT, UPDATE y DELETE sobre ella queden registrados en la pista unificada. Sin esa política, un acceso o una modificación indebida a datos sensibles no deja rastro alguno: no hay forma de reconstruir después quién leyó o cambió qué, ni cuándo. La auditoría unificada es, desde Oracle 12c, el mecanismo recomendado por Oracle (la auditoría tradicional está en camino de desuso) y se administra con las sentencias CREATE AUDIT POLICY / AUDIT POLICY.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide 19c — Introduction to Auditing",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html"
+      }
+    ],
+    "notas_implementacion": "AUDIT_UNIFIED_POLICIES es una vista costosa de evaluar; la consulta materializa una sola vez las políticas habilitadas y, de ellas, las que auditan objetos. Sin esa materialización, Oracle evaluaba la vista una vez por cada tabla sensible (de 2 a 9 segundos en una instancia pequeña).",
     "tipo_prueba": "Revisión de auditoría",
     "resultado_esperado": "Toda tabla sensible está cubierta por una política de auditoría unificada habilitada (0 filas).",
     "riesgo": "R-CONF-05",
     "tarea": "T-07",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["AUDIT_UNIFIED_POLICIES", "AUDIT_UNIFIED_ENABLED_POLICIES"],
+    "requiere": [
+      "AUDIT_UNIFIED_POLICIES",
+      "AUDIT_UNIFIED_ENABLED_POLICIES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-18.sql",
-      "columnas": ["esquema", "tabla"],
-      "identificador": ["esquema", "tabla"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "tabla"
+      ],
+      "identificador": [
+        "esquema",
+        "tabla"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "plantilla": "CREATE AUDIT POLICY POL_ISO_{esquema!b}_{tabla!b}\n  ACTIONS SELECT ON {esquema}.{tabla},\n          INSERT ON {esquema}.{tabla},\n          UPDATE ON {esquema}.{tabla},\n          DELETE ON {esquema}.{tabla};\nAUDIT POLICY POL_ISO_{esquema!b}_{tabla!b};",
@@ -473,18 +893,37 @@
     "control_iso": "A8.15",
     "controles_adicionales": [],
     "nombre": "Logons fallidos y acciones privilegiadas sin auditar",
+    "descripcion": "Comprueba que existan políticas de auditoría unificada habilitadas para dos eventos: los intentos de inicio de sesión fallidos y las acciones de gestión de cuentas y privilegios (CREATE/ALTER/DROP USER, GRANT, REVOKE, CREATE/ALTER/DROP ROLE). Los logons fallidos repetidos son la señal más directa de un intento de adivinar contraseñas, y los cambios de privilegios son precisamente las acciones que un atacante o un interno malicioso necesita para escalar su acceso; si ninguno de los dos se audita, ambas señales de alerta temprana se pierden. Oracle entrega la política predefinida ORA_LOGON_FAILURES lista para habilitar con AUDIT POLICY ... WHENEVER NOT SUCCESSFUL.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide 19c — Introduction to Auditing",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html"
+      }
+    ],
+    "notas_implementacion": "Oracle trae habilitadas por defecto las políticas ORA_LOGON_FAILURES y ORA_SECURECONFIG; lo que suele faltar es auditar GRANT y REVOKE. Las políticas habilitadas se materializan una sola vez, por el mismo motivo de rendimiento que OBS-18 (AUDIT_UNIFIED_POLICIES es una vista costosa).",
     "tipo_prueba": "Revisión de auditoría",
     "resultado_esperado": "Los logons fallidos y las acciones de gestión de cuentas y privilegios están auditados (0 filas).",
     "riesgo": "R-CONF-05",
     "tarea": "T-07",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["AUDIT_UNIFIED_POLICIES", "AUDIT_UNIFIED_ENABLED_POLICIES"],
+    "requiere": [
+      "AUDIT_UNIFIED_POLICIES",
+      "AUDIT_UNIFIED_ENABLED_POLICIES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-19.sql",
-      "columnas": ["tipo", "accion"],
-      "identificador": ["tipo", "accion"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "tipo",
+        "accion"
+      ],
+      "identificador": [
+        "tipo",
+        "accion"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
       "discriminador": "tipo",
@@ -502,22 +941,50 @@
     "control_iso": "A8.20",
     "controles_adicionales": [],
     "nombre": "Sesiones sin cifrado de red",
+    "descripcion": "Detecta sesiones activas que viajan por la red sin cifrado, ni nativo de Oracle Net ni TLS. Sin cifrado en tránsito, cualquiera con acceso a la red entre el cliente y el servidor (un switch comprometido, una captura de tráfico) puede leer en texto plano las consultas, los resultados y potencialmente la contraseña de la sesión. Oracle Net soporta cifrado nativo con AES de 128, 192 o 256 bits configurado en sqlnet.ora (SQLNET.ENCRYPTION_SERVER, SQLNET.ENCRYPTION_TYPES_SERVER); el observable se apoya en V$SESSION_CONNECT_INFO porque una sesión TLS no aparece con el adaptador de cifrado nativo, por lo que las conexiones tcps deben confirmarse aparte antes de tratarlas como un hallazgo real.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Security Guide 19c — Configuring Oracle Database Native Network Encryption and Data Integrity",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/configuring-network-data-encryption-and-integrity.html"
+      }
+    ],
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "Todas las sesiones de usuario usan cifrado de red (0 filas).",
     "riesgo": "R-CONF-06",
     "tarea": "T-09",
     "alcance": "Instancia",
     "version_min": 19,
-    "requiere": ["V$SESSION", "V$SESSION_CONNECT_INFO"],
+    "requiere": [
+      "V$SESSION",
+      "V$SESSION_CONNECT_INFO"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-20.sql",
-      "columnas": ["usuario", "sid", "serial", "programa", "maquina"],
-      "identificador": ["usuario", "sid"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "usuario",
+        "sid",
+        "serial",
+        "programa",
+        "maquina"
+      ],
+      "identificador": [
+        "usuario",
+        "sid"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- La sesión de {usuario!l} (SID {sid!n}) viaja sin cifrado nativo. El cambio se aplica en sqlnet.ora del servidor (no es SQL):\n-- SQLNET.ENCRYPTION_SERVER = REQUIRED\n-- SQLNET.ENCRYPTION_TYPES_SERVER = (AES256)\n-- SQLNET.CRYPTO_CHECKSUM_SERVER = REQUIRED\n-- TCP.VALIDNODE_CHECKING = YES\n-- TCP.INVITED_NODES = (<hosts autorizados>)\n-- Guardar copia del sqlnet.ora original, reiniciar el listener y probar la conexión tras el cambio.",
-      "nota": "Con ENCRYPTION_SERVER=REQUIRED los clientes que no soporten cifrado dejan de conectar: empezar en REQUESTED durante la transición y pasar a REQUIRED cuando todos los clientes estén listos."
+      "plantilla": "-- sqlnet.ora del servidor (no es SQL; editar el archivo y reiniciar el listener). Afecta, entre otras, la sesión de {usuario!l} (SID {sid!n}):\nSQLNET.ENCRYPTION_SERVER = REQUIRED\nSQLNET.ENCRYPTION_TYPES_SERVER = (AES256)\nSQLNET.CRYPTO_CHECKSUM_SERVER = REQUIRED\nTCP.VALIDNODE_CHECKING = YES\nTCP.INVITED_NODES = ({hosts_autorizados!l})",
+      "placeholders": [
+        {
+          "token": "hosts_autorizados",
+          "alcance": "global",
+          "guia": "IPs o nombres de host que sí deben poder conectarse a esta base (por ejemplo, los servidores de la aplicación). Pregúntale al equipo de Infraestructura o Redes."
+        }
+      ],
+      "nota": "Guardar copia del sqlnet.ora original antes de editarlo, y probar la conexión después de reiniciar el listener. Con ENCRYPTION_SERVER=REQUIRED los clientes que no soporten cifrado dejan de conectar: empezar en REQUESTED durante la transición y pasar a REQUIRED cuando todos los clientes estén listos."
     },
     "preventivo": "Cifrado en tránsito obligatorio (nativo o TLS) y lista de nodos autorizados como estándar del listener (A8.20, A8.21).",
     "severidad": "alta",
@@ -528,22 +995,61 @@
     "control_iso": "A8.24",
     "controles_adicionales": [],
     "nombre": "Keystore de TDE no abierto",
+    "descripcion": "Verifica que el keystore de Transparent Data Encryption (TDE) esté abierto, condición indispensable para que la base pueda leer y escribir datos en tablespaces o columnas cifrados. Un keystore cerrado o no disponible no significa que los datos dejen de estar cifrados: significa que la base no puede acceder a la llave maestra y, según el objeto, las operaciones fallan o quedan bloqueadas, lo cual en sí mismo es un indicador de que la gestión de llaves no está operando como debería. El estado se obtiene de V$ENCRYPTION_WALLET, la vista que documenta los valores CLOSED, NOT_AVAILABLE, OPEN, OPEN_NO_MASTER_KEY y OPEN_UNKNOWN_MASTER_KEY_STATUS.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Reference 19c — vista V$ENCRYPTION_WALLET",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/V-ENCRYPTION_WALLET.html"
+      },
+      {
+        "titulo": "Oracle Database Advanced Security Guide 19c — Configuring Transparent Data Encryption",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/asoag/configuring-transparent-data-encryption.html"
+      }
+    ],
+    "notas_implementacion": "El estado OPEN_NO_MASTER_KEY también cuenta como hallazgo: el keystore está abierto, pero no existe todavía una llave maestra con la que cifrar, así que el efecto práctico es el mismo que un keystore cerrado.",
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "El keystore de TDE está abierto (0 filas).",
     "riesgo": "R-CONF-03",
     "tarea": "T-04",
     "alcance": "Instancia/PDB",
     "version_min": 19,
-    "requiere": ["V$ENCRYPTION_WALLET"],
+    "requiere": [
+      "V$ENCRYPTION_WALLET"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-21.sql",
-      "columnas": ["estado", "ubicacion", "tipo_wallet"],
-      "identificador": ["estado"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "estado",
+        "ubicacion",
+        "tipo_wallet"
+      ],
+      "identificador": [
+        "estado"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Estado actual del keystore: {estado!l}. Según el estado:\n-- NOT_AVAILABLE : configurar WALLET_ROOT y TDE_CONFIGURATION (requiere reinicio) y crear el keystore.\n-- CLOSED        : ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY \"<clave_del_keystore>\";\n-- OPEN_NO_MASTER_KEY : ADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY \"<clave_del_keystore>\" WITH BACKUP;",
-      "nota": "Hacer respaldo del keystore y registrar su contraseña en un gestor de secretos antes de crear llaves: perder el keystore deja los datos cifrados ilegibles. Considerar un wallet de auto-login para que la base abra sola tras un reinicio."
+      "discriminador": "estado",
+      "plantillas": {
+        "NOT_AVAILABLE": "ALTER SYSTEM SET WALLET_ROOT = '{ruta_del_keystore!l}' SCOPE = SPFILE;\nALTER SYSTEM SET TDE_CONFIGURATION = 'KEYSTORE_CONFIGURATION=FILE' SCOPE = SPFILE;\nADMINISTER KEY MANAGEMENT CREATE KEYSTORE IDENTIFIED BY \"{clave_del_keystore!l}\";\nADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY \"{clave_del_keystore!l}\" WITH BACKUP;",
+        "CLOSED": "ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY \"{clave_del_keystore!l}\";",
+        "OPEN_NO_MASTER_KEY": "ADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY \"{clave_del_keystore!l}\" WITH BACKUP;"
+      },
+      "placeholders": [
+        {
+          "token": "clave_del_keystore",
+          "alcance": "global",
+          "guia": "La contraseña que se usó (o se va a usar) para crear el keystore de TDE. Pregúntale a quien configuró el cifrado, o revisa el gestor de secretos de la empresa — el instrumento nunca la guarda."
+        },
+        {
+          "token": "ruta_del_keystore",
+          "alcance": "global",
+          "guia": "La carpeta donde vivirá el keystore (convención interna de la empresa; por ejemplo /opt/oracle/keystore, o la misma que usan otras bases de la empresa)."
+        }
+      ],
+      "nota": "NOT_AVAILABLE requiere reiniciar la instancia después de fijar WALLET_ROOT y TDE_CONFIGURATION. Un estado distinto de estos tres (por ejemplo OPEN_UNKNOWN_MASTER_KEY_STATUS) requiere revisión manual. Hacer respaldo del keystore y registrar su contraseña en un gestor de secretos antes de crear llaves: perder el keystore deja los datos cifrados ilegibles. Considerar un wallet de auto-login para que la base abra sola tras un reinicio."
     },
     "preventivo": "Procedimiento de custodia del keystore (copias, doble control, rotación de llaves) y monitoreo de su estado (A8.24).",
     "severidad": "alta"
@@ -553,22 +1059,65 @@
     "control_iso": "A8.24",
     "controles_adicionales": [],
     "nombre": "Columnas sensibles en tablespaces sin cifrar",
+    "descripcion": "Cruza las columnas sensibles descubiertas con el tablespace físico donde vive su tabla (o partición) y señala las que están en un tablespace sin cifrado TDE. TDE cifra a nivel de archivo de datos de forma transparente para la aplicación: protege contra quien accede directamente a los archivos del sistema operativo, a un respaldo o a un disco robado, un escenario que el control de acceso dentro de la base (roles, VPD) no cubre porque esos controles solo actúan cuando alguien se conecta a la instancia. Oracle documenta que SYSTEM, SYSAUX, UNDO y TEMP no se pueden cifrar in situ, por lo que para ellos el control equivalente es cifrar los respaldos y el almacenamiento.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Advanced Security Guide 21c — Introduction to Transparent Data Encryption",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/21/asoag/introduction-to-transparent-data-encryption.html"
+      },
+      {
+        "titulo": "Oracle Database Advanced Security Guide 19c — Configuring Transparent Data Encryption",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/asoag/configuring-transparent-data-encryption.html"
+      }
+    ],
+    "notas_implementacion": "Para tablas particionadas, la ubicación del tablespace se obtiene por partición (DBA_TAB_PARTITIONS) en vez de por tabla (DBA_TABLES), porque cada partición puede vivir en un tablespace distinto. El archivo_origen que se sugiere en la plantilla es el primero (MIN) de los datafiles del tablespace: si el tablespace tiene varios archivos en directorios distintos, confirmar cuál corresponde antes de aplicar.",
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "Ninguna columna sensible está en un tablespace sin cifrar (0 filas).",
     "riesgo": "R-CONF-03",
     "tarea": "T-04",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["DBA_TABLES", "DBA_TAB_PARTITIONS", "DBA_TABLESPACES", "DBA_ENCRYPTED_COLUMNS"],
+    "requiere": [
+      "DBA_TABLES",
+      "DBA_TAB_PARTITIONS",
+      "DBA_TABLESPACES",
+      "DBA_ENCRYPTED_COLUMNS",
+      "DBA_DATA_FILES"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-22.sql",
-      "columnas": ["esquema", "tabla", "columna", "tablespace"],
-      "identificador": ["esquema", "tabla", "columna"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "tabla",
+        "columna",
+        "tablespace",
+        "archivo_origen"
+      ],
+      "identificador": [
+        "esquema",
+        "tabla",
+        "columna"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Cifrar el tablespace {tablespace!l} (requiere keystore abierto con llave maestra, ver OBS-21).\n-- Opción sin conexión (requiere ventana de mantenimiento):\n-- ALTER TABLESPACE {tablespace} OFFLINE NORMAL;\n-- ALTER TABLESPACE {tablespace} ENCRYPTION OFFLINE USING 'AES256' ENCRYPT;\n-- ALTER TABLESPACE {tablespace} ONLINE;\n-- Opción en línea (genera copias de los archivos de datos):\n-- ALTER TABLESPACE {tablespace} ENCRYPTION ONLINE USING 'AES256' ENCRYPT FILE_NAME_CONVERT = ('<archivo_origen>', '<archivo_destino>');",
-      "nota": "No se pueden cifrar in situ SYSTEM, SYSAUX, UNDO ni TEMP; para esas estructuras el control es el cifrado de respaldos y del almacenamiento. Alternativa: crear un tablespace nuevo con ENCRYPTION y mover las tablas con ALTER TABLE ... MOVE."
+      "plantilla": "ALTER TABLESPACE {tablespace} ENCRYPTION ONLINE USING 'AES256' ENCRYPT FILE_NAME_CONVERT = ('{archivo_origen!l}', '{archivo_destino!l}');",
+      "pasos": [
+        {
+          "condicion": "Hay ventana de mantenimiento para detener el tablespace (evita generar copias de los archivos de datos)",
+          "sql": "ALTER TABLESPACE {tablespace} OFFLINE NORMAL;\nALTER TABLESPACE {tablespace} ENCRYPTION OFFLINE USING 'AES256' ENCRYPT;\nALTER TABLESPACE {tablespace} ONLINE;"
+        }
+      ],
+      "placeholders": [
+        {
+          "token": "archivo_destino",
+          "alcance": "por_hallazgo",
+          "guia": "La ruta donde debe quedar la copia cifrada del archivo de datos (normalmente en el mismo directorio del archivo de origen, que el instrumento ya trajo). Confírmalo con quien administra el almacenamiento."
+        }
+      ],
+      "nota": "Requiere el keystore de TDE abierto con llave maestra (ver OBS-21). No se pueden cifrar in situ SYSTEM, SYSAUX, UNDO ni TEMP; para esas estructuras el control es el cifrado de respaldos y del almacenamiento. Alternativa: crear un tablespace nuevo con ENCRYPTION y mover las tablas con ALTER TABLE ... MOVE."
     },
     "preventivo": "Crear los tablespaces de datos sensibles con cifrado desde el diseño (A8.24) y verificar V$ENCRYPTED_TABLESPACES tras cada alta.",
     "severidad": "alta"
@@ -576,23 +1125,54 @@
   {
     "id": "OBS-23",
     "control_iso": "A8.33",
-    "controles_adicionales": ["A8.31"],
+    "controles_adicionales": [
+      "A8.31"
+    ],
     "nombre": "Esquemas de desarrollo o prueba con datos sensibles sin enmascarar",
+    "descripcion": "Busca columnas sensibles en esquemas no productivos (desarrollo, pruebas) que no tienen ni una política de Data Redaction ni el marcador que confirma que el DBA ya enmascaró físicamente los datos. Los ambientes no productivos casi siempre tienen controles de acceso más laxos que producción, por diseño: más personas los usan, con menos restricciones, y suelen ser el destino habitual de una copia completa de datos reales para pruebas. Enmascarar antes de copiar, o redactar mientras los datos siguen ahí, es la defensa que recomienda la documentación de Oracle sobre Data Redaction para separar producción de los ambientes de menor confianza.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Advanced Security Guide 19c — Part II, Using Oracle Data Redaction",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/asoag/asopart2.html"
+      }
+    ],
+    "notas_implementacion": "Los esquemas no productivos se identifican por convención de sufijo (por ejemplo, _DEV, _TEST): si la empresa usa otra convención, debe ajustarse en el perfil de política antes de confiar en este observable.",
     "tipo_prueba": "Consulta de catálogo",
     "resultado_esperado": "Los esquemas no productivos no tienen columnas sensibles sin enmascarar (0 filas).",
     "riesgo": "R-CONF-04",
     "tarea": "T-12",
     "alcance": "PDB",
     "version_min": 19,
-    "requiere": ["REDACTION_COLUMNS", "DBA_COL_COMMENTS"],
+    "requiere": [
+      "REDACTION_COLUMNS",
+      "DBA_COL_COMMENTS"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-23.sql",
-      "columnas": ["esquema", "tabla", "columna", "marcador"],
-      "identificador": ["esquema", "tabla", "columna"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "esquema",
+        "tabla",
+        "columna",
+        "marcador"
+      ],
+      "identificador": [
+        "esquema",
+        "tabla",
+        "columna"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Enmascarar los datos de {esquema}.{tabla}.{columna} (por ejemplo con DBMS_RANDOM o un UPDATE con valores ficticios) y, una vez enmascarados, registrar el marcador:\n-- UPDATE {esquema}.{tabla} SET {columna} = <expresion_de_enmascarado>;\n-- COMMENT ON COLUMN {esquema}.{tabla}.{columna} IS '{marcador!l}';",
+      "plantilla": "UPDATE {esquema}.{tabla} SET {columna} = {expresion_de_enmascarado!m};\nCOMMENT ON COLUMN {esquema}.{tabla}.{columna} IS '{marcador!l}';",
+      "placeholders": [
+        {
+          "token": "expresion_de_enmascarado",
+          "alcance": "por_hallazgo",
+          "guia": "Cómo reemplazar el valor real por uno ficticio (por ejemplo DBMS_RANDOM.STRING('A',10) para texto). Depende del tipo de dato de la columna. Se inserta tal cual, sin escapar: revísalo con cuidado antes de aplicar."
+        }
+      ],
       "nota": "El marcador es una convención: solo debe registrarse cuando el enmascarado ya se aplicó. Los ambientes de prueba no deberían recibir copias de producción sin enmascarar (A8.33)."
     },
     "preventivo": "Procedimiento de refresco de ambientes que enmascare los datos en el mismo flujo de la copia, y separación de ambientes de desarrollo, prueba y producción (A8.31, A8.33).",
@@ -604,22 +1184,40 @@
     "control_iso": "A8.8",
     "controles_adicionales": [],
     "nombre": "Versión y parches del motor",
+    "descripcion": "Compara la fecha del último parche de seguridad aplicado (DBA_REGISTRY_SQLPATCH) contra el plazo que tolera la política de la empresa. Un motor sin parchear acumula vulnerabilidades ya publicadas y corregidas por Oracle, lo que reduce el ataque a buscar en el boletín trimestral de Oracle (Critical Patch Update) una que aplique a la versión instalada; a diferencia de los demás observables, este no mide una mala configuración sino la exposición a fallas ya conocidas del propio software. DBA_REGISTRY_SQLPATCH es la vista que Oracle documenta para listar cada parche aplicado o revertido mediante la utilidad datapatch, con su tipo (RU, RUR, interim) y resultado.",
+    "fuentes": [
+      {
+        "titulo": "Oracle Database Reference 19c — vista DBA_REGISTRY_SQLPATCH",
+        "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/DBA_REGISTRY_SQLPATCH.html"
+      }
+    ],
     "tipo_prueba": "Revisión de configuración",
     "resultado_esperado": "El último parche aplicado está dentro del plazo (0 filas), o el riesgo está aceptado de forma documentada.",
     "riesgo": "R-CONF-03",
     "tarea": "T-08",
     "alcance": "Instancia",
     "version_min": 19,
-    "requiere": ["V$VERSION", "DBA_REGISTRY_SQLPATCH"],
+    "requiere": [
+      "V$VERSION",
+      "DBA_REGISTRY_SQLPATCH"
+    ],
     "observable": {
       "archivo": "sql/observables/OBS-24.sql",
-      "columnas": ["version", "ultimo_parche", "dias"],
-      "identificador": ["ultimo_parche"],
-      "regla": { "tipo": "sin_filas" }
+      "columnas": [
+        "version",
+        "ultimo_parche",
+        "dias"
+      ],
+      "identificador": [
+        "ultimo_parche"
+      ],
+      "regla": {
+        "tipo": "sin_filas"
+      }
     },
     "correctivo": {
-      "plantilla": "-- Versión instalada: {version!l}. Último parche aplicado: {ultimo_parche!l} (hace {dias!l} días).\n-- Aplicar el Release Update vigente con OPatch y datapatch (descarga desde Oracle Support).\n-- Oracle XE no recibe Release Updates trimestrales: documentar el hallazgo como aceptación de riesgo\n-- en el perfil de la empresa y planificar la migración a una edición con soporte de parches.",
-      "nota": "Probar el parche en un ambiente no productivo, respaldar la base y ejecutar datapatch al terminar."
+      "plantilla": "-- No es SQL: se aplica con OPatch y datapatch (Oracle Support). Versión instalada: {version!l}; último parche: {ultimo_parche!l} (hace {dias!l} días).",
+      "nota": "Oracle XE no recibe Release Updates trimestrales: documentar el hallazgo como aceptación de riesgo en el perfil de la empresa y planificar la migración a una edición con soporte de parches si corresponde. Probar el parche en un ambiente no productivo, respaldar la base y ejecutar datapatch al terminar."
     },
     "preventivo": "Calendario trimestral de revisión de Critical Patch Updates y suscripción a los avisos de seguridad de Oracle (A8.8).",
     "severidad": "media",

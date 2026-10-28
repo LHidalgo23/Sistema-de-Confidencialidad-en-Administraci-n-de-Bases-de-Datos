@@ -1,10 +1,3 @@
--- OBS-17 | A8.13 Respaldo de la informacion
--- Piezas de respaldo recientes que no estan cifradas. Si no hay ninguna pieza
--- visible en la ventana, se devuelve NO_EVALUABLE: desde una PDB el catalogo de
--- RMAN puede no ser visible y reportar "sin respaldos" seria un falso hallazgo.
--- Alcance: Instancia | Version minima: 19
--- Binds: :dias_backup_reciente (numero)
--- Regla: cada fila con NO_EVALUABLE nulo es un hallazgo.
 SELECT TO_CHAR(bp.recid)                                  AS pieza,
        bp.handle                                          AS manejador,
        TO_CHAR(bp.completion_time, 'YYYY-MM-DD HH24:MI')  AS finalizado,

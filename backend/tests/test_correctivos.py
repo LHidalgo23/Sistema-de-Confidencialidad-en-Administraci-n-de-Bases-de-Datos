@@ -1,6 +1,6 @@
 import pytest
 
-from app.correctivos import ErrorRender, generar_script, renderizar
+from app.correctivos import ErrorRender, generar_script, renderizar, renderizar_sql, valores_por_defecto
 from app.modelos import Estado
 
 
@@ -24,8 +24,11 @@ def test_todas_las_plantillas_se_pueden_renderizar(catalogo, obs_id):
         hallazgo = dict(muestra)
         if entrada.correctivo.discriminador:
             hallazgo[entrada.correctivo.discriminador] = tipo
-        texto = renderizar(entrada, hallazgo)
+        texto = renderizar(entrada, hallazgo, catalogo.perfil_default["parametros"])
         assert "{" not in texto and "}" not in texto, (obs_id, tipo)
+        for paso in entrada.correctivo.pasos:
+            texto_paso = renderizar_sql(paso.sql, hallazgo, catalogo.perfil_default["parametros"], valores_por_defecto(entrada))
+            assert "{" not in texto_paso and "}" not in texto_paso, (obs_id, tipo, paso.condicion)
 
 
 def test_identificador_inusual_se_entrecomilla(catalogo):

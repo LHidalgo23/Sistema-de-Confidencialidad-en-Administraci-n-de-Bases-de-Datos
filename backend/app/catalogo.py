@@ -101,6 +101,12 @@ def campos_de_plantilla(plantilla: str) -> set[str]:
     return {campo for _, campo, _, _ in string.Formatter().parse(plantilla) if campo}
 
 
+def campos_manuales(plantilla: str) -> set[str]:
+    """Nombres de campo usados con `!m` (texto sin escapar): solo deben ser
+    placeholders manuales declarados, nunca columnas del observable."""
+    return {campo for _, campo, _, conversion in string.Formatter().parse(plantilla) if campo and conversion == "m"}
+
+
 def _leer_json(ruta: Path):
     try:
         return json.loads(ruta.read_text(encoding="utf-8"))
@@ -161,17 +167,32 @@ def validar_catalogo(catalogo: Catalogo) -> list[str]:
             problemas.append(f"{e.id}: variables bind sin parámetro definido: {sorted(desconocidos)}")
 
         columnas = set(e.observable.columnas)
+        placeholders = {p.token for p in e.correctivo.placeholders}
+        campos_validos = columnas | binds_conocidos | placeholders  # hallazgo, política o placeholder manual
         plantillas = (
             list(e.correctivo.plantillas.values()) if e.correctivo.plantillas else [e.correctivo.plantilla or ""]
         )
+        plantillas += [paso.sql for paso in e.correctivo.pasos]
+        usados_en_total: set[str] = set()
+        manuales_en_total: set[str] = set()
         for plantilla in plantillas:
             try:
                 usados = campos_de_plantilla(plantilla)
             except ValueError as exc:
                 problemas.append(f"{e.id}: plantilla inválida ({exc})")
                 continue
-            if usados - columnas:
-                problemas.append(f"{e.id}: la plantilla usa columnas que el observable no devuelve: {sorted(usados - columnas)}")
+            if usados - campos_validos:
+                problemas.append(
+                    f"{e.id}: la plantilla usa campos que no son ni columnas del observable, "
+                    f"ni parámetros de política, ni placeholders declarados: {sorted(usados - campos_validos)}"
+                )
+            usados_en_total |= usados
+            manuales_en_total |= campos_manuales(plantilla)
+        if manuales_en_total - placeholders:
+            problemas.append(f"{e.id}: usa !m en campos que no son placeholders manuales declarados: {sorted(manuales_en_total - placeholders)}")
+        sin_usar = placeholders - usados_en_total
+        if sin_usar:
+            problemas.append(f"{e.id}: declara placeholders que ninguna plantilla usa: {sorted(sin_usar)}")
         if not e.observable.identificador or set(e.observable.identificador) - columnas:
             problemas.append(f"{e.id}: el identificador debe ser un subconjunto no vacío de las columnas del observable")
         if e.correctivo.discriminador and e.correctivo.discriminador not in columnas:

@@ -28,6 +28,11 @@ class Regla(BaseModel):
     tipo: Literal["sin_filas"]
 
 
+class Fuente(BaseModel):
+    titulo: str
+    url: str
+
+
 class Observable(BaseModel):
     archivo: str
     columnas: list[str]
@@ -35,10 +40,26 @@ class Observable(BaseModel):
     regla: Regla
 
 
+class PasoCorrectivo(BaseModel):
+    condicion: str | None = None  # None = paso de una secuencia, sin ser alternativo
+    sql: str
+
+
+class PlaceholderCorrectivo(BaseModel):
+    """Un dato que el instrumento no puede generar (secreto o decisión de negocio) y que la
+    persona que revisa el correctivo debe escribir antes de poder aplicarlo."""
+
+    token: str = Field(pattern=r"^[a-z][a-z0-9_]*$")  # nombre del campo {token} en la plantilla
+    alcance: Literal["global", "por_hallazgo"]  # global: un valor para todo el script; por_hallazgo: uno por fila
+    guia: str  # de dónde sacar ese valor, en una o dos frases
+
+
 class Correctivo(BaseModel):
     plantilla: str | None = None
     discriminador: str | None = None
     plantillas: dict[str, str] | None = None
+    pasos: list[PasoCorrectivo] = []  # pasos previos o condicionales que no son la plantilla principal
+    placeholders: list[PlaceholderCorrectivo] = []  # campos manuales que usan plantilla/plantillas/pasos
     nota: str = ""
 
     @model_validator(mode="after")
@@ -57,6 +78,9 @@ class EntradaCatalogo(BaseModel):
     control_iso: str
     controles_adicionales: list[str] = []
     nombre: str
+    descripcion: str | None = None  # explicación ampliada, no ambigua, del qué y el porqué del observable
+    fuentes: list[Fuente] = []  # documentación oficial de Oracle que respalda la descripción
+    notas_implementacion: str | None = None  # matices propios de cómo está escrita la consulta (no del control en sí)
     tipo_prueba: Literal["Consulta de catálogo", "Revisión de configuración", "Revisión de auditoría"]
     resultado_esperado: str
     riesgo: str
@@ -154,6 +178,19 @@ class AuditarPeticion(Credencial):
 class RevisionPeticion(BaseModel):
     revisor: str = Field(min_length=2, max_length=80)
     notas: str = Field(default="", max_length=500)
+
+
+class MarcarCorrectivoPeticion(BaseModel):
+    estado: Literal["resuelto", "pendiente"]
+    nota: str = Field(default="", max_length=300)
+
+
+class ValoresCorrectivo(BaseModel):
+    """Lo que la persona llenó a mano en la pantalla de correctivos, para sustituir
+    los placeholders antes de generar el script final. Nunca se guarda."""
+
+    globales: dict[str, str] = {}  # token -> valor, uno para todo el script
+    por_hallazgo: dict[str, dict[str, dict[str, str]]] = {}  # obs_id -> clave_hallazgo -> {token: valor}
 
 
 class ColumnaRef(BaseModel):

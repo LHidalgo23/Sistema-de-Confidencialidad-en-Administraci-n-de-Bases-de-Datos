@@ -1,9 +1,3 @@
--- OBS-21 | A8.24 Uso de criptografia
--- El keystore (wallet) de TDE no esta abierto. 'OPEN_NO_MASTER_KEY' tambien es
--- hallazgo: el keystore esta abierto pero no hay llave maestra para cifrar.
--- Alcance: Instancia/PDB | Version minima: 19
--- Binds: (ninguno)
--- Regla: cada fila con NO_EVALUABLE nulo es un hallazgo.
 SELECT w.status                    AS estado,
        w.wrl_parameter             AS ubicacion,
        w.wallet_type               AS tipo_wallet,

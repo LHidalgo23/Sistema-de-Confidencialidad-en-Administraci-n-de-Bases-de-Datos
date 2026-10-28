@@ -1,11 +1,3 @@
--- OBS-07 | A5.18 Derechos de acceso
--- Privilegios de sistema otorgados directamente a cuentas de negocio, mas alla
--- de la lista permitida por la empresa (por defecto solo CREATE SESSION).
--- Los privilegios de sistema deben llegar por roles funcionales revisables. Las
--- cuentas administrativas autorizadas de la empresa no se consideran hallazgo.
--- Alcance: PDB | Version minima: 19
--- Binds: :privilegios_sistema_permitidos (JSON: ["CREATE SESSION", ...]), :cuentas_administrativas (JSON)
--- Regla: cada fila es un hallazgo.
 SELECT sp.grantee,
        sp.privilege    AS privilegio,
        sp.admin_option AS con_admin_option

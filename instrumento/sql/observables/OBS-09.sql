@@ -1,11 +1,3 @@
--- OBS-09 | A8.2 Derechos de acceso privilegiado
--- Rol DBA otorgado fuera de las cuentas autorizadas. Se excluyen las cuentas y
--- roles mantenidos por Oracle (SYS, SYSTEM, ...). Se usa NOT EXISTS y no
--- NOT IN: un solo NULL en la lista haria que NOT IN no devolviera ninguna fila
--- y ocultaria todos los hallazgos.
--- Alcance: PDB | Version minima: 19
--- Binds: :cuentas_dba_autorizadas (JSON: ["DBA_X", ...])
--- Regla: cada fila es un hallazgo.
 SELECT rp.grantee,
        rp.admin_option AS con_admin_option
 FROM   dba_role_privs rp

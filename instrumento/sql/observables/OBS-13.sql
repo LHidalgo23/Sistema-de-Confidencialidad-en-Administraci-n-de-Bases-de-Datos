@@ -1,9 +1,3 @@
--- OBS-13 | A8.5 Autenticacion segura
--- Cuentas de negocio con contrasena almacenada con versiones de hash antiguas
--- (10G/11G). Las cuentas con autenticacion externa o global no tienen hash.
--- Alcance: PDB | Version minima: 19
--- Binds: (ninguno)
--- Regla: cada fila es un hallazgo.
 SELECT u.username          AS usuario,
        TRIM(u.password_versions) AS versiones
 FROM   dba_users u

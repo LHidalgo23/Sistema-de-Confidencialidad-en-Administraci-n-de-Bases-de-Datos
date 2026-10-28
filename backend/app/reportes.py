@@ -102,6 +102,36 @@ def marcar_revision(ejecucion_id: int, revisor: str, notas: str) -> None:
         )
 
 
+def marcar_correctivo(ejecucion_id: int, obs_id: str, estado: str, nota: str = "") -> None:
+    """Marca manual del DBA sobre un observable de esta ejecución:
+    - 'resuelto': ya lo arregló por su cuenta, se excluye del script final.
+    - 'pendiente': lo deja para después; sigue en el script, pero no exige llenar
+      sus campos manuales para poder generarlo.
+    Marcar de nuevo (con el mismo estado o el otro) reemplaza la marca anterior."""
+    if estado not in ("resuelto", "pendiente"):
+        raise ValueError(f"estado inválido: {estado!r}")
+    obtener_ejecucion(ejecucion_id)
+    with almacen.conexion() as con:
+        con.execute(
+            "INSERT INTO correctivos_resueltos (ejecucion_id, obs_id, estado, marcado_en, nota) VALUES (?, ?, ?, ?, ?) "
+            "ON CONFLICT (ejecucion_id, obs_id) DO UPDATE SET estado = excluded.estado, marcado_en = excluded.marcado_en, nota = excluded.nota",
+            (ejecucion_id, obs_id, estado, almacen.ahora_iso(), nota.strip()),
+        )
+
+
+def quitar_marca_correctivo(ejecucion_id: int, obs_id: str) -> None:
+    with almacen.conexion() as con:
+        con.execute("DELETE FROM correctivos_resueltos WHERE ejecucion_id = ? AND obs_id = ?", (ejecucion_id, obs_id))
+
+
+def obtener_marcas_correctivos(ejecucion_id: int) -> dict[str, dict[str, str]]:
+    with almacen.conexion() as con:
+        filas = con.execute(
+            "SELECT obs_id, estado, marcado_en, nota FROM correctivos_resueltos WHERE ejecucion_id = ?", (ejecucion_id,)
+        ).fetchall()
+    return {f["obs_id"]: {"estado": f["estado"], "marcado_en": f["marcado_en"], "nota": f["nota"]} for f in filas}
+
+
 # --------------------------------------------------------------------------
 # Evaluación
 # --------------------------------------------------------------------------

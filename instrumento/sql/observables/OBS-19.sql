@@ -1,12 +1,3 @@
--- OBS-19 | A8.15 Registro
--- Eventos criticos sin una politica de auditoria unificada habilitada:
--- inicios de sesion fallidos y acciones de gestion de cuentas y privilegios.
--- Oracle trae habilitadas por defecto ORA_LOGON_FAILURES y ORA_SECURECONFIG: lo que
--- suele faltar es auditar GRANT y REVOKE. Las politicas habilitadas se materializan
--- una sola vez (AUDIT_UNIFIED_POLICIES es una vista costosa).
--- Alcance: PDB | Version minima: 19
--- Binds: (ninguno)
--- Regla: cada fila es un hallazgo (evento requerido que nadie audita).
 WITH habilitadas AS (
   SELECT /*+ MATERIALIZE */ ap.audit_option,
          ep.failure

@@ -74,8 +74,13 @@ export const api = {
   ejecucion: (id) => solicitar(`/api/ejecuciones/${id}`),
   revisar: (id, cuerpo) => solicitar(`/api/ejecuciones/${id}/revision`, { metodo: "POST", cuerpo }),
   hallazgo: (ejecucionId, obsId) => solicitar(`/api/ejecuciones/${ejecucionId}/hallazgos/${obsId}`),
-  correctivos: (ejecucionId) => solicitar(`/api/ejecuciones/${ejecucionId}/correctivos`),
-  urlCorrectivos: (ejecucionId) => `${API_BASE}/api/ejecuciones/${ejecucionId}/correctivos?descargar=true`,
+  correctivosDetalle: (ejecucionId) => solicitar(`/api/ejecuciones/${ejecucionId}/correctivos-detalle`),
+  generarCorrectivos: (ejecucionId, valores) =>
+    solicitar(`/api/ejecuciones/${ejecucionId}/correctivos`, { metodo: "POST", cuerpo: valores }),
+  marcarCorrectivo: (ejecucionId, obsId, estado, nota) =>
+    solicitar(`/api/ejecuciones/${ejecucionId}/correctivos-resueltos/${obsId}`, { metodo: "POST", cuerpo: { estado, nota } }),
+  quitarMarcaCorrectivo: (ejecucionId, obsId) =>
+    solicitar(`/api/ejecuciones/${ejecucionId}/correctivos-resueltos/${obsId}`, { metodo: "DELETE" }),
   planMejora: (ejecucionId) => solicitar(`/api/ejecuciones/${ejecucionId}/plan-mejora`),
 
   // matriz de evaluación

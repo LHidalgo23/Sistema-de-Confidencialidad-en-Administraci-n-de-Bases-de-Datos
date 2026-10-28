@@ -1,11 +1,3 @@
--- OBS-16 | A8.12 Prevencion de fuga de datos
--- (1) EXECUTE sobre paquetes de salida (UTL_FILE, UTL_HTTP, ...) otorgado a PUBLIC.
--- (2) Objetos DIRECTORY con privilegios otorgados a PUBLIC.
--- (3) Roles de Data Pump (exportacion/importacion completa) fuera de las
---     cuentas administrativas.
--- Alcance: PDB | Version minima: 19
--- Binds: :paquetes_restringidos (JSON), :cuentas_administrativas (JSON)
--- Regla: cada fila es un hallazgo.
 SELECT 'PAQUETE'        AS tipo,
        p.grantee        AS grantee,
        p.table_name     AS objeto,

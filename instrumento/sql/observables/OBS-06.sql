@@ -1,11 +1,3 @@
--- OBS-06 | A5.17 Informacion de autenticacion
--- Perfiles en uso por cuentas de negocio sin funcion de verificacion de
--- contrasena o con limites mas debiles que el umbral de la empresa.
--- Un limite 'DEFAULT' se resuelve contra el perfil DEFAULT (herencia).
--- UNLIMITED, NULL o un valor no numerico cuentan como limite debil.
--- Alcance: PDB | Version minima: 19 (TO_NUMBER ... DEFAULT ON CONVERSION ERROR requiere 12.2+)
--- Binds: :max_intentos_fallidos, :max_vigencia_password_dias, :max_idle_time_min, :funcion_verificacion
--- Regla: cada fila (perfil, parametro) es un hallazgo.
 WITH recursos AS (
   SELECT 'FAILED_LOGIN_ATTEMPTS' AS recurso FROM dual UNION ALL
   SELECT 'PASSWORD_LIFE_TIME'                FROM dual UNION ALL

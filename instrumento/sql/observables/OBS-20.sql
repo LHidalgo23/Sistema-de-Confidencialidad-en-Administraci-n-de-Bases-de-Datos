@@ -1,12 +1,3 @@
--- OBS-20 | A8.20 Seguridad de redes
--- Sesiones de usuario sin evidencia del adaptador de cifrado nativo de Oracle
--- Net en V$SESSION_CONNECT_INFO.
--- Limitacion conocida: una sesion TLS (protocolo tcps) no muestra el adaptador
--- de cifrado nativo y aparecera aqui; el auditor debe confirmarla con
--- SYS_CONTEXT('USERENV','NETWORK_PROTOCOL') desde la propia sesion.
--- Alcance: Instancia | Version minima: 19
--- Binds: (ninguno)
--- Regla: cada fila es un hallazgo.
 SELECT s.username   AS usuario,
        s.sid        AS sid,
        s.serial#    AS serial,

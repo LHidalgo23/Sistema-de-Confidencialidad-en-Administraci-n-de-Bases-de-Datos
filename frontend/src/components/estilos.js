@@ -4,6 +4,9 @@
 const presion = "transition-[scale,background-color,color,box-shadow] duration-150 active:scale-[0.96] disabled:active:scale-100";
 
 export const contenedorTabla = "overflow-x-auto rounded-xl bg-superficie shadow-tarjeta";
+// Como contenedorTabla, pero con alto fijo (~5 filas) y scroll vertical, para listas largas que no necesitan verse enteras.
+export const contenedorTablaCorta = "max-h-60 overflow-auto rounded-xl bg-superficie shadow-tarjeta";
+export const cabeceraFija = "sticky top-0 z-10 bg-superficie-2 text-left";
 export const tabla = "min-w-full text-sm";
 export const cabecera = "bg-superficie-2 text-left";
 export const th = "px-3 py-2.5 font-semibold whitespace-nowrap text-texto-2 text-[0.8125rem] border-b border-linea";

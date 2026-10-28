@@ -1,10 +1,3 @@
--- OBS-01 | A5.12 Clasificacion de la informacion
--- Columnas sensibles descubiertas que no tienen clasificacion registrada.
--- La clasificacion se registra como comentario de columna que contiene el
--- marcador configurado (parametro marcador_clasificacion).
--- Alcance: PDB | Version minima: 19
--- Binds: :columnas_sensibles (JSON: [{esquema,tabla,columna,nivel}]), :marcador_clasificacion
--- Regla: cada fila es un hallazgo.
 SELECT s.esquema,
        s.tabla,
        s.columna,

@@ -1,0 +1,1053 @@
+{
+  "id": 17,
+  "empresa_id": 1,
+  "etiqueta": "antes_manual_20261027",
+  "iniciada_en": "2026-10-28T02:21:01+00:00",
+  "finalizada_en": "2026-10-28T02:21:15+00:00",
+  "version_oracle": "21.3.0.0.0",
+  "contenedor": "PDB_CLINICA",
+  "revisada_por": null,
+  "revisada_en": null,
+  "notas_revision": null,
+  "perfil": {
+    "parametros": {
+      "dias_inactividad": 1,
+      "max_intentos_fallidos": 5,
+      "max_vigencia_password_dias": 90,
+      "max_idle_time_min": 30,
+      "funcion_verificacion": "ORA12C_VERIFY_FUNCTION",
+      "cuentas_dba_autorizadas": [
+        "DBA_LHIDALGO"
+      ],
+      "cuentas_administrativas": [
+        "DBA_LHIDALGO",
+        "PDBADMIN"
+      ],
+      "cuentas_audit_admin_autorizadas": [
+        "DBA_LHIDALGO"
+      ],
+      "cuentas_pwfile_autorizadas": [
+        "SYS"
+      ],
+      "privilegios_sistema_permitidos": [
+        "CREATE SESSION"
+      ],
+      "paquetes_restringidos": [
+        "UTL_FILE",
+        "UTL_HTTP",
+        "UTL_TCP",
+        "UTL_SMTP"
+      ],
+      "dias_backup_reciente": 7,
+      "dias_max_sin_parche": 120,
+      "marcador_clasificacion": "CLASIFICACION",
+      "marcador_enmascarado": "ENMASCARADO",
+      "sufijos_no_productivos": [
+        "_DEV",
+        "_TEST"
+      ],
+      "dias_retencion_auditoria": 365,
+      "esquema_seguridad": "SEG_AUDITORIA"
+    },
+    "patrones_sensibles": [
+      {
+        "patron": "CEDULA",
+        "categoria": "Identificador personal",
+        "nivel": "Confidencial - dato personal"
+      },
+      {
+        "patron": "NACIMIENTO",
+        "categoria": "Dato demografico",
+        "nivel": "Confidencial - dato personal"
+      },
+      {
+        "patron": "TELEFONO",
+        "categoria": "Dato de contacto",
+        "nivel": "Confidencial - dato personal"
+      },
+      {
+        "patron": "CORREO",
+        "categoria": "Dato de contacto",
+        "nivel": "Confidencial - dato personal"
+      },
+      {
+        "patron": "DIRECCION",
+        "categoria": "Dato de contacto",
+        "nivel": "Confidencial - dato personal"
+      },
+      {
+        "patron": "SALARIO",
+        "categoria": "Dato financiero",
+        "nivel": "Confidencial - dato financiero"
+      },
+      {
+        "patron": "IBAN",
+        "categoria": "Dato financiero",
+        "nivel": "Confidencial - dato financiero"
+      },
+      {
+        "patron": "TARJETA",
+        "categoria": "Dato financiero",
+        "nivel": "Confidencial - dato financiero"
+      },
+      {
+        "patron": "DIAGNOSTICO",
+        "categoria": "Dato de salud",
+        "nivel": "Restringido - dato sensible (salud)"
+      },
+      {
+        "patron": "TRATAMIENTO",
+        "categoria": "Dato de salud",
+        "nivel": "Restringido - dato sensible (salud)"
+      }
+    ],
+    "tipos_dato_candidatos": [
+      "VARCHAR2",
+      "NVARCHAR2",
+      "CHAR",
+      "NCHAR",
+      "CLOB",
+      "NCLOB",
+      "NUMBER",
+      "FLOAT",
+      "DATE",
+      "TIMESTAMP"
+    ],
+    "aceptaciones_riesgo": {
+      "OBS-24": "Oracle Database XE no distribuye Release Updates trimestrales; se acepta el riesgo en el laboratorio y se documenta la migración a una edición con soporte de parches como plan de mejora."
+    }
+  },
+  "resultados": [
+    {
+      "obs_id": "OBS-01",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "CEDULA",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "IBAN",
+          "nivel": "Confidencial - dato financiero",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "SALARIO",
+          "nivel": "Confidencial - dato financiero",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES",
+          "columna": "DIAGNOSTICO",
+          "nivel": "Restringido - dato sensible (salud)",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES",
+          "columna": "TRATAMIENTO",
+          "nivel": "Restringido - dato sensible (salud)",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "CEDULA",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "CORREO",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "DIRECCION",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "FECHA_NACIMIENTO",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "TELEFONO",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CEDULA",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CORREO",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "DIRECCION",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "FECHA_NACIMIENTO",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "TELEFONO",
+          "nivel": "Confidencial - dato personal",
+          "marcador": "CLASIFICACION",
+          "comentario_actual": null
+        }
+      ],
+      "duracion_ms": 314,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-02",
+      "estado": "Cumple",
+      "motivo": null,
+      "hallazgos": [],
+      "duracion_ms": 303,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-03",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "INSERT"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "UPDATE"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "EXPEDIENTES",
+          "privilegio": "INSERT"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "EXPEDIENTES",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "EXPEDIENTES",
+          "privilegio": "UPDATE"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "PACIENTES",
+          "privilegio": "INSERT"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "PACIENTES",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "APP_CLINICA",
+          "esquema": "CLINICA",
+          "objeto": "PACIENTES",
+          "privilegio": "UPDATE"
+        },
+        {
+          "grantee": "MEDICO_01",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "MEDICO_01",
+          "esquema": "CLINICA",
+          "objeto": "EXPEDIENTES",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "MEDICO_01",
+          "esquema": "CLINICA",
+          "objeto": "PACIENTES",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "MEDICO_02",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "MEDICO_02",
+          "esquema": "CLINICA",
+          "objeto": "EXPEDIENTES",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "MEDICO_02",
+          "esquema": "CLINICA",
+          "objeto": "PACIENTES",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "RECEPCION_01",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "INSERT"
+        },
+        {
+          "grantee": "RECEPCION_01",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "RECEPCION_01",
+          "esquema": "CLINICA",
+          "objeto": "CITAS",
+          "privilegio": "UPDATE"
+        },
+        {
+          "grantee": "RECEPCION_01",
+          "esquema": "CLINICA",
+          "objeto": "PACIENTES",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "RRHH_01",
+          "esquema": "CLINICA",
+          "objeto": "EMPLEADOS",
+          "privilegio": "SELECT"
+        },
+        {
+          "grantee": "RRHH_01",
+          "esquema": "CLINICA",
+          "objeto": "EMPLEADOS",
+          "privilegio": "UPDATE"
+        }
+      ],
+      "duracion_ms": 423,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-04",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "usuario": "APP_CLINICA",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 02:36",
+          "creado": "2026-10-22"
+        },
+        {
+          "usuario": "DBA_LHIDALGO",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 13:24",
+          "creado": "2026-10-22"
+        },
+        {
+          "usuario": "DEV_USER",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 02:36",
+          "creado": "2026-10-22"
+        },
+        {
+          "usuario": "EXEMPLEADO_01",
+          "estado": "OPEN",
+          "ultimo_acceso": "NUNCA",
+          "creado": "2026-10-22"
+        },
+        {
+          "usuario": "MEDICO_01",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 02:36",
+          "creado": "2026-10-22"
+        },
+        {
+          "usuario": "MEDICO_02",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 02:36",
+          "creado": "2026-10-22"
+        },
+        {
+          "usuario": "PDBADMIN",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 02:37",
+          "creado": "2026-10-20"
+        },
+        {
+          "usuario": "RECEPCION_01",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 02:36",
+          "creado": "2026-10-22"
+        },
+        {
+          "usuario": "RRHH_01",
+          "estado": "OPEN",
+          "ultimo_acceso": "2026-10-22 02:36",
+          "creado": "2026-10-22"
+        }
+      ],
+      "duracion_ms": 41,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-05",
+      "estado": "Cumple",
+      "motivo": null,
+      "hallazgos": [],
+      "duracion_ms": 74,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-06",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "perfil": "DEFAULT",
+          "parametro": "FAILED_LOGIN_ATTEMPTS",
+          "actual": "10",
+          "recomendado": "5"
+        },
+        {
+          "perfil": "DEFAULT",
+          "parametro": "IDLE_TIME",
+          "actual": "UNLIMITED",
+          "recomendado": "30"
+        },
+        {
+          "perfil": "DEFAULT",
+          "parametro": "PASSWORD_LIFE_TIME",
+          "actual": "UNLIMITED",
+          "recomendado": "90"
+        },
+        {
+          "perfil": "DEFAULT",
+          "parametro": "PASSWORD_VERIFY_FUNCTION",
+          "actual": "NULL",
+          "recomendado": "ORA12C_VERIFY_FUNCTION"
+        }
+      ],
+      "duracion_ms": 373,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-07",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "grantee": "APP_CLINICA",
+          "privilegio": "UNLIMITED TABLESPACE",
+          "con_admin_option": "NO"
+        },
+        {
+          "grantee": "DEV_USER",
+          "privilegio": "SELECT ANY TABLE",
+          "con_admin_option": "NO"
+        }
+      ],
+      "duracion_ms": 44,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-08",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "tipo": "RETENCION",
+          "grantee": null
+        }
+      ],
+      "duracion_ms": 49,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-09",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "grantee": "APP_CLINICA",
+          "con_admin_option": "NO"
+        }
+      ],
+      "duracion_ms": 34,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-10",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "grantee": "DEV_USER",
+          "privilegio": "SELECT ANY TABLE",
+          "con_admin_option": "NO"
+        }
+      ],
+      "duracion_ms": 82,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-11",
+      "estado": "Cumple",
+      "motivo": null,
+      "hallazgos": [],
+      "duracion_ms": 56,
+      "truncado": false,
+      "origen": "Instancia"
+    },
+    {
+      "obs_id": "OBS-12",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES"
+        }
+      ],
+      "duracion_ms": 12,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-13",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "usuario": "APP_CLINICA",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "AUDITOR_ISO",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "C##AUDITOR_ISO",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "DBA_LHIDALGO",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "DEV_USER",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "EXEMPLEADO_01",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "MEDICO_01",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "MEDICO_02",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "PDBADMIN",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "RECEPCION_01",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "RRHH_01",
+          "versiones": "11G 12C"
+        },
+        {
+          "usuario": "SCOTT",
+          "versiones": "11G 12C"
+        }
+      ],
+      "duracion_ms": 21,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-14",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "esquema": "CLINICA",
+          "objeto": "TMP_EXPORTACION",
+          "tipo": "TABLE",
+          "tablespace": "TS_SENSIBLE",
+          "eliminado": "2026-10-22:02:36:32"
+        }
+      ],
+      "duracion_ms": 25,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-15",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "CEDULA"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "IBAN"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "SALARIO"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES",
+          "columna": "DIAGNOSTICO"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES",
+          "columna": "TRATAMIENTO"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "CEDULA"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "CORREO"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "DIRECCION"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "FECHA_NACIMIENTO"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "TELEFONO"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CEDULA"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CORREO"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "DIRECCION"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "FECHA_NACIMIENTO"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "TELEFONO"
+        }
+      ],
+      "duracion_ms": 33,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-16",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "tipo": "PAQUETE",
+          "grantee": "PUBLIC",
+          "objeto": "UTL_FILE",
+          "privilegio": "EXECUTE"
+        },
+        {
+          "tipo": "PAQUETE",
+          "grantee": "PUBLIC",
+          "objeto": "UTL_HTTP",
+          "privilegio": "EXECUTE"
+        },
+        {
+          "tipo": "PAQUETE",
+          "grantee": "PUBLIC",
+          "objeto": "UTL_SMTP",
+          "privilegio": "EXECUTE"
+        },
+        {
+          "tipo": "PAQUETE",
+          "grantee": "PUBLIC",
+          "objeto": "UTL_TCP",
+          "privilegio": "EXECUTE"
+        }
+      ],
+      "duracion_ms": 539,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-17",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "pieza": "6",
+          "manejador": "C:\\APP\\CALVO\\PRODUCT\\21C\\DBHOMEXE\\DATABASE\\C-3124756861-20261022-00",
+          "finalizado": "2026-10-22 02:31"
+        },
+        {
+          "pieza": "7",
+          "manejador": "C:\\APP\\CALVO\\PRODUCT\\21C\\DBHOMEXE\\DATABASE\\C-3124756861-20261022-01",
+          "finalizado": "2026-10-22 02:41"
+        }
+      ],
+      "duracion_ms": 29,
+      "truncado": false,
+      "origen": "Instancia"
+    },
+    {
+      "obs_id": "OBS-18",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES"
+        }
+      ],
+      "duracion_ms": 6831,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-19",
+      "estado": "Cumple",
+      "motivo": null,
+      "hallazgos": [],
+      "duracion_ms": 3341,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-20",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "usuario": "C##AUDITOR_ISO",
+          "sid": 1232,
+          "serial": 3819,
+          "programa": "C:\\Users\\calvo\\AppData\\Local\\AuditorISO\\venv\\Scripts\\python.exe",
+          "maquina": "DESKTOP-E064O9O"
+        }
+      ],
+      "duracion_ms": 25,
+      "truncado": false,
+      "origen": "Instancia"
+    },
+    {
+      "obs_id": "OBS-21",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "estado": "NOT_AVAILABLE",
+          "ubicacion": null,
+          "tipo_wallet": "UNKNOWN"
+        }
+      ],
+      "duracion_ms": 116,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-22",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "CEDULA",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "IBAN",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EMPLEADOS",
+          "columna": "SALARIO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES",
+          "columna": "DIAGNOSTICO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "EXPEDIENTES",
+          "columna": "TRATAMIENTO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "CEDULA",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "CORREO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "DIRECCION",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "FECHA_NACIMIENTO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA",
+          "tabla": "PACIENTES",
+          "columna": "TELEFONO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CEDULA",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CORREO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "DIRECCION",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "FECHA_NACIMIENTO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "TELEFONO",
+          "tablespace": "TS_SENSIBLE",
+          "archivo_origen": "C:\\APP\\CALVO\\PRODUCT\\21C\\ORADATA\\XE\\PDB_CLINICA\\TS_SENSIBLE01.DBF"
+        }
+      ],
+      "duracion_ms": 348,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-23",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CEDULA",
+          "marcador": "ENMASCARADO"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "CORREO",
+          "marcador": "ENMASCARADO"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "DIRECCION",
+          "marcador": "ENMASCARADO"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "FECHA_NACIMIENTO",
+          "marcador": "ENMASCARADO"
+        },
+        {
+          "esquema": "CLINICA_DEV",
+          "tabla": "PACIENTES",
+          "columna": "TELEFONO",
+          "marcador": "ENMASCARADO"
+        }
+      ],
+      "duracion_ms": 241,
+      "truncado": false,
+      "origen": "PDB"
+    },
+    {
+      "obs_id": "OBS-24",
+      "estado": "No cumple",
+      "motivo": null,
+      "hallazgos": [
+        {
+          "version": "Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production",
+          "ultimo_parche": "SIN REGISTRO",
+          "dias": "N/D"
+        }
+      ],
+      "duracion_ms": 14,
+      "truncado": false,
+      "origen": "Instancia"
+    }
+  ]
+}

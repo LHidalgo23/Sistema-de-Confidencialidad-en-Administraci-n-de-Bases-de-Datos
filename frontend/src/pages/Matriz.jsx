@@ -161,19 +161,19 @@ export default function Matriz() {
                 const mejoro = f.criterio_despues !== null && f.criterio_despues !== undefined && f.criterio_despues > (f.criterio_antes ?? -1);
                 return (
                   <tr key={f.control_id} className="hover:bg-superficie-2/60">
-                    <th scope="row" className={`${td} sticky left-0 min-w-48 bg-superficie text-left font-semibold`}>
+                    <th scope="row" className={`${td} sticky left-0 min-w-32 bg-superficie text-left font-semibold`}>
                       {f.control}
                     </th>
-                    <td className={`${td} min-w-40 text-[0.8125rem] text-texto-2`}>{f.tarea}</td>
+                    <td className={`${td} min-w-24 text-[0.8125rem] text-texto-2`}>{f.tarea}</td>
                     <td className={`${td} font-mono text-xs whitespace-nowrap text-texto-2`}>{f.riesgo}</td>
-                    <td className={`${td} min-w-64 max-w-sm text-[0.8125rem]`}>{f.hallazgo}</td>
+                    <td className={`${td} min-w-40 max-w-xs text-[0.8125rem]`}>{f.hallazgo}</td>
                     <td className={`${td} border-l border-linea`}>
                       <Criterio valor={f.criterio_antes} />
                     </td>
                     <td className={td}>
                       <EstadoBadge estado={f.estado_antes} />
                     </td>
-                    <td className={`${td} min-w-36 border-l border-linea text-[0.8125rem] text-texto-2`}>{f.correctivo_aplicado}</td>
+                    <td className={`${td} min-w-24 border-l border-linea text-[0.8125rem] text-texto-2`}>{f.correctivo_aplicado}</td>
                     <td className={td}>
                       <span className="inline-flex items-center gap-1.5">
                         <Criterio valor={f.criterio_despues} />

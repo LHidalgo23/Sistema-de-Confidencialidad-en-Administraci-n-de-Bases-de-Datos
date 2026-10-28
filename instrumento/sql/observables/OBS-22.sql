@@ -1,10 +1,3 @@
--- OBS-22 | A8.24 Uso de criptografia
--- Columnas sensibles ubicadas en tablespaces sin cifrar y sin cifrado TDE a
--- nivel de columna. La ubicacion se obtiene de DBA_TABLES y, para tablas
--- particionadas, de DBA_TAB_PARTITIONS.
--- Alcance: PDB | Version minima: 19
--- Binds: :columnas_sensibles (JSON: [{esquema,tabla,columna,nivel}])
--- Regla: cada fila es un hallazgo.
 WITH ubicacion AS (
   SELECT t.owner AS esquema, t.table_name AS tabla, t.tablespace_name AS tablespace
   FROM   dba_tables t
@@ -18,7 +11,8 @@ SELECT DISTINCT
        s.esquema,
        s.tabla,
        s.columna,
-       u.tablespace
+       u.tablespace,
+       (SELECT MIN(df.file_name) FROM dba_data_files df WHERE df.tablespace_name = u.tablespace) AS archivo_origen
 FROM   JSON_TABLE(TO_CLOB(:columnas_sensibles), '$[*]'
          COLUMNS (esquema VARCHAR2(128) PATH '$.esquema',
                   tabla   VARCHAR2(128) PATH '$.tabla',

@@ -1,4 +1,4 @@
-import { Radar, ScanEye, Signature } from "lucide-react";
+import { BarChart2, Radar, ScanEye, Signature } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -6,7 +6,19 @@ import { api } from "../api/client";
 import Aviso, { Cargando } from "../components/Aviso";
 import EstadoBadge from "../components/EstadoBadge";
 import { ESTADOS, ORDEN_ESTADOS, etiquetaEjecucion } from "../components/estados";
-import { boton, botonSecundario, cabecera, campo, contenedorTabla, cuerpo, enlace, etiquetaCampo, tabla, td, th } from "../components/estilos";
+import {
+  boton,
+  botonSecundario,
+  cabeceraFija,
+  campo,
+  contenedorTablaCorta,
+  cuerpo,
+  enlace,
+  etiquetaCampo,
+  tabla,
+  td,
+  th,
+} from "../components/estilos";
 import { Encabezado, MedidorMadurez, Seccion, Segmentado, Vacio } from "../components/ui";
 import { useAccion, useCarga } from "../hooks/useCarga";
 import { useEmpresa } from "../hooks/useEmpresa";
@@ -161,22 +173,26 @@ function Controles({ ejecucion, empresaId }) {
 }
 
 function Observables({ ejecucion, empresaId }) {
-  const [soloPendientes, setSoloPendientes] = useState(false);
-  const filas = ejecucion.observables.filter((o) => !soloPendientes || o.estado !== "Cumple");
+  const [filtro, setFiltro] = useState("");
+  const filas = ejecucion.observables.filter((o) => !filtro || o.estado === filtro);
+  const opciones = [
+    { valor: "", etiqueta: "Todos", cuenta: ejecucion.observables.length },
+    ...ORDEN_ESTADOS.map((estado) => ({
+      valor: estado,
+      etiqueta: estado,
+      punto: ESTADOS[estado].punto,
+      cuenta: ejecucion.observables.filter((o) => o.estado === estado).length,
+    })),
+  ];
   return (
     <Seccion
       titulo="Observables de esta ejecución"
       descripcion="Las 24 consultas de solo lectura. Cada fila devuelta por una consulta es un hallazgo."
-      acciones={
-        <label className="inline-flex min-h-9 cursor-pointer items-center gap-2 text-sm text-texto-2">
-          <input type="checkbox" checked={soloPendientes} onChange={(e) => setSoloPendientes(e.target.checked)} className="size-4 accent-[var(--acento)]" />
-          Solo los que no cumplen
-        </label>
-      }
+      acciones={<Segmentado etiqueta="Filtrar observables por estado" nombre="filtro-observables" opciones={opciones} valor={filtro} onChange={setFiltro} />}
     >
-      <div className={contenedorTabla}>
+      <div className={contenedorTablaCorta}>
         <table className={tabla}>
-          <thead className={cabecera}>
+          <thead className={cabeceraFija}>
             <tr>
               {["Observable", "Control", "Qué revisa", "Origen", "Severidad", "Estado", "Hallazgos"].map((titulo) => (
                 <th key={titulo} scope="col" className={th}>
@@ -219,6 +235,7 @@ function Observables({ ejecucion, empresaId }) {
 
 function Comparacion({ ejecuciones }) {
   const [comparacion, setComparacion] = useState({ antes: null, despues: null });
+  const [mostrarGrafico, setMostrarGrafico] = useState(false);
   const idDespues = comparacion.despues ?? ejecuciones[0]?.id ?? null;
   const idAntes = comparacion.antes ?? ejecuciones[1]?.id ?? null;
   const comparada = useCarga(async () => {
@@ -260,7 +277,13 @@ function Comparacion({ ejecuciones }) {
       {comparada.cargando && <Cargando />}
       <Aviso tono="error">{comparada.error}</Aviso>
       {idAntes === idDespues && <p className="text-sm text-texto-3">Elige dos ejecuciones distintas para compararlas.</p>}
-      {grafico && (
+      {grafico && !mostrarGrafico && (
+        <button type="button" onClick={() => setMostrarGrafico(true)} className={botonSecundario}>
+          <BarChart2 aria-hidden="true" className="size-4" />
+          Presione para ver la representación gráfica de los resultados
+        </button>
+      )}
+      {grafico && mostrarGrafico && (
         <figure className="rounded-xl bg-superficie px-3 pt-5 pb-3 shadow-tarjeta">
           <div className="h-80" role="img" aria-label="Gráfico de barras: madurez por control, antes y después">
             <ResponsiveContainer width="100%" height="100%">
@@ -285,7 +308,12 @@ function Comparacion({ ejecuciones }) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <figcaption className="px-2 pt-2 text-xs text-texto-3">Escala 0-4. Un control sin madurez calculable se dibuja en 0.</figcaption>
+          <figcaption className="flex items-center justify-between gap-3 px-2 pt-2 text-xs text-texto-3">
+            Escala 0-4. Un control sin madurez calculable se dibuja en 0.
+            <button type="button" onClick={() => setMostrarGrafico(false)} className="shrink-0 font-medium text-acento hover:underline">
+              Ocultar gráfico
+            </button>
+          </figcaption>
         </figure>
       )}
     </Seccion>
@@ -341,9 +369,9 @@ function Revision({ ejecucionId, alRegistrar }) {
 function Historial({ ejecuciones, ejecucionId, seleccionar }) {
   return (
     <Seccion titulo="Historial de ejecuciones" descripcion="Cada observación queda guardada con su fecha y su versión de Oracle.">
-      <div className={contenedorTabla}>
+      <div className={contenedorTablaCorta}>
         <table className={tabla}>
-          <thead className={cabecera}>
+          <thead className={cabeceraFija}>
             <tr>
               {["Ejecución", "Etiqueta", "Fecha", "Oracle", "Observables con hallazgos", "Revisión", ""].map((titulo) => (
                 <th key={titulo || "accion"} scope="col" className={th}>

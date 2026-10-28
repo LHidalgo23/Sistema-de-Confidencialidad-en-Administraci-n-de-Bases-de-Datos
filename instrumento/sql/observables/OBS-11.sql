@@ -1,11 +1,3 @@
--- OBS-11 | A8.2 Derechos de acceso privilegiado
--- (1) AUDIT_SYS_OPERATIONS distinto de TRUE: no se auditan las acciones de SYS.
--- (2) Cuentas en el password file fuera de la lista autorizada.
--- Si el parametro no es visible, se devuelve un renglon NO_EVALUABLE en lugar
--- de reportar un falso hallazgo.
--- Alcance: Instancia | Version minima: 19
--- Binds: :cuentas_pwfile_autorizadas (JSON: ["SYS", ...])
--- Regla: cada fila con NO_EVALUABLE nulo es un hallazgo.
 SELECT 'AUDIT_SYS_OPERATIONS'  AS tipo,
        p.name                  AS objeto,
        p.value                 AS actual,
