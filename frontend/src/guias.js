@@ -566,21 +566,14 @@ export const GUIAS = {
 
   documentacion: {
     titulo: "Defensa y documentación",
-    queEs: "Dónde está cada pieza que pide el enunciado dentro del sistema, cómo se reparte la rúbrica, el guion del video y los documentos del proyecto.",
+    queEs: "Dónde está cada pieza que pide el enunciado dentro del sistema, cómo auditar una empresa nueva y los documentos del proyecto.",
     queMuestra: [
       "El mapa del enunciado: cada punto del producto esperado con el enlace a la pantalla que lo cumple.",
-      "La rúbrica con su peso y dónde está la evidencia de cada criterio.",
       "Los pasos para auditar una empresa nueva y la lista de documentos con su ruta.",
     ],
     comoProbar: ["Recorre el mapa del enunciado de arriba abajo antes de la presentación: cada enlace abre la evidencia."],
     esperado: ["Con una empresa nueva solo cambian la conexión y el perfil: el catálogo y el motor son los mismos."],
     siguiente: ["Abre la Práctica para ejercitar el ciclo."],
-    defensa: {
-      enunciado: "Secciones 6, 9 y 10 del enunciado: producto esperado, rúbrica y entregables.",
-      rubrica: "Todos los criterios: es el índice de la defensa.",
-      argumentos: ["Cada punto del producto esperado tiene una pantalla y un archivo en el repositorio que lo respalda."],
-      preguntas: [],
-    },
     terminos: ["phva", "rconf", "observable", "madurez"],
   },
 };
