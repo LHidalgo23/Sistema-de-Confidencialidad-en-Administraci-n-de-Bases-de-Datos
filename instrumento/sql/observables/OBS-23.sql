@@ -1,11 +1,14 @@
 SELECT s.esquema,
        s.tabla,
        s.columna,
+       dtc.data_type AS tipo_dato,
        :marcador_enmascarado AS marcador
 FROM   JSON_TABLE(TO_CLOB(:columnas_sensibles), '$[*]'
          COLUMNS (esquema VARCHAR2(128) PATH '$.esquema',
                   tabla   VARCHAR2(128) PATH '$.tabla',
                   columna VARCHAR2(128) PATH '$.columna')) s
+LEFT JOIN dba_tab_columns dtc
+       ON dtc.owner = s.esquema AND dtc.table_name = s.tabla AND dtc.column_name = s.columna
 WHERE  EXISTS (SELECT 1
                FROM   JSON_TABLE(TO_CLOB(:sufijos_no_productivos), '$[*]'
                         COLUMNS (sufijo VARCHAR2(64) PATH '$')) x

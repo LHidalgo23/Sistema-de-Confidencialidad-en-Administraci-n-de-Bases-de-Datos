@@ -225,15 +225,73 @@ def generar_script(
     return "\n".join(lineas)
 
 
-def _pendientes_de(texto: str, placeholders: Mapping[str, Any]) -> list[dict[str, Any]]:
+_TIPOS_TEXTO = {"VARCHAR2", "CHAR", "NVARCHAR2", "NCHAR", "CLOB", "NCLOB", "LONG"}
+_TIPOS_NUMERO = {"NUMBER", "FLOAT", "BINARY_DOUBLE", "BINARY_FLOAT", "INTEGER"}
+_TIPOS_FECHA = {"DATE", "TIMESTAMP", "TIMESTAMP(6)", "TIMESTAMP WITH TIME ZONE", "TIMESTAMP WITH LOCAL TIME ZONE"}
+
+
+def _valor_sugerido(token: str, hallazgo: Mapping[str, Any]) -> str | None:
+    """Valor por defecto editable para un placeholder que sigue una convención fija
+    (no es un secreto ni una decisión de negocio), calculado con datos que el propio
+    observable ya trajo. El DBA lo ve en pantalla, lo copia o lo ajusta: nunca se
+    aplica solo. Si falta el dato que necesita (por ejemplo tipo_dato), no sugiere
+    nada en vez de adivinar."""
+    if token == "rol_funcional":
+        objeto = str(hallazgo.get("objeto", "")).strip().upper()
+        privilegio = str(hallazgo.get("privilegio", "")).strip().upper().replace(" ", "_")
+        if objeto and privilegio:
+            return f"ROL_{objeto}_{privilegio}"
+    elif token == "archivo_destino":
+        origen = str(hallazgo.get("archivo_origen", "")).strip()
+        if origen:
+            base, separador, extension = origen.rpartition(".")
+            return f"{base}_enc.{extension}" if separador else f"{origen}_enc"
+    elif token == "expresion_de_enmascarado":
+        tipo = str(hallazgo.get("tipo_dato", "")).strip().upper()
+        if tipo in _TIPOS_TEXTO:
+            return "DBMS_RANDOM.STRING('A', 10)"
+        if tipo in _TIPOS_NUMERO:
+            return "ROUND(DBMS_RANDOM.VALUE(1, 999999))"
+        if tipo in _TIPOS_FECHA:
+            return "SYSDATE - TRUNC(DBMS_RANDOM.VALUE(1, 3650))"
+    return None
+
+
+def _pendientes_de(
+    texto: str,
+    placeholders: Mapping[str, Any],
+    hallazgo: Mapping[str, Any],
+    parametros: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+) -> list[dict[str, Any]]:
     """Placeholders <TOKEN> que quedaron en `texto`, con su metadato del catálogo
-    (alcance y guía) para que la pantalla sepa qué campo pedir y cómo explicarlo."""
+    (alcance y guía) para que la pantalla sepa qué campo pedir y cómo explicarlo.
+    Cuando el catálogo trae consulta_sql, se renderiza con los datos reales de este
+    hallazgo (esquema, tabla, etc.) para que el DBA pueda copiarla y pegarla tal cual
+    en sqlplus/cmd. Si algo falta para renderizarla, se muestra sin rellenar en vez de
+    ocultarla. valor_sugerido es, además, un valor por convención listo para usar en
+    el campo (ver _valor_sugerido): no sustituye la consulta, la complementa."""
     salida = []
     for marcador in advertencias_pendientes(texto):
         token = marcador.strip("<>").lower()
         meta = placeholders.get(token)
+        if meta is None:
+            salida.append({"token": token, "alcance": "por_hallazgo", "guia": "", "consulta_sql": None, "valor_sugerido": None})
+            continue
+        consulta_sql = None
+        if meta.consulta_sql:
+            try:
+                consulta_sql = renderizar_sql(meta.consulta_sql, hallazgo, parametros, defaults)
+            except (ErrorRender, KeyError):
+                consulta_sql = meta.consulta_sql
         salida.append(
-            {"token": token, "alcance": meta.alcance, "guia": meta.guia} if meta else {"token": token, "alcance": "por_hallazgo", "guia": ""}
+            {
+                "token": token,
+                "alcance": meta.alcance,
+                "guia": meta.guia,
+                "consulta_sql": consulta_sql,
+                "valor_sugerido": _valor_sugerido(token, hallazgo) if meta.alcance == "por_hallazgo" else None,
+            }
         )
     return salida
 
@@ -271,7 +329,13 @@ def detalle_correctivos(
                     sql_paso = renderizar_sql(paso.sql, hallazgo, parametros, defaults)
                 except (ErrorRender, KeyError):
                     continue
-                pasos.append({"condicion": paso.condicion, "script": sql_paso, "pendientes": _pendientes_de(sql_paso, placeholders)})
+                pasos.append(
+                    {
+                        "condicion": paso.condicion,
+                        "script": sql_paso,
+                        "pendientes": _pendientes_de(sql_paso, placeholders, hallazgo, parametros, defaults),
+                    }
+                )
             items.append(
                 {
                     "clave": clave_hallazgo(entrada, hallazgo),
@@ -279,7 +343,7 @@ def detalle_correctivos(
                     "script": sentencia,
                     "error": None,
                     "pasos": pasos,
-                    "pendientes": _pendientes_de(sentencia, placeholders),
+                    "pendientes": _pendientes_de(sentencia, placeholders, hallazgo, parametros, defaults),
                 }
             )
         salida.append(

@@ -52,6 +52,7 @@ class PlaceholderCorrectivo(BaseModel):
     token: str = Field(pattern=r"^[a-z][a-z0-9_]*$")  # nombre del campo {token} en la plantilla
     alcance: Literal["global", "por_hallazgo"]  # global: un valor para todo el script; por_hallazgo: uno por fila
     guia: str  # de dónde sacar ese valor, en una o dos frases
+    consulta_sql: str | None = None  # SELECT listo para pegar en sqlplus/cmd que ayuda a obtener el valor
 
 
 class Correctivo(BaseModel):

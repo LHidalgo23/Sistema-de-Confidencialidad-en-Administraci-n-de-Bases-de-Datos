@@ -101,12 +101,10 @@ export const GUIAS = {
       "El resumen: madurez promedio y cuántos controles Cumplen, son Parciales, No cumplen o son No evaluables.",
       "Una tarjeta por control (los 15 de la asignación y 4 extras) con enlaces a los observables que fallaron.",
       "La tabla de los 24 observables: de dónde se observó (PDB o instancia), severidad, estado y número de hallazgos.",
-      "El historial de ejecuciones y, con dos o más, el gráfico de madurez antes y después.",
     ],
     comoProbar: [
       "Escribe una etiqueta («antes» antes de corregir, «despues» al volver a observar) y pulsa «Observar la base».",
       "Pulsa un observable (por ejemplo OBS-09) para abrir su evidencia y su correctivo.",
-      "Con dos ejecuciones, elige cuál es «Antes» y cuál «Después» para ver el gráfico.",
       "Registra una revisión: es una de las condiciones del nivel 4 (Gestionado).",
     ],
     esperado: [
@@ -116,6 +114,7 @@ export const GUIAS = {
     ],
     siguiente: [
       "Descarga el script correctivo, aplícalo en la base (lo aplica el DBA, nunca el instrumento) y vuelve a observar para comprobar que el control mejora.",
+      "Abre Resultados para comparar ejecuciones y ver la evolución de la madurez.",
     ],
     defensa: {
       enunciado: "Producto esperado, punto 4: la lista de 15 controles observables por un auditor externo. Fase Verificar del PHVA.",
@@ -123,7 +122,6 @@ export const GUIAS = {
       argumentos: [
         "La madurez no es una opinión: sale de una regla fija sobre el porcentaje de observables que cumplen, y el 4 exige auditoría activa y revisión firmada.",
         "Cada estado se puede rastrear hasta las filas exactas que lo causaron: del control al observable y del observable a la evidencia.",
-        "El gráfico antes y después demuestra el ciclo completo con dos ejecuciones reales, no con datos dibujados.",
       ],
       preguntas: [
         [
@@ -229,30 +227,35 @@ export const GUIAS = {
   },
 
   matriz: {
-    titulo: "Matriz de evaluación",
+    titulo: "Resultados",
     queEs:
-      "La matriz de evaluación que pide la asignación: tarea, riesgo, control, criterio 0-4, evidencia y estado, antes y después del correctivo.",
+      "El análisis histórico y comparativo de las ejecuciones de la empresa: estado actual, comparación antes/después, evolución de la madurez y el detalle de cualquier ejecución puntual. Incluye la matriz de evaluación que pide la asignación (tarea, riesgo, control, criterio 0-4, evidencia y estado).",
     queMuestra: [
-      "Una fila por control ISO con la tarea del DBA, el riesgo que mitiga y la evidencia (qué observable falló y sobre qué objeto).",
-      "El criterio y el estado «antes» y «después», y qué correctivo se aplicó.",
+      "Estado actual: la madurez de cada control en la ejecución más reciente, en tarjetas y en un gráfico.",
+      "Antes y después: gráfico comparando dos ejecuciones elegidas más la matriz de evaluación completa (exportable a CSV).",
+      "Evolución: la línea de tiempo de la madurez general en todas las ejecuciones de la empresa, con el historial debajo.",
+      "Detalle por evaluación: controles y observables de una sola ejecución elegida.",
     ],
     comoProbar: [
-      "Con una sola ejecución solo verás las columnas «antes».",
-      "Tras volver a observar, elige las ejecuciones «Antes» y «Después».",
-      "Filtra por estado y pulsa «Exportar CSV» para llevar la matriz al informe.",
+      "Cambia de vista con el selector debajo del título.",
+      "En «Antes y después», con una sola ejecución solo verás las columnas «antes»; tras volver a observar, elige las ejecuciones «Antes» y «Después» y pulsa «Exportar CSV» para llevar la matriz al informe.",
+      "En «Evolución», observa 3 o más veces para ver cómo se mueve la línea.",
+      "En «Detalle por evaluación», elige cualquier ejecución del historial, no solo la más reciente.",
     ],
     esperado: [
       "«Correctivo aplicado» lista los observables que pasaron de No cumple a Cumple; si ninguno cambió, dice «No».",
       "Un control mejora solo cuando mejora el porcentaje de sus observables en Cumple.",
+      "Con una sola ejecución, «Evolución» muestra un único punto: no se inventa una tendencia que no existe.",
     ],
     siguiente: ["Abre el Plan de mejora para ver lo que sigue pendiente."],
     defensa: {
-      enunciado: "Producto esperado, punto 5: Matriz de evaluación (Tarea | Riesgo | Control | Criterio 0-4 | Evidencia | Estado).",
+      enunciado: "Producto esperado, punto 5: Matriz de evaluación (Tarea | Riesgo | Control | Criterio 0-4 | Evidencia | Estado). Fase Verificar del PHVA.",
       rubrica: "Matriz de evaluación y controles observables (20 %).",
       argumentos: [
         "Tiene exactamente las columnas que pide el enunciado y agrega el «después» para demostrar el efecto del correctivo.",
         "La evidencia no es texto libre: nombra el observable y el objeto que falló, y se puede reproducir en SQL Developer.",
         "Se exporta a CSV para el informe, con los mismos datos que se ven en pantalla.",
+        "El gráfico de evolución demuestra el ciclo completo con las ejecuciones reales guardadas, no con datos dibujados.",
       ],
       preguntas: [
         [
@@ -262,6 +265,10 @@ export const GUIAS = {
         [
           "¿Por qué un control puede seguir Parcial después de corregir?",
           "Porque se corrigieron algunos de sus observables y no todos. La madurez sube con el porcentaje que cumple.",
+        ],
+        [
+          "¿De dónde sale el color de cada punto en la evolución?",
+          "De la misma regla de estados del glosario (0-1 No cumple, 2 Parcial, 3-4 Cumple), aplicada a la madurez promedio de esa ejecución.",
         ],
       ],
     },
@@ -312,19 +319,25 @@ export const GUIAS = {
   correctivos: {
     titulo: "Script correctivo",
     queEs:
-      "El script correctivo consolidado de una ejecución, ordenado por severidad, para que el DBA lo revise y lo aplique.",
+      "La revisión de correctivos de una ejecución, uno por observable en «No cumple»: qué está listo, qué necesita un dato manual y de dónde sacarlo, antes de generar el script consolidado que aplica el DBA.",
     queMuestra: [
-      "Un encabezado con la empresa y la ejecución, y una sección por observable con su nota y su control preventivo.",
-      "El SQL por hallazgo, sin sentencias repetidas.",
+      "Los 5 pasos del DBA con el script: revisar, probar, respaldar, aplicar y re-observar.",
+      "Cada observable como tarjeta, con severidad, si «Requiere intervención manual» o no, y su estado: Activa, Pendiente o Aplicada.",
+      "Dentro de cada tarjeta: la consulta SQL que detectó el hallazgo, el paso previo (si lo necesita, por ejemplo crear antes el rol funcional) y la plantilla del correctivo.",
+      "Los campos manuales que el catálogo no puede inventar (un valor por todo el script, o uno por cada fila), cada uno con su guía y, cuando aplica, la consulta SQL lista para copiar y pegar en sqlplus/cmd que trae el dato real de esa fila.",
+      "El contador de activas, pendientes y aplicadas, y cuántos campos faltan por completar antes de poder generar el script.",
     ],
     comoProbar: [
-      "Pulsa «Copiar» o «Descargar .sql».",
-      "Revisa el script y complétalo donde pida decisiones propias (por ejemplo el predicado de VPD o los archivos de TDE).",
+      "Llena los campos manuales de las observables activas: usa la consulta SQL de cada campo si la trae, cópiala, ejecútala en sqlplus y pega el resultado.",
+      "Si un hallazgo ya lo resolviste por tu cuenta, márcalo «Aplicada»; si lo quieres dejar para después, márcalo «Pendiente» (sale del script hasta que lo reactives).",
+      "Cuando no falte ningún campo en las activas, pulsa «Generar script completo» y luego «Copiar» o «Descargar .sql».",
       "Pruébalo primero en un ambiente de prueba y con respaldo previo.",
     ],
     esperado: [
-      "Lo que el instrumento no puede inventar (reglas de negocio, rutas de archivos) viene comentado y marcado para completar.",
-      "Los controles que ya cumplen no aparecen.",
+      "El botón de generar solo se habilita cuando no hay observables activas sin campos, o cuando no queda ninguna activa.",
+      "Lo que el instrumento no puede inventar y nadie llenó todavía aparece como «COMPLETAR A MANO» en el script, en vez de un valor inventado.",
+      "Las observables ya en «Aplicada» o «Pendiente» no se incluyen en el script; marcar y desmarcar no cambia la base, solo qué entra al script.",
+      "Los controles que ya cumplen no aparecen: el script solo cubre lo que sigue en «No cumple».",
     ],
     siguiente: ["Aplica el script, vuelve a observar y compara en la Matriz."],
     defensa: {
@@ -332,13 +345,22 @@ export const GUIAS = {
       rubrica: "Pruebas técnicas y scripts (15 %): scripts funcionales.",
       argumentos: [
         "Ordenado por severidad: lo más grave primero, para que el DBA priorice.",
-        "Honesto con sus límites: lo que depende del negocio (predicado VPD, ubicación del wallet) viene marcado para completar, no inventado.",
+        "Honesto con sus límites: lo que depende del negocio (predicado VPD, ubicación del wallet) viene marcado para completar, no inventado; y donde el dato sí vive en la base, el instrumento da la consulta exacta para traerlo en vez de dejarlo a la memoria del DBA.",
+        "Marcar «Pendiente» o «Aplicada» separa el trabajo real del DBA (fuera del instrumento) de lo que todavía va a entrar al script, sin perder el hallazgo de vista.",
         "Cada sección trae también su control preventivo, para que el hallazgo no vuelva.",
       ],
       preguntas: [
         [
           "¿Qué pasa si aplico el script dos veces?",
           "Las sentencias se deduplican dentro del script; volver a aplicarlo puede dar errores inofensivos de Oracle (por ejemplo, revocar algo ya revocado). Por eso se recomienda un ambiente de prueba primero.",
+        ],
+        [
+          "¿De dónde sale la consulta que aparece bajo un campo manual?",
+          "Del mismo catálogo: cada campo que depende de un dato de la base (por ejemplo el tipo de dato de una columna para armar el enmascarado) trae su propio SELECT, ya con el esquema y la tabla reales de ese hallazgo, para copiarlo y pegarlo tal cual.",
+        ],
+        [
+          "¿Por qué algunos campos manuales no traen una consulta SQL?",
+          "Porque el valor no vive en la base: es una contraseña, una convención de la empresa o una decisión de negocio (por ejemplo, a qué filas puede ver un rol). Ahí la guía dice a quién preguntarle en vez de qué consultar.",
         ],
       ],
     },

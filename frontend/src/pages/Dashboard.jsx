@@ -1,11 +1,10 @@
-import { BarChart2, Radar, ScanEye, Signature } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { Radar, ScanEye, Signature } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api/client";
 import Aviso, { Cargando } from "../components/Aviso";
 import EstadoBadge from "../components/EstadoBadge";
-import { ESTADOS, ORDEN_ESTADOS, etiquetaEjecucion } from "../components/estados";
+import { ESTADOS, ORDEN_ESTADOS } from "../components/estados";
 import {
   boton,
   botonSecundario,
@@ -22,15 +21,6 @@ import {
 import { Encabezado, MedidorMadurez, Seccion, Segmentado, Vacio } from "../components/ui";
 import { useAccion, useCarga } from "../hooks/useCarga";
 import { useEmpresa } from "../hooks/useEmpresa";
-
-function datosGrafico(antes, despues) {
-  const madurezAntes = Object.fromEntries(antes.controles.map((c) => [c.control_id, c.madurez ?? 0]));
-  return despues.controles.map((c) => ({
-    control: c.control_id,
-    Antes: madurezAntes[c.control_id] ?? 0,
-    Después: c.madurez ?? 0,
-  }));
-}
 
 /** Resumen de la ejecución: madurez promedio, reparto por estado y revisión. */
 function Resumen({ ejecucion }) {
@@ -233,93 +223,6 @@ function Observables({ ejecucion, empresaId }) {
   );
 }
 
-function Comparacion({ ejecuciones }) {
-  const [comparacion, setComparacion] = useState({ antes: null, despues: null });
-  const [mostrarGrafico, setMostrarGrafico] = useState(false);
-  const idDespues = comparacion.despues ?? ejecuciones[0]?.id ?? null;
-  const idAntes = comparacion.antes ?? ejecuciones[1]?.id ?? null;
-  const comparada = useCarga(async () => {
-    if (!idAntes || !idDespues || idAntes === idDespues) return null;
-    const [antes, despues] = await Promise.all([api.ejecucion(idAntes), api.ejecucion(idDespues)]);
-    return { antes, despues };
-  }, [idAntes, idDespues]);
-
-  const grafico = useMemo(() => (comparada.datos ? datosGrafico(comparada.datos.antes, comparada.datos.despues) : null), [comparada.datos]);
-
-  return (
-    <Seccion
-      titulo="Antes y después"
-      descripcion="Madurez de cada control en dos ejecuciones. Así se demuestra que el correctivo funcionó."
-      acciones={
-        <div className="flex flex-wrap gap-3">
-          {[
-            ["Antes", idAntes, "antes"],
-            ["Después", idDespues, "despues"],
-          ].map(([titulo, valor, clave]) => (
-            <label key={clave} className="text-sm">
-              <span className={etiquetaCampo}>{titulo}</span>
-              <select
-                value={valor ?? ""}
-                onChange={(e) => setComparacion((p) => ({ ...p, [clave]: Number(e.target.value) }))}
-                className={`${campo} w-auto max-w-72`}
-              >
-                {ejecuciones.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {etiquetaEjecucion(e)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
-        </div>
-      }
-    >
-      {comparada.cargando && <Cargando />}
-      <Aviso tono="error">{comparada.error}</Aviso>
-      {idAntes === idDespues && <p className="text-sm text-texto-3">Elige dos ejecuciones distintas para compararlas.</p>}
-      {grafico && !mostrarGrafico && (
-        <button type="button" onClick={() => setMostrarGrafico(true)} className={botonSecundario}>
-          <BarChart2 aria-hidden="true" className="size-4" />
-          Presione para ver la representación gráfica de los resultados
-        </button>
-      )}
-      {grafico && mostrarGrafico && (
-        <figure className="rounded-xl bg-superficie px-3 pt-5 pb-3 shadow-tarjeta">
-          <div className="h-80" role="img" aria-label="Gráfico de barras: madurez por control, antes y después">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={grafico} barGap={2} margin={{ left: -18, right: 8 }}>
-                <CartesianGrid strokeDasharray="2 4" stroke="var(--linea)" vertical={false} />
-                <XAxis dataKey="control" tick={{ fontSize: 11, fill: "var(--texto-3)" }} tickLine={false} axisLine={{ stroke: "var(--linea)" }} />
-                <YAxis domain={[0, 4]} ticks={[0, 1, 2, 3, 4]} tick={{ fontSize: 11, fill: "var(--texto-3)" }} tickLine={false} axisLine={false} />
-                <Tooltip
-                  cursor={{ fill: "var(--superficie-2)" }}
-                  contentStyle={{
-                    background: "var(--superficie)",
-                    border: "1px solid var(--linea)",
-                    borderRadius: 8,
-                    color: "var(--texto)",
-                    fontSize: 13,
-                  }}
-                />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 13, color: "var(--texto-2)" }} />
-                {/* Sin animación: el gráfico se usa en capturas de evidencia y debe verse completo al instante. */}
-                <Bar dataKey="Antes" fill="var(--linea-fuerte)" radius={[3, 3, 0, 0]} isAnimationActive={false} />
-                <Bar dataKey="Después" fill="var(--acento)" radius={[3, 3, 0, 0]} isAnimationActive={false} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <figcaption className="flex items-center justify-between gap-3 px-2 pt-2 text-xs text-texto-3">
-            Escala 0-4. Un control sin madurez calculable se dibuja en 0.
-            <button type="button" onClick={() => setMostrarGrafico(false)} className="shrink-0 font-medium text-acento hover:underline">
-              Ocultar gráfico
-            </button>
-          </figcaption>
-        </figure>
-      )}
-    </Seccion>
-  );
-}
-
 function Revision({ ejecucionId, alRegistrar }) {
   const [revision, setRevision] = useState({ revisor: "", notas: "" });
   const revisar = useAccion(useCallback((cuerpoPeticion) => api.revisar(ejecucionId, cuerpoPeticion), [ejecucionId]));
@@ -363,50 +266,6 @@ function Revision({ ejecucionId, alRegistrar }) {
         </div>
       </form>
     </section>
-  );
-}
-
-function Historial({ ejecuciones, ejecucionId, seleccionar }) {
-  return (
-    <Seccion titulo="Historial de ejecuciones" descripcion="Cada observación queda guardada con su fecha y su versión de Oracle.">
-      <div className={contenedorTablaCorta}>
-        <table className={tabla}>
-          <thead className={cabeceraFija}>
-            <tr>
-              {["Ejecución", "Etiqueta", "Fecha", "Oracle", "Observables con hallazgos", "Revisión", ""].map((titulo) => (
-                <th key={titulo || "accion"} scope="col" className={th}>
-                  {titulo}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className={cuerpo}>
-            {ejecuciones.map((e) => {
-              const activa = e.id === ejecucionId;
-              return (
-                <tr key={e.id} aria-current={activa ? "true" : undefined} className={activa ? "bg-acento-suave/50" : ""}>
-                  <td className={`${td} font-mono font-medium`}>#{e.id}</td>
-                  <td className={td}>{e.etiqueta || "—"}</td>
-                  <td className={`${td} whitespace-nowrap text-texto-2`}>{new Date(e.iniciada_en).toLocaleString()}</td>
-                  <td className={`${td} text-texto-2`}>{e.version_oracle}</td>
-                  <td className={`${td} tabular`}>{e.con_hallazgos}</td>
-                  <td className={`${td} text-texto-2`}>{e.revisada_por ?? "—"}</td>
-                  <td className={`${td} text-right`}>
-                    {activa ? (
-                      <span className="text-xs font-semibold text-acento">En pantalla</span>
-                    ) : (
-                      <button type="button" onClick={() => seleccionar(e.id)} className={botonSecundario}>
-                        Ver
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </Seccion>
   );
 }
 
@@ -477,8 +336,6 @@ export default function Dashboard() {
         </>
       )}
 
-      {ejecuciones.length > 1 && <Comparacion key={ejecuciones[0].id} ejecuciones={ejecuciones} />}
-
       {ejecucion && (
         <Revision
           key={ejecucion.id}
@@ -490,7 +347,15 @@ export default function Dashboard() {
         />
       )}
 
-      {ejecuciones.length > 0 && <Historial ejecuciones={ejecuciones} ejecucionId={ejecucionId} seleccionar={seleccionarEjecucion} />}
+      {ejecuciones.length > 0 && (
+        <p className="text-sm text-texto-2">
+          Hay {ejecuciones.length} ejecución{ejecuciones.length === 1 ? "" : "es"} guardada{ejecuciones.length === 1 ? "" : "s"}.{" "}
+          <Link to={`/empresas/${empresa.id}/matriz`} className={enlace}>
+            Ver Resultados
+          </Link>{" "}
+          para comparar, ver la evolución y el historial.
+        </p>
+      )}
     </div>
   );
 }

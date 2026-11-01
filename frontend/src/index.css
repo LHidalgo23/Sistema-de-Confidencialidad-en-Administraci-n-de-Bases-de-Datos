@@ -30,8 +30,8 @@
   --barra-linea: #24365a;
   --cumple: #12733a;
   --cumple-suave: #e3f3e8;
-  --parcial: #9a5300;
-  --parcial-suave: #fbf0dc;
+  --parcial: #a16207;
+  --parcial-suave: #fef3c7;
   --nocumple: #b42318;
   --nocumple-suave: #fce8e6;
   --noeval: #4f5d75;
@@ -61,8 +61,8 @@
   --barra-linea: #1a2638;
   --cumple: #5cc98a;
   --cumple-suave: #12301f;
-  --parcial: #e8ae57;
-  --parcial-suave: #33260f;
+  --parcial: #eab308;
+  --parcial-suave: #332b0a;
   --nocumple: #f28b82;
   --nocumple-suave: #3a1716;
   --noeval: #a4b1c6;
@@ -200,6 +200,21 @@ dialog.panel-ayuda[open]::backdrop {
   }
 }
 
+/* Fila a la que saltó un enlace «ver observables de este control»: un resalte que se apaga solo. */
+@keyframes destacar-fila {
+  0%,
+  55% {
+    background-color: var(--acento-suave);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.fila-destacada {
+  animation: destacar-fila 2.4s ease-out 1;
+}
+
 /* Marcador nativo de <details> fuera: cada acordeón dibuja su propio chevrón. */
 details > summary {
   list-style: none;
@@ -219,5 +234,26 @@ details[open] > summary .chevron {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * «Exportar PDF» es window.print(): el navegador ofrece «Guardar como PDF» en su propio
+ * diálogo, sin sumar una librería solo para generar el archivo.
+ * .evitar-imprimir se pone a mano en los controles que no sirven en un documento estático
+ * (selects, botones, los interruptores de tipo de gráfico).
+ */
+@media print {
+  /* Chromium imprime con el ancho de la hoja, no el del viewport: eso cae por debajo del
+     punto de quiebre lg y activa la barra/menú de móvil (incluido el cajón deslizable, que
+     en impresión pierde su transform y queda en el flujo normal). Se ocultan los dos. */
+  aside,
+  .lg\:hidden,
+  .evitar-imprimir {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
   }
 }

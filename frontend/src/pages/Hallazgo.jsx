@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import Aviso, { Cargando } from "../components/Aviso";
 import EstadoBadge from "../components/EstadoBadge";
@@ -32,7 +32,12 @@ function Eslabon({ numero, titulo, tipo, descripcion, ultimo = false, children }
 
 export default function Hallazgo() {
   const { obsId } = useParams();
-  const { empresa, ejecucionId, ejecuciones } = useEmpresa();
+  const { empresa, ejecucionId: ejecucionActiva, ejecuciones } = useEmpresa();
+  const [parametros] = useSearchParams();
+  // Por defecto se usa la ejecución activa de la empresa, pero un enlace (por ejemplo desde
+  // Resultados, que puede mostrar cualquier ejecución) puede pedir una distinta con ?ejecucion=.
+  const ejecucionParam = Number(parametros.get("ejecucion"));
+  const ejecucionId = ejecucionParam || ejecucionActiva;
   const [otra, setOtra] = useState("");
 
   const hallazgo = useCarga(() => (ejecucionId ? api.hallazgo(ejecucionId, obsId) : Promise.resolve(null)), [ejecucionId, obsId]);

@@ -170,11 +170,11 @@ def test_correctivos_hallazgo_y_plan_de_mejora(cliente, oracle_falso):
     obs21 = next(o for o in detalle["observables"] if o["obs_id"] == "OBS-21")
     assert obs21["requiere_manual"] is True  # declara clave_del_keystore y ruta_del_keystore
     pendiente = obs21["items"][0]["pendientes"][0]
-    assert pendiente == {
-        "token": "clave_del_keystore",
-        "alcance": "global",
-        "guia": "La contraseña que se usó (o se va a usar) para crear el keystore de TDE. Pregúntale a quien configuró el cifrado, o revisa el gestor de secretos de la empresa — el instrumento nunca la guarda.",
-    }
+    assert pendiente["token"] == "clave_del_keystore"
+    assert pendiente["alcance"] == "global"
+    assert "gestor de secretos" in pendiente["guia"]
+    assert pendiente["consulta_sql"] == "SELECT wrl_parameter, status, wallet_type FROM V$ENCRYPTION_WALLET;"
+    assert pendiente["valor_sugerido"] is None  # es un secreto global: nunca se sugiere solo
     assert "<CLAVE_DEL_KEYSTORE>" in obs21["items"][0]["script"]
 
     script_lleno = cliente.post(

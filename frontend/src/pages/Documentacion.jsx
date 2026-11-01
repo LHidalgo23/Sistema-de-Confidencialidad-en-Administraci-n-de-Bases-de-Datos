@@ -24,7 +24,7 @@ const PRODUCTO = [
   },
   {
     punto: "Matriz de evaluación (Tarea, Riesgo, Control, Criterio 0-4, Evidencia, Estado)",
-    donde: "Empresa, Matriz (exportable a CSV)",
+    donde: "Empresa, Resultados (vista «Antes y después», exportable a CSV)",
     ruta: "matriz",
     empresa: true,
     archivo: "docs/evidencias/fase1/05_matriz_antes.csv",

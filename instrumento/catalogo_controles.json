@@ -151,7 +151,8 @@
         {
           "token": "rol_funcional",
           "alcance": "por_hallazgo",
-          "guia": "Nombre del rol que agrupará este privilegio sobre el objeto. Si la empresa ya tiene una convención de nombres de roles, úsala; si no, algo descriptivo como ROL_<OBJETO>_LECTURA funciona."
+          "guia": "Nombre del rol que agrupará este privilegio sobre el objeto. Si la empresa ya tiene una convención de nombres de roles, úsala; si no, algo descriptivo como ROL_<OBJETO>_LECTURA funciona.",
+          "consulta_sql": "SELECT role FROM DBA_ROLES WHERE role LIKE 'ROL%' ORDER BY role;"
         }
       ],
       "nota": "El rol funcional debe definirse según la función del puesto, no según la persona."
@@ -603,7 +604,8 @@
         {
           "token": "predicado",
           "alcance": "por_hallazgo",
-          "guia": "La condición que define qué filas puede ver cada usuario en esta tabla. Pregúntale al dueño del dato (por ejemplo, '¿un médico debe ver solo a sus pacientes, o a todos?'). Normalmente se basa en una columna que identifique al responsable, comparada con SYS_CONTEXT('USERENV','SESSION_USER')."
+          "guia": "No existe una consulta que devuelva esto: es una regla de negocio, no un dato guardado en Oracle. Para decidirlo: 1) corre la consulta de abajo y mira qué columnas tiene la tabla; 2) de esas columnas, identifica cuál identifica al responsable de la fila (el médico, el dueño de la cuenta, el vendedor...); 3) pregúntale a quien conoce el negocio si ese es el criterio correcto ('¿un médico debe ver solo a sus pacientes, o a todos?'); 4) escribe el predicado comparando esa columna con SYS_CONTEXT('USERENV','SESSION_USER'), por ejemplo: medico_responsable = SYS_CONTEXT('USERENV','SESSION_USER').",
+          "consulta_sql": "SELECT column_name, data_type FROM DBA_TAB_COLUMNS WHERE owner = '{esquema!l}' AND table_name = '{tabla!l}' ORDER BY column_id;"
         }
       ],
       "nota": "El esquema que aloja la función de predicado sale del parámetro esquema_seguridad del perfil de la empresa (SEG_AUDITORIA por defecto; debe existir y ser distinto del dueño de la tabla). La regla de acceso (el predicado) depende del negocio: el instrumento no puede inventarla, hay que definirla antes de aplicar esta plantilla (por ejemplo, columna_responsable = SYS_CONTEXT('USERENV','SESSION_USER')). Los usuarios con EXEMPT ACCESS POLICY (incluido SYS) no están sujetos a VPD."
@@ -981,7 +983,8 @@
         {
           "token": "hosts_autorizados",
           "alcance": "global",
-          "guia": "IPs o nombres de host que sí deben poder conectarse a esta base (por ejemplo, los servidores de la aplicación). Pregúntale al equipo de Infraestructura o Redes."
+          "guia": "IPs o nombres de host que sí deben poder conectarse a esta base (por ejemplo, los servidores de la aplicación). Pregúntale al equipo de Infraestructura o Redes.",
+          "consulta_sql": "SELECT DISTINCT machine, program FROM V$SESSION WHERE username IS NOT NULL ORDER BY machine;"
         }
       ],
       "nota": "Guardar copia del sqlnet.ora original antes de editarlo, y probar la conexión después de reiniciar el listener. Con ENCRYPTION_SERVER=REQUIRED los clientes que no soporten cifrado dejan de conectar: empezar en REQUESTED durante la transición y pasar a REQUIRED cuando todos los clientes estén listos."
@@ -1041,12 +1044,14 @@
         {
           "token": "clave_del_keystore",
           "alcance": "global",
-          "guia": "La contraseña que se usó (o se va a usar) para crear el keystore de TDE. Pregúntale a quien configuró el cifrado, o revisa el gestor de secretos de la empresa — el instrumento nunca la guarda."
+          "guia": "No existe una consulta que devuelva esto: ninguna vista de Oracle guarda contraseñas en texto legible (sería un hueco de seguridad). Primero corre la consulta de abajo para saber si ya existe un keystore: si STATUS es NOT_AVAILABLE, no hay ninguno y tú defines la contraseña por primera vez; si es CLOSED u OPEN_NO_MASTER_KEY, ya existe uno y necesitas la contraseña que se usó entonces — pregúntale a quien lo configuró o revisa el gestor de secretos de la empresa. Si la estás definiendo por primera vez, usa al menos 12 caracteres con mayúsculas, minúsculas, números y un símbolo, y guárdala en el gestor de secretos antes de aplicar el script: perder esta contraseña deja los datos cifrados ilegibles.",
+          "consulta_sql": "SELECT wrl_parameter, status, wallet_type FROM V$ENCRYPTION_WALLET;"
         },
         {
           "token": "ruta_del_keystore",
           "alcance": "global",
-          "guia": "La carpeta donde vivirá el keystore (convención interna de la empresa; por ejemplo /opt/oracle/keystore, o la misma que usan otras bases de la empresa)."
+          "guia": "La carpeta donde vivirá el keystore (convención interna de la empresa; por ejemplo /opt/oracle/keystore, o la misma que usan otras bases de la empresa). Si ya la configuraste con ALTER SYSTEM SET WALLET_ROOT, la consulta de abajo la confirma; V$ENCRYPTION_WALLET no siempre la refleja cuando se usa WALLET_ROOT.",
+          "consulta_sql": "SELECT value FROM V$PARAMETER WHERE name = 'wallet_root';"
         }
       ],
       "nota": "NOT_AVAILABLE requiere reiniciar la instancia después de fijar WALLET_ROOT y TDE_CONFIGURATION. Un estado distinto de estos tres (por ejemplo OPEN_UNKNOWN_MASTER_KEY_STATUS) requiere revisión manual. Hacer respaldo del keystore y registrar su contraseña en un gestor de secretos antes de crear llaves: perder el keystore deja los datos cifrados ilegibles. Considerar un wallet de auto-login para que la base abra sola tras un reinicio."
@@ -1114,7 +1119,8 @@
         {
           "token": "archivo_destino",
           "alcance": "por_hallazgo",
-          "guia": "La ruta donde debe quedar la copia cifrada del archivo de datos (normalmente en el mismo directorio del archivo de origen, que el instrumento ya trajo). Confírmalo con quien administra el almacenamiento."
+          "guia": "La ruta donde debe quedar la copia cifrada del archivo de datos (normalmente en el mismo directorio del archivo de origen, que el instrumento ya trajo). Confírmalo con quien administra el almacenamiento.",
+          "consulta_sql": "SELECT file_name FROM DBA_DATA_FILES WHERE tablespace_name = '{tablespace!l}' ORDER BY file_name;"
         }
       ],
       "nota": "Requiere el keystore de TDE abierto con llave maestra (ver OBS-21). No se pueden cifrar in situ SYSTEM, SYSAUX, UNDO ni TEMP; para esas estructuras el control es el cifrado de respaldos y del almacenamiento. Alternativa: crear un tablespace nuevo con ENCRYPTION y mover las tablas con ALTER TABLE ... MOVE."
@@ -1145,7 +1151,8 @@
     "version_min": 19,
     "requiere": [
       "REDACTION_COLUMNS",
-      "DBA_COL_COMMENTS"
+      "DBA_COL_COMMENTS",
+      "DBA_TAB_COLUMNS"
     ],
     "observable": {
       "archivo": "sql/observables/OBS-23.sql",
@@ -1153,6 +1160,7 @@
         "esquema",
         "tabla",
         "columna",
+        "tipo_dato",
         "marcador"
       ],
       "identificador": [
@@ -1170,7 +1178,8 @@
         {
           "token": "expresion_de_enmascarado",
           "alcance": "por_hallazgo",
-          "guia": "Cómo reemplazar el valor real por uno ficticio (por ejemplo DBMS_RANDOM.STRING('A',10) para texto). Depende del tipo de dato de la columna. Se inserta tal cual, sin escapar: revísalo con cuidado antes de aplicar."
+          "guia": "Cómo reemplazar el valor real por uno ficticio (por ejemplo DBMS_RANDOM.STRING('A',10) para texto). Depende del tipo de dato de la columna. Se inserta tal cual, sin escapar: revísalo con cuidado antes de aplicar.",
+          "consulta_sql": "SELECT data_type, data_length, data_precision, data_scale FROM DBA_TAB_COLUMNS WHERE owner = '{esquema!l}' AND table_name = '{tabla!l}' AND column_name = '{columna!l}';"
         }
       ],
       "nota": "El marcador es una convención: solo debe registrarse cuando el enmascarado ya se aplicó. Los ambientes de prueba no deberían recibir copias de producción sin enmascarar (A8.33)."

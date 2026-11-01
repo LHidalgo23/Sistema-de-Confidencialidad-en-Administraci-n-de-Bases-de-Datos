@@ -1,0 +1,13 @@
+{
+  "cuentas_dba_autorizadas": ["DBA_LHIDALGO"],
+  "cuentas_administrativas": ["DBA_LHIDALGO", "PDBADMIN"],
+  "cuentas_audit_admin_autorizadas": ["DBA_LHIDALGO"],
+  "cuentas_pwfile_autorizadas": ["SYS"],
+  "aceptaciones_riesgo": {
+    "OBS-13": "El verificador de contrasena anterior (10G/11G) solo se puede desactivar fijando SQLNET.ALLOWED_LOGON_VERSION_SERVER=12a en el sqlnet.ora de la instancia, que es compartido por las demas PDB del mismo Oracle local (incluida la Clinica Los Robles). Se acepta el riesgo en el laboratorio para no afectar a otras empresas de demostracion; la recomendacion para produccion queda documentada como plan de mejora.",
+    "OBS-20": "El cifrado de sesiones de red (SQLNET.ENCRYPTION_SERVER) se configura en el sqlnet.ora de la instancia, compartido por todas las PDB del mismo Oracle local (incluida la Clinica Los Robles). OBS-20 resulto evaluable desde la PDB (V$SESSION es visible por contenedor) y marco sesiones sin cifrar de verdad. Se acepta el riesgo en el laboratorio; en produccion cada entorno deberia tener su propio listener con cifrado obligatorio.",
+    "OBS-21": "El keystore de TDE de esta instancia (C:\\ORACLE_WALLET_DEMO\\tde) existe pero esta CERRADO en modo UNITED (compartido por toda la instancia) y su contrasena no esta documentada en este laboratorio. Abrirlo afectaria tambien a PDB_CLINICA, XEPDB1 y BKPCAT. Se acepta el riesgo; la recomendacion es que cada entorno productivo tenga su propio keystore aislado.",
+    "OBS-22": "Depende del mismo keystore de TDE cerrado que OBS-21 (ver esa aceptacion): sin el keystore abierto no se puede cifrar el tablespace ni las columnas sensibles. Se acepta el riesgo por la misma razon.",
+    "OBS-24": "Oracle Database XE no distribuye Release Updates trimestrales; se acepta el riesgo en el laboratorio y se documenta la migracion a una edicion con soporte de parches como plan de mejora (misma aceptacion que ya usa la Clinica Los Robles para este mismo observable)."
+  }
+}

@@ -65,7 +65,7 @@ function useResumen(observables, globales, porHallazgo) {
         const campos = dedupeCampos([...item.pendientes, ...item.pasos.flatMap((p) => p.pendientes)]).map((c) => {
           if (c.alcance === "global") {
             const lleno = Boolean(globales[c.token]?.trim());
-            globalesGuia.set(c.token, c.guia);
+            globalesGuia.set(c.token, { guia: c.guia, consulta_sql: c.consulta_sql });
             if (!lleno) completo = false;
             return { ...c, lleno };
           }
@@ -93,7 +93,7 @@ function useResumen(observables, globales, porHallazgo) {
   }, [observables, globales, porHallazgo]);
 }
 
-function CampoManual({ etiqueta, guia, valor, onChange }) {
+function CampoManual({ etiqueta, guia, sugerido, consulta, valor, onChange }) {
   return (
     <label className="block text-sm">
       <span className={etiquetaCampo}>{etiqueta}</span>
@@ -105,6 +105,30 @@ function CampoManual({ etiqueta, guia, valor, onChange }) {
         className={`${campo} font-mono`}
       />
       {guia && <span className={ayudaCampo}>{guia}</span>}
+      {sugerido && (
+        <div className="mt-2 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-texto-3">
+              Valor sugerido por convención (revísalo antes de usarlo, no viene de una decisión del negocio):
+            </span>
+            <BotonCopiar texto={sugerido} etiqueta="Copiar valor" />
+          </div>
+          <pre className={codigo}>{sugerido}</pre>
+        </div>
+      )}
+      {consulta && (
+        <div className="mt-2 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-texto-3">
+              {sugerido
+                ? "Para confirmarlo en la base (opcional): copia, pega en sqlplus/cmd y ejecútala."
+                : "Consulta para obtener este dato: copia, pega en sqlplus/cmd y ejecútala."}
+            </span>
+            <BotonCopiar texto={consulta} etiqueta="Copiar consulta" />
+          </div>
+          <pre className={codigo}>{consulta}</pre>
+        </div>
+      )}
     </label>
   );
 }
@@ -234,6 +258,8 @@ function TarjetaObservable({ obs, porHallazgo, actualizarCampoHallazgo, onMarcar
                         key={c.token}
                         etiqueta={etiquetaCampoDe(c.token)}
                         guia={c.guia}
+                        sugerido={c.valor_sugerido}
+                        consulta={c.consulta_sql}
                         valor={porHallazgo[obs.obs_id]?.[item.clave]?.[c.token] ?? ""}
                         onChange={(v) => actualizarCampoHallazgo(obs.obs_id, item.clave, c.token, v)}
                       />
@@ -361,11 +387,12 @@ export default function Correctivos() {
                   descripcion="Se llenan una sola vez y se usan en todas las plantillas activas que los necesiten."
                 >
                   <div className="grid gap-4 rounded-xl bg-superficie p-5 shadow-tarjeta sm:grid-cols-2">
-                    {[...resumen.globalesGuia].map(([token, guia]) => (
+                    {[...resumen.globalesGuia].map(([token, meta]) => (
                       <CampoManual
                         key={token}
                         etiqueta={etiquetaCampoDe(token)}
-                        guia={guia}
+                        guia={meta.guia}
+                        consulta={meta.consulta_sql}
                         valor={globales[token] ?? ""}
                         onChange={(v) => setGlobales((previo) => ({ ...previo, [token]: v }))}
                       />

@@ -9,13 +9,13 @@ import Descubrimiento from "./pages/Descubrimiento";
 import Documentacion from "./pages/Documentacion";
 import Empresas from "./pages/Empresas";
 import Hallazgo from "./pages/Hallazgo";
-import Matriz from "./pages/Matriz";
 import PlanMejora from "./pages/PlanMejora";
 import Practica from "./pages/Practica";
 import Prevuelo from "./pages/Prevuelo";
 
-// El Dashboard es el único que usa Recharts: se carga bajo demanda para aligerar el resto.
+// Dashboard y Resultados son los únicos que usan Recharts: se cargan bajo demanda para aligerar el resto.
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Resultados = lazy(() => import("./pages/Matriz"));
 
 export default function App() {
   return (
@@ -33,7 +33,14 @@ export default function App() {
           />
           <Route path="prevuelo" element={<Prevuelo />} />
           <Route path="descubrimiento" element={<Descubrimiento />} />
-          <Route path="matriz" element={<Matriz />} />
+          <Route
+            path="matriz"
+            element={
+              <Suspense fallback={<Cargando />}>
+                <Resultados />
+              </Suspense>
+            }
+          />
           <Route path="hallazgos/:obsId" element={<Hallazgo />} />
           <Route path="correctivos" element={<Correctivos />} />
           <Route path="plan-mejora" element={<PlanMejora />} />

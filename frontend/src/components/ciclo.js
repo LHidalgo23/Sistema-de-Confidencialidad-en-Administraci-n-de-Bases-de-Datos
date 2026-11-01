@@ -14,7 +14,7 @@ export const FASES = [
     fase: "Verificar",
     pasos: [
       { ruta: "", etiqueta: "Dashboard", detalle: "Observar y evaluar", icono: Gauge },
-      { ruta: "matriz", etiqueta: "Matriz", detalle: "Antes y después", icono: Table2 },
+      { ruta: "matriz", etiqueta: "Resultados", detalle: "Historial y evolución", icono: Table2 },
     ],
   },
   {
